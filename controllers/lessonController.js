@@ -1,97 +1,106 @@
-const db = require('../config/database');
+const pool = require('../config/database');
 
 // --- Sổ đầu bài (Schedules) ---
 
-exports.getScheduleByProjectId = (req, res) => {
+exports.getScheduleByProjectId = async (req, res) => {
     const projectId = req.params.projectId;
-    const query = `SELECT * FROM schedules WHERE project_id = ?`;
     
-    db.get(query, [projectId], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const query = `SELECT * FROM schedules WHERE project_id = $1`;
+        const result = await pool.query(query, [projectId]);
+        const row = result.rows[0];
+
         if (!row) return res.json(null);
         
         try { row.schedule_data = JSON.parse(row.schedule_data); } catch(e) { }
         res.json(row);
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
-exports.saveSchedule = (req, res) => {
+exports.saveSchedule = async (req, res) => {
     const projectId = req.params.projectId;
     const { schedule_data } = req.body;
     
     const scheduleStr = JSON.stringify(schedule_data);
     
-    // Check if exists
-    db.get(`SELECT id FROM schedules WHERE project_id = ?`, [projectId], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        
+    try {
+        const checkQuery = `SELECT id FROM schedules WHERE project_id = $1`;
+        const result = await pool.query(checkQuery, [projectId]);
+        const row = result.rows[0];
+
         if (row) {
             // Update
-            db.run(`UPDATE schedules SET schedule_data = ?, updated_at = CURRENT_TIMESTAMP WHERE project_id = ?`, 
-                [scheduleStr, projectId], function(err) {
-                    if (err) return res.status(500).json({ error: err.message });
-                    res.json({ message: 'Schedule updated successfully' });
-                });
+            const updateQuery = `UPDATE schedules SET schedule_data = $1, updated_at = CURRENT_TIMESTAMP WHERE project_id = $2`;
+            await pool.query(updateQuery, [scheduleStr, projectId]);
+            res.json({ message: 'Schedule updated successfully' });
         } else {
             // Insert
-            db.run(`INSERT INTO schedules (project_id, schedule_data) VALUES (?, ?)`, 
-                [projectId, scheduleStr], function(err) {
-                    if (err) return res.status(500).json({ error: err.message });
-                    res.status(201).json({ message: 'Schedule saved successfully' });
-                });
+            const insertQuery = `INSERT INTO schedules (project_id, schedule_data) VALUES ($1, $2)`;
+            await pool.query(insertQuery, [projectId, scheduleStr]);
+            res.status(201).json({ message: 'Schedule saved successfully' });
         }
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
 
 // --- Giáo án (Lessons) ---
 
-exports.getLessonByTT = (req, res) => {
+exports.getLessonByTT = async (req, res) => {
     const projectId = req.params.projectId;
     const scheduleTT = req.params.tt;
     
-    const query = `SELECT * FROM lessons WHERE project_id = ? AND schedule_tt = ?`;
-    db.get(query, [projectId, scheduleTT], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const query = `SELECT * FROM lessons WHERE project_id = $1 AND schedule_tt = $2`;
+        const result = await pool.query(query, [projectId, scheduleTT]);
+        const row = result.rows[0];
+
         if (!row) return res.json(null);
         
         try { row.lesson_data = JSON.parse(row.lesson_data); } catch(e) { }
         res.json(row);
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
-exports.getAllLessonsByProject = (req, res) => {
+exports.getAllLessonsByProject = async (req, res) => {
     const projectId = req.params.projectId;
     
-    const query = `SELECT schedule_tt, updated_at FROM lessons WHERE project_id = ? ORDER BY schedule_tt ASC`;
-    db.all(query, [projectId], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
+    try {
+        const query = `SELECT schedule_tt, updated_at FROM lessons WHERE project_id = $1 ORDER BY schedule_tt ASC`;
+        const result = await pool.query(query, [projectId]);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
-exports.saveLesson = (req, res) => {
+exports.saveLesson = async (req, res) => {
     const projectId = req.params.projectId;
     const scheduleTT = req.params.tt;
     const { lesson_data } = req.body;
     
     const lessonStr = JSON.stringify(lesson_data);
     
-    db.get(`SELECT id FROM lessons WHERE project_id = ? AND schedule_tt = ?`, [projectId, scheduleTT], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
-        
+    try {
+        const checkQuery = `SELECT id FROM lessons WHERE project_id = $1 AND schedule_tt = $2`;
+        const result = await pool.query(checkQuery, [projectId, scheduleTT]);
+        const row = result.rows[0];
+
         if (row) {
-            db.run(`UPDATE lessons SET lesson_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`, 
-                [lessonStr, row.id], function(err) {
-                    if (err) return res.status(500).json({ error: err.message });
-                    res.json({ message: 'Lesson updated successfully' });
-                });
+            const updateQuery = `UPDATE lessons SET lesson_data = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`;
+            await pool.query(updateQuery, [lessonStr, row.id]);
+            res.json({ message: 'Lesson updated successfully' });
         } else {
-            db.run(`INSERT INTO lessons (project_id, schedule_tt, lesson_data) VALUES (?, ?, ?)`, 
-                [projectId, scheduleTT, lessonStr], function(err) {
-                    if (err) return res.status(500).json({ error: err.message });
-                    res.status(201).json({ message: 'Lesson saved successfully' });
-                });
+            const insertQuery = `INSERT INTO lessons (project_id, schedule_tt, lesson_data) VALUES ($1, $2, $3)`;
+            await pool.query(insertQuery, [projectId, scheduleTT, lessonStr]);
+            res.status(201).json({ message: 'Lesson saved successfully' });
         }
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };

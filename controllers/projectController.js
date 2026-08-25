@@ -1,14 +1,12 @@
-const db = require('../config/database');
+const pool = require('../config/database');
 
-exports.getAllProjects = (req, res) => {
+exports.getAllProjects = async (req, res) => {
     const userId = req.user.id;
-    const query = `SELECT * FROM projects WHERE user_id = ? ORDER BY created_at DESC`;
-    
-    db.all(query, [userId], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const query = `SELECT * FROM projects WHERE user_id = $1 ORDER BY created_at DESC`;
+        const result = await pool.query(query, [userId]);
         
-        // Parse JSON program_data back to object
-        const projects = rows.map(row => {
+        const projects = result.rows.map(row => {
             if (row.program_data) {
                 try { row.program_data = JSON.parse(row.program_data); } 
                 catch(e) { row.program_data = null; }
@@ -17,16 +15,20 @@ exports.getAllProjects = (req, res) => {
         });
         
         res.json(projects);
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
-exports.getProjectById = (req, res) => {
+exports.getProjectById = async (req, res) => {
     const userId = req.user.id;
     const projectId = req.params.id;
     
-    const query = `SELECT * FROM projects WHERE id = ? AND user_id = ?`;
-    db.get(query, [projectId, userId], (err, project) => {
-        if (err) return res.status(500).json({ error: err.message });
+    try {
+        const query = `SELECT * FROM projects WHERE id = $1 AND user_id = $2`;
+        const result = await pool.query(query, [projectId, userId]);
+        const project = result.rows[0];
+
         if (!project) return res.status(404).json({ message: 'Project not found' });
         
         if (project.program_data) {
@@ -35,10 +37,12 @@ exports.getProjectById = (req, res) => {
         }
         
         res.json(project);
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
-exports.createProject = (req, res) => {
+exports.createProject = async (req, res) => {
     const userId = req.user.id;
     const { name, course_code, total_hours, program_data } = req.body;
     
@@ -46,36 +50,44 @@ exports.createProject = (req, res) => {
     
     const programDataStr = program_data ? JSON.stringify(program_data) : null;
     
-    const query = `INSERT INTO projects (user_id, name, course_code, total_hours, program_data) VALUES (?, ?, ?, ?, ?)`;
-    db.run(query, [userId, name, course_code, total_hours, programDataStr], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.status(201).json({ message: 'Project created successfully', projectId: this.lastID });
-    });
+    try {
+        const query = `INSERT INTO projects (user_id, name, course_code, total_hours, program_data) VALUES ($1, $2, $3, $4, $5) RETURNING id`;
+        const result = await pool.query(query, [userId, name, course_code, total_hours, programDataStr]);
+        res.status(201).json({ message: 'Project created successfully', projectId: result.rows[0].id });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
-exports.updateProject = (req, res) => {
+exports.updateProject = async (req, res) => {
     const userId = req.user.id;
     const projectId = req.params.id;
     const { name, course_code, total_hours, program_data } = req.body;
     
     const programDataStr = program_data ? JSON.stringify(program_data) : null;
     
-    const query = `UPDATE projects SET name = ?, course_code = ?, total_hours = ?, program_data = ? WHERE id = ? AND user_id = ?`;
-    db.run(query, [name, course_code, total_hours, programDataStr, projectId, userId], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ message: 'Project not found or unauthorized' });
+    try {
+        const query = `UPDATE projects SET name = $1, course_code = $2, total_hours = $3, program_data = $4 WHERE id = $5 AND user_id = $6`;
+        const result = await pool.query(query, [name, course_code, total_hours, programDataStr, projectId, userId]);
+        
+        if (result.rowCount === 0) return res.status(404).json({ message: 'Project not found or unauthorized' });
         res.json({ message: 'Project updated successfully' });
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
 
-exports.deleteProject = (req, res) => {
+exports.deleteProject = async (req, res) => {
     const userId = req.user.id;
     const projectId = req.params.id;
     
-    const query = `DELETE FROM projects WHERE id = ? AND user_id = ?`;
-    db.run(query, [projectId, userId], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        if (this.changes === 0) return res.status(404).json({ message: 'Project not found or unauthorized' });
+    try {
+        const query = `DELETE FROM projects WHERE id = $1 AND user_id = $2`;
+        const result = await pool.query(query, [projectId, userId]);
+        
+        if (result.rowCount === 0) return res.status(404).json({ message: 'Project not found or unauthorized' });
         res.json({ message: 'Project deleted successfully' });
-    });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 };
