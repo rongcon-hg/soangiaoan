@@ -20,8 +20,10 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
             email,
             null,
             formattedKey,
-            ['https://www.googleapis.com/auth/drive.file']
+            ['https://www.googleapis.com/auth/drive']
         );
+
+        await auth.authorize();
 
         const drive = google.drive({ version: 'v3', auth });
 
@@ -33,7 +35,9 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
         const searchRes = await drive.files.list({
             q: `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and '${folderId}' in parents and trashed=false`,
             fields: 'files(id, name)',
-            spaces: 'drive'
+            spaces: 'drive',
+            includeItemsFromAllDrives: true,
+            supportsAllDrives: true
         });
 
         let targetFolderId = null;
@@ -47,7 +51,8 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
             };
             const folder = await drive.files.create({
                 resource: folderMetadata,
-                fields: 'id'
+                fields: 'id',
+                supportsAllDrives: true
             });
             targetFolderId = folder.data.id;
         } else {
@@ -70,7 +75,8 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
         const file = await drive.files.create({
             resource: fileMetadata,
             media: media,
-            fields: 'id, webViewLink, webContentLink'
+            fields: 'id, webViewLink, webContentLink',
+            supportsAllDrives: true
         });
         
         // Share the file publicly so it can be viewed as an avatar/resource
@@ -79,7 +85,8 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
             requestBody: {
                 role: 'reader',
                 type: 'anyone'
-            }
+            },
+            supportsAllDrives: true
         });
 
         return file.data.webViewLink; // or webContentLink for direct download
