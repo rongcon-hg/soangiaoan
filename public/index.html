@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hệ thống Quản lý Sổ đầu bài & Soạn giáo án</title>
+<style>
+body{margin:0;background:#eef3f9;font-family:"Times New Roman",Times,serif;color:#172033}
+.shell{max-width:1000px;margin:40px auto;padding:16px}
+.hero{background:#16469d;color:#fff;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 8px 24px rgba(22,70,157,.18)}
+.hero h1{margin:0 0 10px;font-size:28px}
+.hero p{margin:0;opacity:.95;font-size:16px}
+
+.card{background:#fff;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 5px 20px rgba(0,0,0,.07)}
+h2{margin:0 0 16px;color:#123d82}
+
+.form-group{margin-bottom:16px}
+label{display:block;font-weight:bold;margin-bottom:8px;font-size:14px}
+input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit}
+button{font:inherit;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer;background:#16469d;color:#fff;width:auto}
+button:hover{background:#123d82}
+button.secondary{background:#64748b}
+
+.hidden{display:none}
+.alert{padding:12px;border-radius:8px;margin-bottom:16px;font-weight:bold}
+.alert-error{background:#fee2e2;color:#991b1b;border:1px solid #f87171}
+.alert-success{background:#dcfce7;color:#166534;border:1px solid #4ade80}
+
+.project-list{display:grid;grid-template-columns:1fr;gap:12px}
+.project-item{padding:16px;border:1px solid #e2e8f0;border-radius:8px;display:flex;justify-content:space-between;align-items:center;background:#f8fafc}
+.project-item:hover{border-color:#cbd5e1;background:#fff}
+.project-info h3{margin:0 0 4px;font-size:18px;color:#1e293b}
+.project-info p{margin:0;font-size:14px;color:#64748b}
+
+.tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #e2e8f0;padding-bottom:10px}
+.tab{padding:8px 16px;cursor:pointer;font-weight:bold;color:#64748b;border-radius:8px}
+.tab.active{background:#16469d;color:#fff}
+
+#userMenu{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:16px;border-radius:14px;margin-bottom:20px}
+
+/* Modal */
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal-content{background:#fff;padding:24px;border-radius:14px;width:100%;max-width:500px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="hero">
+    <h1>HỆ THỐNG QUẢN LÝ SỔ ĐẦU BÀI & SOẠN GIÁO ÁN</h1>
+    <p>Trợ lý AI hỗ trợ giảng viên lập kế hoạch giảng dạy</p>
+  </div>
+
+  <div id="alertBox" class="alert hidden"></div>
+
+  <!-- AUTH SECTION -->
+  <div id="authSection" class="card">
+    <div class="tabs">
+      <div class="tab active" onclick="switchAuthTab('login')" id="tabLogin">Đăng nhập</div>
+      <div class="tab" onclick="switchAuthTab('register')" id="tabRegister">Đăng ký</div>
+    </div>
+    
+    <form id="authForm" onsubmit="handleAuth(event)">
+      <div class="form-group">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="username" required>
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu</label>
+        <input type="password" id="password" required>
+      </div>
+      <button type="submit" id="authBtn">Đăng nhập</button>
+    </form>
+  </div>
+
+  <!-- DASHBOARD SECTION -->
+  <div id="dashboardSection" class="hidden">
+    <div id="userMenu">
+      <div>Xin chào, <b id="displayUsername"></b></div>
+      <div style="display:flex;gap:8px;">
+        <button class="secondary" onclick="openSettingsModal()">Cài đặt Gemini API</button>
+        <button class="secondary" onclick="logout()">Đăng xuất</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2>Dự án / Môn học của tôi</h2>
+        <button onclick="openNewProjectModal()">+ Thêm Môn học mới</button>
+      </div>
+      
+      <div id="projectsList" class="project-list">
+        <!-- Projects will be rendered here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div id="settingsModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Cài đặt Gemini API Key cá nhân</h2>
+    <p style="font-size:14px;color:#666">Mỗi tài khoản sử dụng một API Key riêng để soạn giáo án.</p>
+    <div class="form-group">
+      <input type="text" id="geminiApiKey" placeholder="Nhập AIzaSy...">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="secondary" onclick="closeModal('settingsModal')">Hủy</button>
+      <button onclick="saveApiKey()">Lưu khóa</button>
+    </div>
+  </div>
+</div>
+
+<div id="newProjectModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Thêm Môn học mới</h2>
+    <div class="form-group">
+      <label>Tên môn học</label>
+      <input type="text" id="newProjectName" required>
+    </div>
+    <div class="form-group">
+      <label>Mã môn học</label>
+      <input type="text" id="newProjectCode">
+    </div>
+    <div class="form-group">
+      <label>Tổng giờ</label>
+      <input type="number" id="newProjectHours" min="1">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="secondary" onclick="closeModal('newProjectModal')">Hủy</button>
+      <button onclick="createProject()">Tạo Môn học</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = '/api';
+let currentUser = null;
+let isLoginMode = true;
+
+// Utility functions
+function showAlert(message, type = 'error') {
+  const box = document.getElementById('alertBox');
+  box.className = `alert alert-${type}`;
+  box.textContent = message;
+  box.classList.remove('hidden');
+  setTimeout(() => box.classList.add('hidden'), 5000);
+}
+
+function getAuthHeaders() {
+  const token = localStorage.getItem('token');
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+}
+
+// Auth Handlers
+function switchAuthTab(mode) {
+  isLoginMode = mode === 'login';
+  document.getElementById('tabLogin').className = `tab ${isLoginMode ? 'active' : ''}`;
+  document.getElementById('tabRegister').className = `tab ${!isLoginMode ? 'active' : ''}`;
+  document.getElementById('authBtn').textContent = isLoginMode ? 'Đăng nhập' : 'Đăng ký';
+}
+
+async function handleAuth(e) {
+  e.preventDefault();
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
+  
+  try {
+    const res = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    
+    if (!res.ok) throw new Error(data.message || data.error);
+    
+    if (!isLoginMode) {
+      showAlert('Đăng ký thành công, vui lòng đăng nhập.', 'success');
+      switchAuthTab('login');
+      document.getElementById('password').value = '';
+    } else {
+      localStorage.setItem('token', data.token);
+      checkAuth();
+    }
+  } catch (err) {
+    showAlert(err.message);
+  }
+}
+
+async function checkAuth() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    showAuth();
+    return;
+  }
+  
+  try {
+    const res = await fetch(`${API_URL}/auth/me`, { headers: getAuthHeaders() });
+    if (!res.ok) throw new Error();
+    
+    const data = await res.json();
+    currentUser = data.user;
+    showDashboard();
+    loadProjects();
+  } catch (err) {
+    localStorage.removeItem('token');
+    showAuth();
+  }
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  currentUser = null;
+  showAuth();
+}
+
+// UI Handlers
+function showAuth() {
+  document.getElementById('authSection').classList.remove('hidden');
+  document.getElementById('dashboardSection').classList.add('hidden');
+}
+
+function showDashboard() {
+  document.getElementById('authSection').classList.add('hidden');
+  document.getElementById('dashboardSection').classList.remove('hidden');
+  document.getElementById('displayUsername').textContent = currentUser.username;
+}
+
+function openSettingsModal() {
+  document.getElementById('geminiApiKey').value = currentUser.gemini_api_key || '';
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+
+function openNewProjectModal() {
+  document.getElementById('newProjectName').value = '';
+  document.getElementById('newProjectCode').value = '';
+  document.getElementById('newProjectHours').value = '';
+  document.getElementById('newProjectModal').classList.remove('hidden');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+// API Handlers
+async function saveApiKey() {
+  const apiKey = document.getElementById('geminiApiKey').value.trim();
+  try {
+    const res = await fetch(`${API_URL}/auth/apikey`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ apiKey })
+    });
+    if (!res.ok) throw new Error('Không thể lưu API Key');
+    
+    currentUser.gemini_api_key = apiKey;
+    showAlert('Đã lưu API Key.', 'success');
+    closeModal('settingsModal');
+  } catch (err) {
+    showAlert(err.message);
+  }
+}
+
+async function loadProjects() {
+  try {
+    const res = await fetch(`${API_URL}/projects`, { headers: getAuthHeaders() });
+    const projects = await res.json();
+    
+    const container = document.getElementById('projectsList');
+    if (projects.length === 0) {
+      container.innerHTML = '<p style="color:#666">Chưa có môn học nào. Hãy tạo mới.</p>';
+      return;
+    }
+    
+    container.innerHTML = projects.map(p => `
+      <div class="project-item">
+        <div class="project-info">
+          <h3>${p.name}</h3>
+          <p>Mã: ${p.course_code || '---'} | Tổng giờ: ${p.total_hours || 0}</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="secondary" onclick="deleteProject(${p.id})">Xóa</button>
+          <button onclick="openProject(${p.id})">Mở & Soạn</button>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    showAlert('Lỗi tải danh sách dự án');
+  }
+}
+
+async function createProject() {
+  const name = document.getElementById('newProjectName').value;
+  const course_code = document.getElementById('newProjectCode').value;
+  const total_hours = document.getElementById('newProjectHours').value;
+  
+  if (!name) return showAlert('Vui lòng nhập tên môn học');
+  
+  try {
+    const res = await fetch(`${API_URL}/projects`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ name, course_code, total_hours: Number(total_hours) })
+    });
+    if (!res.ok) throw new Error('Không thể tạo môn học');
+    
+    closeModal('newProjectModal');
+    loadProjects();
+    showAlert('Đã tạo môn học mới.', 'success');
+  } catch (err) {
+    showAlert(err.message);
+  }
+}
+
+async function deleteProject(id) {
+  if (!confirm('Bạn có chắc chắn muốn xóa môn học này?')) return;
+  try {
+    const res = await fetch(`${API_URL}/projects/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    if (!res.ok) throw new Error('Không thể xóa');
+    loadProjects();
+  } catch (err) {
+    showAlert(err.message);
+  }
+}
+
+function openProject(id) {
+  // Chuyển hướng sang trang Soạn Giáo Án với project_id
+  window.location.href = `/app.html?project=${id}`;
+}
+
+// Initialize
+checkAuth();
+</script>
+</body>
+</html>
