@@ -1,342 +1,546 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Hệ thống Quản lý Sổ đầu bài & Soạn giáo án</title>
-<style>
-body{margin:0;background:#eef3f9;font-family:"Times New Roman",Times,serif;color:#172033}
-.shell{max-width:1000px;margin:40px auto;padding:16px}
-.hero{background:#16469d;color:#fff;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 8px 24px rgba(22,70,157,.18)}
-.hero h1{margin:0 0 10px;font-size:28px}
-.hero p{margin:0;opacity:.95;font-size:16px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Giáo án - Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --bg: #f1f5f9;
+            --white: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --sidebar-width: 260px;
+        }
 
-.card{background:#fff;border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:0 5px 20px rgba(0,0,0,.07)}
-h2{margin:0 0 16px;color:#123d82}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-.form-group{margin-bottom:16px}
-label{display:block;font-weight:bold;margin-bottom:8px;font-size:14px}
-input{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font:inherit}
-button{font:inherit;border:0;border-radius:8px;padding:10px 16px;font-weight:bold;cursor:pointer;background:#16469d;color:#fff;width:auto}
-button:hover{background:#123d82}
-button.secondary{background:#64748b}
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-.hidden{display:none}
-.alert{padding:12px;border-radius:8px;margin-bottom:16px;font-weight:bold}
-.alert-error{background:#fee2e2;color:#991b1b;border:1px solid #f87171}
-.alert-success{background:#dcfce7;color:#166534;border:1px solid #4ade80}
+        /* --- Auth View --- */
+        #auth-view {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            position: absolute;
+            z-index: 1000;
+        }
+        
+        .auth-card {
+            background: var(--white);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
 
-.project-list{display:grid;grid-template-columns:1fr;gap:12px}
-.project-item{padding:16px;border:1px solid #e2e8f0;border-radius:8px;display:flex;justify-content:space-between;align-items:center;background:#f8fafc}
-.project-item:hover{border-color:#cbd5e1;background:#fff}
-.project-info h3{margin:0 0 4px;font-size:18px;color:#1e293b}
-.project-info p{margin:0;font-size:14px;color:#64748b}
+        .auth-card h2 {
+            text-align: center;
+            margin-bottom: 24px;
+            color: var(--primary);
+        }
 
-.tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #e2e8f0;padding-bottom:10px}
-.tab{padding:8px 16px;cursor:pointer;font-weight:bold;color:#64748b;border-radius:8px}
-.tab.active{background:#16469d;color:#fff}
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
 
-#userMenu{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:16px;border-radius:14px;margin-bottom:20px}
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-light);
+        }
 
-/* Modal */
-.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000}
-.modal-content{background:#fff;padding:24px;border-radius:14px;width:100%;max-width:500px}
-</style>
+        .auth-tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: -2px;
+        }
+
+        /* --- Dashboard Layout --- */
+        #app-view {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        
+        .sidebar-header h2 {
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-light);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: #f8fafc;
+            color: var(--primary);
+            border-right: 3px solid var(--primary);
+        }
+
+        .nav-item i {
+            width: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            height: 64px;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+
+        .content-area {
+            padding: 24px;
+            flex: 1;
+        }
+
+        /* Common Elements */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; outline: none; transition: border 0.2s; }
+        .form-control:focus { border-color: var(--primary); }
+        
+        .btn { padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; transition: background 0.2s; }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .btn-danger { background: var(--danger); color: var(--white); }
+
+        .card { background: var(--white); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 24px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; }
+
+        /* Grid */
+        .grid { display: grid; gap: 20px; }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        
+        .project-card { border: 1px solid var(--border); border-radius: 8px; padding: 16px; transition: transform 0.2s, box-shadow 0.2s; background: var(--bg); }
+        .project-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .project-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; color: var(--primary); }
+        .project-meta { font-size: 0.85rem; color: var(--text-light); margin-bottom: 16px; }
+
+        /* Alert */
+        #alert-box { position: fixed; top: 20px; right: 20px; padding: 12px 24px; border-radius: 6px; color: white; font-weight: bold; z-index: 2000; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .alert-error { background: var(--danger); }
+        .alert-success { background: var(--success); }
+
+        /* Page View */
+        .page-view { display: none; }
+        .page-view.active { display: block; }
+        
+    </style>
 </head>
 <body>
-<div class="shell">
-  <div class="hero">
-    <h1>HỆ THỐNG QUẢN LÝ SỔ ĐẦU BÀI & SOẠN GIÁO ÁN</h1>
-    <p>Trợ lý AI hỗ trợ giảng viên lập kế hoạch giảng dạy</p>
-  </div>
 
-  <div id="alertBox" class="alert hidden"></div>
+    <!-- THÔNG BÁO -->
+    <div id="alert-box"></div>
 
-  <!-- AUTH SECTION -->
-  <div id="authSection" class="card">
-    <div class="tabs">
-      <div class="tab active" onclick="switchAuthTab('login')" id="tabLogin">Đăng nhập</div>
-      <div class="tab" onclick="switchAuthTab('register')" id="tabRegister">Đăng ký</div>
-    </div>
-    
-    <form id="authForm" onsubmit="handleAuth(event)">
-      <div class="form-group">
-        <label>Tên đăng nhập</label>
-        <input type="text" id="username" required>
-      </div>
-      <div class="form-group">
-        <label>Mật khẩu</label>
-        <input type="password" id="password" required>
-      </div>
-      <button type="submit" id="authBtn">Đăng nhập</button>
-    </form>
-  </div>
-
-  <!-- DASHBOARD SECTION -->
-  <div id="dashboardSection" class="hidden">
-    <div id="userMenu">
-      <div>Xin chào, <b id="displayUsername"></b></div>
-      <div style="display:flex;gap:8px;">
-        <button class="secondary" onclick="openSettingsModal()">Cài đặt Gemini API</button>
-        <button class="secondary" onclick="logout()">Đăng xuất</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <h2>Dự án / Môn học của tôi</h2>
-        <button onclick="openNewProjectModal()">+ Thêm Môn học mới</button>
-      </div>
-      
-      <div id="projectsList" class="project-list">
-        <!-- Projects will be rendered here -->
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modals -->
-<div id="settingsModal" class="modal hidden">
-  <div class="modal-content">
-    <h2>Cài đặt Gemini API Key cá nhân</h2>
-    <p style="font-size:14px;color:#666">Mỗi tài khoản sử dụng một API Key riêng để soạn giáo án.</p>
-    <div class="form-group">
-      <input type="text" id="geminiApiKey" placeholder="Nhập AIzaSy...">
-    </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="secondary" onclick="closeModal('settingsModal')">Hủy</button>
-      <button onclick="saveApiKey()">Lưu khóa</button>
-    </div>
-  </div>
-</div>
-
-<div id="newProjectModal" class="modal hidden">
-  <div class="modal-content">
-    <h2>Thêm Môn học mới</h2>
-    <div class="form-group">
-      <label>Tên môn học</label>
-      <input type="text" id="newProjectName" required>
-    </div>
-    <div class="form-group">
-      <label>Mã môn học</label>
-      <input type="text" id="newProjectCode">
-    </div>
-    <div class="form-group">
-      <label>Tổng giờ</label>
-      <input type="number" id="newProjectHours" min="1">
-    </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="secondary" onclick="closeModal('newProjectModal')">Hủy</button>
-      <button onclick="createProject()">Tạo Môn học</button>
-    </div>
-  </div>
-</div>
-
-<script>
-const API_URL = '/api';
-let currentUser = null;
-let isLoginMode = true;
-
-// Utility functions
-function showAlert(message, type = 'error') {
-  const box = document.getElementById('alertBox');
-  box.className = `alert alert-${type}`;
-  box.textContent = message;
-  box.classList.remove('hidden');
-  setTimeout(() => box.classList.add('hidden'), 5000);
-}
-
-function getAuthHeaders() {
-  const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  };
-}
-
-// Auth Handlers
-function switchAuthTab(mode) {
-  isLoginMode = mode === 'login';
-  document.getElementById('tabLogin').className = `tab ${isLoginMode ? 'active' : ''}`;
-  document.getElementById('tabRegister').className = `tab ${!isLoginMode ? 'active' : ''}`;
-  document.getElementById('authBtn').textContent = isLoginMode ? 'Đăng nhập' : 'Đăng ký';
-}
-
-async function handleAuth(e) {
-  e.preventDefault();
-  const username = document.getElementById('username').value;
-  const password = document.getElementById('password').value;
-  const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
-  
-  try {
-    const res = await fetch(`${API_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
-    });
-    const data = await res.json();
-    
-    if (!res.ok) throw new Error(data.message || data.error);
-    
-    if (!isLoginMode) {
-      showAlert('Đăng ký thành công, vui lòng đăng nhập.', 'success');
-      switchAuthTab('login');
-      document.getElementById('password').value = '';
-    } else {
-      localStorage.setItem('token', data.token);
-      checkAuth();
-    }
-  } catch (err) {
-    showAlert(err.message);
-  }
-}
-
-async function checkAuth() {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    showAuth();
-    return;
-  }
-  
-  try {
-    const res = await fetch(`${API_URL}/auth/me`, { headers: getAuthHeaders() });
-    if (!res.ok) throw new Error();
-    
-    const data = await res.json();
-    currentUser = data.user;
-    showDashboard();
-    loadProjects();
-  } catch (err) {
-    localStorage.removeItem('token');
-    showAuth();
-  }
-}
-
-function logout() {
-  localStorage.removeItem('token');
-  currentUser = null;
-  showAuth();
-}
-
-// UI Handlers
-function showAuth() {
-  document.getElementById('authSection').classList.remove('hidden');
-  document.getElementById('dashboardSection').classList.add('hidden');
-}
-
-function showDashboard() {
-  document.getElementById('authSection').classList.add('hidden');
-  document.getElementById('dashboardSection').classList.remove('hidden');
-  document.getElementById('displayUsername').textContent = currentUser.username;
-}
-
-function openSettingsModal() {
-  document.getElementById('geminiApiKey').value = currentUser.gemini_api_key || '';
-  document.getElementById('settingsModal').classList.remove('hidden');
-}
-
-function openNewProjectModal() {
-  document.getElementById('newProjectName').value = '';
-  document.getElementById('newProjectCode').value = '';
-  document.getElementById('newProjectHours').value = '';
-  document.getElementById('newProjectModal').classList.remove('hidden');
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.add('hidden');
-}
-
-// API Handlers
-async function saveApiKey() {
-  const apiKey = document.getElementById('geminiApiKey').value.trim();
-  try {
-    const res = await fetch(`${API_URL}/auth/apikey`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ apiKey })
-    });
-    if (!res.ok) throw new Error('Không thể lưu API Key');
-    
-    currentUser.gemini_api_key = apiKey;
-    showAlert('Đã lưu API Key.', 'success');
-    closeModal('settingsModal');
-  } catch (err) {
-    showAlert(err.message);
-  }
-}
-
-async function loadProjects() {
-  try {
-    const res = await fetch(`${API_URL}/projects`, { headers: getAuthHeaders() });
-    const projects = await res.json();
-    
-    const container = document.getElementById('projectsList');
-    if (projects.length === 0) {
-      container.innerHTML = '<p style="color:#666">Chưa có môn học nào. Hãy tạo mới.</p>';
-      return;
-    }
-    
-    container.innerHTML = projects.map(p => `
-      <div class="project-item">
-        <div class="project-info">
-          <h3>${p.name}</h3>
-          <p>Mã: ${p.course_code || '---'} | Tổng giờ: ${p.total_hours || 0}</p>
+    <!-- VIEW ĐĂNG NHẬP -->
+    <div id="auth-view">
+        <div class="auth-card">
+            <h2>Hệ thống Giáo án</h2>
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="setAuthMode('login')" id="tab-login">Đăng nhập</div>
+                <div class="auth-tab" onclick="setAuthMode('register')" id="tab-register">Đăng ký</div>
+            </div>
+            <form id="auth-form" onsubmit="handleAuth(event)">
+                <div class="form-group">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="auth-username" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="auth-password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%" id="auth-btn">Đăng nhập</button>
+            </form>
         </div>
-        <div style="display:flex;gap:8px;">
-          <button class="secondary" onclick="deleteProject(${p.id})">Xóa</button>
-          <button onclick="openProject(${p.id})">Mở & Soạn</button>
+    </div>
+
+    <!-- VIEW DASHBOARD -->
+    <div id="app-view">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-book-open"></i> Sổ Giáo Án</h2>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="switchPage('projects', this)">
+                    <i class="fas fa-layer-group"></i> Quản lý Môn học
+                </div>
+                <div class="nav-item" onclick="switchPage('profile', this)">
+                    <i class="fas fa-user"></i> Thông tin cá nhân
+                </div>
+                <div class="nav-item" onclick="switchPage('settings', this)">
+                    <i class="fas fa-cog"></i> Cấu hình AI (Gemini)
+                </div>
+                <div class="nav-item" onclick="switchPage('users', this)" id="nav-users" style="display:none">
+                    <i class="fas fa-users"></i> Quản lý Người dùng
+                </div>
+                <div class="nav-item" onclick="logout()" style="margin-top:auto; border-top:1px solid #e2e8f0;">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </div>
+            </div>
         </div>
-      </div>
-    `).join('');
-  } catch (err) {
-    showAlert('Lỗi tải danh sách dự án');
-  }
-}
 
-async function createProject() {
-  const name = document.getElementById('newProjectName').value;
-  const course_code = document.getElementById('newProjectCode').value;
-  const total_hours = document.getElementById('newProjectHours').value;
-  
-  if (!name) return showAlert('Vui lòng nhập tên môn học');
-  
-  try {
-    const res = await fetch(`${API_URL}/projects`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ name, course_code, total_hours: Number(total_hours) })
-    });
-    if (!res.ok) throw new Error('Không thể tạo môn học');
-    
-    closeModal('newProjectModal');
-    loadProjects();
-    showAlert('Đã tạo môn học mới.', 'success');
-  } catch (err) {
-    showAlert(err.message);
-  }
-}
+        <div class="main-content">
+            <div class="topbar">
+                <div style="font-weight:600; color:var(--text-light)" id="current-page-title">Quản lý Môn học</div>
+                <div>
+                    <span>Xin chào, <b id="topbar-username"></b></span>
+                </div>
+            </div>
 
-async function deleteProject(id) {
-  if (!confirm('Bạn có chắc chắn muốn xóa môn học này?')) return;
-  try {
-    const res = await fetch(`${API_URL}/projects/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders()
-    });
-    if (!res.ok) throw new Error('Không thể xóa');
-    loadProjects();
-  } catch (err) {
-    showAlert(err.message);
-  }
-}
+            <div class="content-area">
+                
+                <!-- PAGE: QUẢN LÝ MÔN HỌC -->
+                <div id="page-projects" class="page-view active">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Danh sách Môn học / Lịch giảng</h3>
+                            <button class="btn btn-primary" onclick="openNewProjectForm()"><i class="fas fa-plus"></i> Thêm Môn học</button>
+                        </div>
+                        
+                        <div id="new-project-form" style="display:none; background:#f8fafc; padding:16px; border-radius:8px; margin-bottom:20px; border:1px solid var(--border)">
+                            <h4>Thêm Môn học mới</h4><br>
+                            <div class="grid grid-cols-2">
+                                <div class="form-group">
+                                    <label>Tên Môn học</label>
+                                    <input type="text" id="project-name" class="form-control" placeholder="VD: Lập trình Web">
+                                </div>
+                                <div class="form-group">
+                                    <label>Mã môn học</label>
+                                    <input type="text" id="project-code" class="form-control" placeholder="VD: IT101">
+                                </div>
+                                <div class="form-group">
+                                    <label>Tổng số giờ</label>
+                                    <input type="number" id="project-hours" class="form-control" value="30">
+                                </div>
+                            </div>
+                            <div style="margin-top:10px">
+                                <button class="btn btn-primary" onclick="createProject()">Lưu</button>
+                                <button class="btn btn-secondary" onclick="closeNewProjectForm()">Hủy</button>
+                            </div>
+                        </div>
 
-function openProject(id) {
-  // Chuyển hướng sang trang Soạn Giáo Án với project_id
-  window.location.href = `/app.html?project=${id}`;
-}
+                        <div id="projects-grid" class="grid grid-cols-2">
+                            <!-- Render projects here -->
+                        </div>
+                    </div>
+                </div>
 
-// Initialize
-checkAuth();
-</script>
+                <!-- PAGE: THÔNG TIN CÁ NHÂN -->
+                <div id="page-profile" class="page-view">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title">Thông tin tài khoản</h3></div>
+                        <div style="max-width:400px">
+                            <div class="form-group">
+                                <label>Tên đăng nhập</label>
+                                <input type="text" id="profile-username" class="form-control" disabled>
+                            </div>
+                            <p style="color:var(--text-light); font-size:14px">Để thay đổi mật khẩu, vui lòng liên hệ quản trị viên.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE: CẤU HÌNH -->
+                <div id="page-settings" class="page-view">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title">Cấu hình Trợ lý AI (Gemini)</h3></div>
+                        <div style="max-width:600px">
+                            <p style="margin-bottom:16px; color:var(--text-light)">Nhập mã API Key của bạn để sử dụng tính năng tạo Sổ đầu bài và Giáo án tự động. Mỗi giáo viên cần sử dụng mã riêng.</p>
+                            <div class="form-group">
+                                <label>Gemini API Key</label>
+                                <input type="text" id="settings-apikey" class="form-control" placeholder="Nhập mã bắt đầu bằng AIzaSy...">
+                            </div>
+                            <button class="btn btn-primary" onclick="saveApiKey()">Cập nhật cấu hình</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGE: QUẢN LÝ NGƯỜI DÙNG (Giả lập admin) -->
+                <div id="page-users" class="page-view">
+                    <div class="card">
+                        <div class="card-header"><h3 class="card-title">Quản lý Người dùng</h3></div>
+                        <p>Tính năng này chỉ dành cho Admin (Đang phát triển).</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let currentUser = null;
+        let isLoginMode = true;
+
+        // --- Core UI Functions ---
+        function showAlert(msg, type = 'error') {
+            const box = document.getElementById('alert-box');
+            box.textContent = msg;
+            box.className = 'alert-' + type;
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 3000);
+        }
+
+        function getHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            };
+        }
+
+        function switchPage(pageId, navElement) {
+            document.querySelectorAll('.page-view').forEach(el => el.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            if(navElement) {
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                navElement.classList.add('active');
+                document.getElementById('current-page-title').textContent = navElement.textContent.trim();
+            }
+
+            if(pageId === 'projects') loadProjects();
+        }
+
+        // --- Auth Functions ---
+        function setAuthMode(mode) {
+            isLoginMode = (mode === 'login');
+            document.getElementById('tab-login').classList.toggle('active', isLoginMode);
+            document.getElementById('tab-register').classList.toggle('active', !isLoginMode);
+            document.getElementById('auth-btn').textContent = isLoginMode ? 'Đăng nhập' : 'Đăng ký';
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('auth-username').value;
+            const password = document.getElementById('auth-password').value;
+            const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
+            
+            try {
+                const res = await fetch(API_URL + endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.message || data.error);
+                
+                if (!isLoginMode) {
+                    showAlert('Đăng ký thành công, hãy đăng nhập!', 'success');
+                    setAuthMode('login');
+                    document.getElementById('auth-password').value = '';
+                } else {
+                    localStorage.setItem('token', data.token);
+                    checkAuth();
+                }
+            } catch (err) {
+                showAlert(err.message);
+            }
+        }
+
+        async function checkAuth() {
+            const token = localStorage.getItem('token');
+            if (!token) return showAuthView();
+            
+            try {
+                const res = await fetch(API_URL + '/auth/me', { headers: getHeaders() });
+                if (!res.ok) throw new Error();
+                
+                const data = await res.json();
+                currentUser = data.user;
+                
+                // Initialize Dashboard
+                document.getElementById('auth-view').style.display = 'none';
+                document.getElementById('app-view').style.display = 'flex';
+                document.getElementById('topbar-username').textContent = currentUser.username;
+                document.getElementById('profile-username').value = currentUser.username;
+                document.getElementById('settings-apikey').value = currentUser.gemini_api_key || '';
+
+                // Show Admin tab if username is admin
+                if(currentUser.username === 'admin') {
+                    document.getElementById('nav-users').style.display = 'flex';
+                }
+
+                loadProjects();
+            } catch (err) {
+                localStorage.removeItem('token');
+                showAuthView();
+            }
+        }
+
+        function showAuthView() {
+            document.getElementById('auth-view').style.display = 'flex';
+            document.getElementById('app-view').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            currentUser = null;
+            showAuthView();
+        }
+
+        // --- Project Functions ---
+        async function loadProjects() {
+            try {
+                const res = await fetch(API_URL + '/projects', { headers: getHeaders() });
+                const projects = await res.json();
+                
+                const grid = document.getElementById('projects-grid');
+                if(projects.length === 0) {
+                    grid.innerHTML = '<div style="grid-column: span 2; text-align:center; padding: 40px; color: var(--text-light)">Chưa có môn học nào. Nhấn "Thêm Môn học" để bắt đầu.</div>';
+                    return;
+                }
+
+                grid.innerHTML = projects.map(p => `
+                    <div class="project-card">
+                        <div class="project-title">${p.name}</div>
+                        <div class="project-meta">
+                            Mã: ${p.course_code || '---'} &bull; Tổng giờ: ${p.total_hours || 0}
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:16px;">
+                            <button class="btn btn-primary" onclick="openApp(${p.id})"><i class="fas fa-edit"></i> Soạn Giáo Án</button>
+                            <button class="btn btn-danger" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                showAlert('Lỗi tải danh sách môn học');
+            }
+        }
+
+        function openNewProjectForm() { document.getElementById('new-project-form').style.display = 'block'; }
+        function closeNewProjectForm() { document.getElementById('new-project-form').style.display = 'none'; }
+
+        async function createProject() {
+            const name = document.getElementById('project-name').value;
+            const course_code = document.getElementById('project-code').value;
+            const total_hours = document.getElementById('project-hours').value;
+            
+            if(!name) return showAlert('Vui lòng nhập tên môn học');
+
+            try {
+                const res = await fetch(API_URL + '/projects', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ name, course_code, total_hours: Number(total_hours) })
+                });
+                if(!res.ok) throw new Error('Không thể tạo môn học');
+                
+                closeNewProjectForm();
+                document.getElementById('project-name').value = '';
+                document.getElementById('project-code').value = '';
+                loadProjects();
+                showAlert('Tạo thành công!', 'success');
+            } catch (err) {
+                showAlert(err.message);
+            }
+        }
+
+        async function deleteProject(id) {
+            if(!confirm('Xóa môn học này và toàn bộ giáo án liên quan?')) return;
+            try {
+                const res = await fetch(API_URL + '/projects/' + id, { method: 'DELETE', headers: getHeaders() });
+                if(!res.ok) throw new Error('Lỗi khi xóa');
+                loadProjects();
+                showAlert('Đã xóa', 'success');
+            } catch(err) {
+                showAlert(err.message);
+            }
+        }
+
+        function openApp(projectId) {
+            // Chuyển hướng sang giao diện soạn giáo án (app.html) với tham số ID
+            window.location.href = `/app.html?project=${projectId}`;
+        }
+
+        // --- Settings Functions ---
+        async function saveApiKey() {
+            const apiKey = document.getElementById('settings-apikey').value.trim();
+            try {
+                const res = await fetch(API_URL + '/auth/apikey', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ apiKey })
+                });
+                if(!res.ok) throw new Error('Không thể lưu API Key');
+                
+                currentUser.gemini_api_key = apiKey;
+                showAlert('Đã lưu cấu hình AI', 'success');
+            } catch(err) {
+                showAlert(err.message);
+            }
+        }
+
+        // --- Init ---
+        checkAuth();
+    </script>
 </body>
 </html>
