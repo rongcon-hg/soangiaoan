@@ -25,12 +25,41 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
 
         const drive = google.drive({ version: 'v3', auth });
 
+        // 1. Lấy tên thư mục theo năm-tháng hiện tại (VD: 2026-08)
+        const date = new Date();
+        const folderName = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+        // 2. Tìm xem thư mục này đã tồn tại trong folder gốc chưa
+        const searchRes = await drive.files.list({
+            q: `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and '${folderId}' in parents and trashed=false`,
+            fields: 'files(id, name)',
+            spaces: 'drive'
+        });
+
+        let targetFolderId = null;
+
+        // 3. Nếu chưa có thì tạo mới
+        if (searchRes.data.files.length === 0) {
+            const folderMetadata = {
+                name: folderName,
+                mimeType: 'application/vnd.google-apps.folder',
+                parents: [folderId]
+            };
+            const folder = await drive.files.create({
+                resource: folderMetadata,
+                fields: 'id'
+            });
+            targetFolderId = folder.data.id;
+        } else {
+            targetFolderId = searchRes.data.files[0].id;
+        }
+
         const bufferStream = new stream.PassThrough();
         bufferStream.end(fileBuffer);
 
         const fileMetadata = {
             name: fileName,
-            parents: [folderId]
+            parents: [targetFolderId]
         };
 
         const media = {
