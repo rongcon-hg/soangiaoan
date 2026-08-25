@@ -3,49 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cấu hình AI - Hệ thống Giáo án</title>
+    <title>Cấu hình Hệ thống - Hệ thống Giáo án</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .settings-tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .s-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-light);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        .s-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .s-panel {
+            display: none;
+        }
+        .s-panel.active {
+            display: block;
+        }
+        .panel-desc {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+    </style>
 </head>
 <body>
     <div id="alert-box"></div>
 
     <div class="card">
-        <div class="card-header"><h3 class="card-title">Cấu hình Trợ lý AI (Gemini)</h3></div>
-        <div style="max-width:600px">
-            <p style="margin-bottom:16px; color:var(--text-light)">Nhập mã API Key của bạn để sử dụng tính năng tạo Sổ đầu bài và Giáo án tự động. Mỗi giáo viên cần sử dụng mã riêng.</p>
-            <div class="form-group">
-                <label>Gemini API Key</label>
-                <input type="text" id="settings-apikey" class="form-control" placeholder="Nhập mã bắt đầu bằng AIzaSy...">
-            </div>
-            <button class="btn btn-primary" onclick="saveApiKey()">Cập nhật cấu hình</button>
+        <div class="settings-tabs">
+            <div class="s-tab active" onclick="switchSettingsTab('gemini', this)"><i class="fas fa-brain"></i> AI (Gemini)</div>
+            <div class="s-tab" onclick="switchSettingsTab('smtp', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
+            <div class="s-tab" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
         </div>
+
+        <form id="settingsForm" onsubmit="saveSettings(event)">
+            
+            <!-- PANEL: GEMINI -->
+            <div id="panel-gemini" class="s-panel active">
+                <h3 style="margin-bottom: 12px; color: var(--primary);">Cấu hình Trợ lý AI (Gemini)</h3>
+                <p class="panel-desc">Nhập mã API Key của bạn để sử dụng tính năng tạo Sổ đầu bài và Giáo án tự động. Mỗi giáo viên cần sử dụng mã riêng.</p>
+                <div class="form-group" style="max-width:600px">
+                    <label>Gemini API Key</label>
+                    <input type="text" id="cfg-gemini-key" class="form-control" placeholder="AIzaSy...">
+                </div>
+            </div>
+
+            <!-- PANEL: SMTP -->
+            <div id="panel-smtp" class="s-panel">
+                <h3 style="margin-bottom: 12px; color: var(--primary);">Cấu hình SMTP Gmail (Gửi thư thông báo)</h3>
+                <p class="panel-desc">Sử dụng tài khoản Gmail và Mật khẩu ứng dụng (App Password) để hệ thống tự động gửi email.</p>
+                
+                <div class="grid grid-cols-2">
+                    <div class="form-group">
+                        <label>SMTP Host</label>
+                        <input type="text" id="cfg-smtp-host" class="form-control" placeholder="smtp.gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label>SMTP Port</label>
+                        <input type="number" id="cfg-smtp-port" class="form-control" placeholder="465">
+                    </div>
+                    <div class="form-group">
+                        <label>Tên người gửi (Sender Name)</label>
+                        <input type="text" id="cfg-smtp-name" class="form-control" placeholder="Hệ thống Giáo án">
+                    </div>
+                    <div class="form-group">
+                        <label>Email gửi (SMTP User)</label>
+                        <input type="email" id="cfg-smtp-user" class="form-control" placeholder="chuyendoiso@nsgpc.edu.vn">
+                    </div>
+                    <div class="form-group" style="grid-column: span 2; max-width: 50%;">
+                        <label>Mật khẩu ứng dụng (App Password)</label>
+                        <input type="password" id="cfg-smtp-pass" class="form-control" placeholder="••••••••••••••••">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL: GDRIVE -->
+            <div id="panel-gdrive" class="s-panel">
+                <h3 style="margin-bottom: 12px; color: var(--primary);">Cấu hình Google Team Drive (Upload file)</h3>
+                <p class="panel-desc">Nhập thông tin Service Account và Folder ID để hệ thống có thể upload và chia sẻ file lên Google Drive.</p>
+                
+                <div class="form-group">
+                    <label>Client Email (Email Service Account)</label>
+                    <input type="email" id="cfg-drive-email" class="form-control" placeholder="cdsupload@chuyendoiso-xyz.iam.gserviceaccount.com">
+                </div>
+                <div class="form-group">
+                    <label>Private Key (Có thể copy toàn bộ nội dung file JSON vào đây)</label>
+                    <textarea id="cfg-drive-key" class="form-control" rows="5" placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvA..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Folder ID (Thư mục lưu trữ chính)</label>
+                    <input type="text" id="cfg-drive-folder" class="form-control" placeholder="1dDKXJyt8du7UimS8mRtS-7ymjtjKFMWN">
+                </div>
+            </div>
+
+            <hr style="margin: 24px 0; border:0; border-top: 1px solid var(--border);">
+            
+            <div style="display: flex; gap: 12px;">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Lưu toàn bộ cấu hình</button>
+                <button type="button" class="btn btn-secondary" onclick="testConnection()"><i class="fas fa-bolt"></i> Test kết nối</button>
+            </div>
+        </form>
     </div>
 
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
     <script>
+        let userSettings = {};
+
         checkAuth().then(user => {
             if(user) {
-                injectLayout('settings', 'Cấu hình AI');
-                document.getElementById('settings-apikey').value = user.gemini_api_key || '';
+                injectLayout('settings', 'Cấu hình Hệ thống');
+                
+                // Đổ dữ liệu
+                document.getElementById('cfg-gemini-key').value = user.gemini_api_key || '';
+                
+                if (user.settings) {
+                    userSettings = user.settings;
+                    
+                    // SMTP
+                    document.getElementById('cfg-smtp-host').value = userSettings.smtp_host || 'smtp.gmail.com';
+                    document.getElementById('cfg-smtp-port').value = userSettings.smtp_port || '465';
+                    document.getElementById('cfg-smtp-name').value = userSettings.smtp_name || '';
+                    document.getElementById('cfg-smtp-user').value = userSettings.smtp_user || '';
+                    document.getElementById('cfg-smtp-pass').value = userSettings.smtp_pass || '';
+                    
+                    // Drive
+                    document.getElementById('cfg-drive-email').value = userSettings.drive_email || '';
+                    document.getElementById('cfg-drive-key').value = userSettings.drive_key || '';
+                    document.getElementById('cfg-drive-folder').value = userSettings.drive_folder || '';
+                }
             }
         });
 
-        async function saveApiKey() {
-            const apiKey = document.getElementById('settings-apikey').value.trim();
+        function switchSettingsTab(panelId, el) {
+            document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.s-panel').forEach(p => p.classList.remove('active'));
+            
+            el.classList.add('active');
+            document.getElementById('panel-' + panelId).classList.add('active');
+        }
+
+        async function saveSettings(e) {
+            e.preventDefault();
+            
+            // Lưu Gemini Key vào API riêng biệt hoặc gộp chung?
+            // backend hiện có API /auth/apikey riêng biệt, ta gọi API đó trước
+            const apiKey = document.getElementById('cfg-gemini-key').value.trim();
+            
+            // Lưu các setting JSON
+            const settingsPayload = {
+                smtp_host: document.getElementById('cfg-smtp-host').value.trim(),
+                smtp_port: document.getElementById('cfg-smtp-port').value.trim(),
+                smtp_name: document.getElementById('cfg-smtp-name').value.trim(),
+                smtp_user: document.getElementById('cfg-smtp-user').value.trim(),
+                smtp_pass: document.getElementById('cfg-smtp-pass').value.trim(),
+                drive_email: document.getElementById('cfg-drive-email').value.trim(),
+                drive_key: document.getElementById('cfg-drive-key').value.trim(),
+                drive_folder: document.getElementById('cfg-drive-folder').value.trim(),
+            };
+
             try {
-                const res = await fetch(API_URL + '/auth/apikey', {
+                // 1. Cập nhật Gemini Key
+                await fetch(API_URL + '/auth/apikey', {
                     method: 'POST',
                     headers: getHeaders(),
                     body: JSON.stringify({ apiKey })
                 });
-                if(!res.ok) throw new Error('Không thể lưu API Key');
+
+                // 2. Cập nhật JSON settings
+                const res = await fetch(API_URL + '/auth/settings', {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ settings: settingsPayload })
+                });
                 
-                showAlert('Đã lưu cấu hình AI', 'success');
+                if(!res.ok) throw new Error('Không thể lưu cài đặt hệ thống');
+                
+                showAlert('Đã lưu toàn bộ cấu hình thành công', 'success');
             } catch(err) {
                 showAlert(err.message);
             }
+        }
+
+        function testConnection() {
+            showAlert('Tính năng Test kết nối đang được phát triển.', 'success');
         }
     </script>
 </body>

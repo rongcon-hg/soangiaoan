@@ -6,35 +6,134 @@
     <title>Thông tin cá nhân - Hệ thống Giáo án</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .profile-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 24px;
+        }
+        .avatar-section {
+            text-align: center;
+        }
+        .avatar-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: var(--border);
+            margin: 0 auto 16px;
+            display: block;
+            border: 3px solid var(--white);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .file-upload {
+            display: none;
+        }
+    </style>
 </head>
 <body>
     <div id="alert-box"></div>
 
     <div class="card">
-        <div class="card-header"><h3 class="card-title">Thông tin tài khoản</h3></div>
-        <div style="max-width:400px">
-            <div class="form-group">
-                <label>Tên đăng nhập</label>
-                <input type="text" id="profile-username" class="form-control" disabled>
+        <div class="card-header"><h3 class="card-title">Cập nhật Hồ sơ Cá nhân</h3></div>
+        <div class="profile-container">
+            <div class="avatar-section">
+                <img id="avatar-preview" class="avatar-preview" src="https://via.placeholder.com/150" alt="Avatar">
+                <label for="avatar-upload" class="btn btn-secondary" style="width:100%; justify-content:center">
+                    <i class="fas fa-camera"></i> Đổi ảnh đại diện
+                </label>
+                <input type="file" id="avatar-upload" class="file-upload" accept="image/*" onchange="handleAvatarUpload(event)">
             </div>
-            <div class="form-group">
-                <label>Quyền hạn (Role)</label>
-                <input type="text" id="profile-role" class="form-control" disabled>
+            <div>
+                <div class="grid grid-cols-2">
+                    <div class="form-group">
+                        <label>Tên đăng nhập</label>
+                        <input type="text" id="profile-username" class="form-control" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Quyền hạn</label>
+                        <input type="text" id="profile-role" class="form-control" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Họ và tên</label>
+                        <input type="text" id="profile-fullname" class="form-control" placeholder="Nhập họ và tên...">
+                    </div>
+                    <div class="form-group">
+                        <label>Khoa / Đơn vị công tác</label>
+                        <input type="text" id="profile-department" class="form-control" placeholder="VD: Khoa Cơ khí">
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input type="text" id="profile-phone" class="form-control" placeholder="VD: 0912345678">
+                    </div>
+                    <div class="form-group">
+                        <label>Địa chỉ Email</label>
+                        <input type="email" id="profile-email" class="form-control" placeholder="VD: user@nsgpc.edu.vn">
+                    </div>
+                </div>
+                <div style="margin-top: 16px">
+                    <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i> Lưu thông tin</button>
+                </div>
             </div>
-            <p style="color:var(--text-light); font-size:14px">Để thay đổi mật khẩu, vui lòng liên hệ quản trị viên.</p>
         </div>
     </div>
 
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
     <script>
+        let currentAvatarBase64 = null;
+
         checkAuth().then(user => {
             if(user) {
                 injectLayout('profile', 'Thông tin cá nhân');
                 document.getElementById('profile-username').value = user.username;
                 document.getElementById('profile-role').value = user.role;
+                document.getElementById('profile-fullname').value = user.full_name || '';
+                document.getElementById('profile-department').value = user.department || '';
+                document.getElementById('profile-phone').value = user.phone || '';
+                document.getElementById('profile-email').value = user.email || '';
+                
+                if (user.avatar) {
+                    currentAvatarBase64 = user.avatar;
+                    document.getElementById('avatar-preview').src = user.avatar;
+                }
             }
         });
+
+        function handleAvatarUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentAvatarBase64 = e.target.result;
+                    document.getElementById('avatar-preview').src = currentAvatarBase64;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveProfile() {
+            const payload = {
+                full_name: document.getElementById('profile-fullname').value.trim(),
+                department: document.getElementById('profile-department').value.trim(),
+                phone: document.getElementById('profile-phone').value.trim(),
+                email: document.getElementById('profile-email').value.trim(),
+                avatar: currentAvatarBase64
+            };
+
+            try {
+                const res = await fetch(API_URL + '/auth/profile', {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if(!res.ok) throw new Error('Không thể lưu thông tin');
+                
+                showAlert('Đã cập nhật hồ sơ cá nhân', 'success');
+            } catch(err) {
+                showAlert(err.message);
+            }
+        }
     </script>
 </body>
 </html>

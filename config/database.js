@@ -22,7 +22,13 @@ const initDb = async () => {
                 username VARCHAR(255) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
                 role VARCHAR(50) DEFAULT 'User',
-                gemini_api_key TEXT
+                gemini_api_key TEXT,
+                full_name VARCHAR(255),
+                department VARCHAR(255),
+                phone VARCHAR(20),
+                email VARCHAR(255),
+                avatar TEXT,
+                settings JSONB DEFAULT '{}'
             )
         `);
 
