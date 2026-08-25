@@ -195,6 +195,30 @@
             }
         }
 
+        async function testDriveConnection() {
+            const email = document.getElementById('cfg-drive-email').value.trim();
+            const key = document.getElementById('cfg-drive-key').value.trim();
+            const folderId = document.getElementById('cfg-drive-folder').value.trim();
+            
+            if(!email || !key || !folderId) {
+                return showAlert('Vui lòng điền đủ Email, Key và Folder ID trước khi test', 'error');
+            }
+
+            try {
+                showAlert('Đang kiểm tra kết nối tới Google Drive...', 'success');
+                const res = await fetch(API_URL + '/auth/test-drive', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ email, key, folderId })
+                });
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error || data.message);
+                showAlert('✅ ' + data.message, 'success');
+            } catch(e) {
+                showAlert('❌ ' + e.message, 'error');
+            }
+        }
+
         function testConnection() {
             showAlert('Tính năng Test kết nối đang được phát triển.', 'success');
         }

@@ -13,8 +13,17 @@ const stream = require('stream');
  */
 exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeType) => {
     try {
-        // Format the private key correctly (replace literal \n with actual newlines if needed)
-        const formattedKey = key.replace(/\\n/g, '\n');
+        let actualKey = key;
+        // Kiểm tra xem user có paste nguyên cục JSON không
+        if (key.trim().startsWith('{')) {
+            try {
+                const parsed = JSON.parse(key);
+                if (parsed.private_key) actualKey = parsed.private_key;
+            } catch(e) {}
+        }
+
+        // Format the private key correctly
+        const formattedKey = actualKey.replace(/\\n/g, '\n');
 
         const auth = new google.auth.JWT(
             email,
@@ -93,5 +102,43 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
     } catch (error) {
         console.error('Google Drive Upload Error:', error);
         throw new Error('Google Drive upload failed: ' + error.message);
+    }
+};
+
+/**
+ * Test the Google Drive Connection.
+ */
+exports.testConnection = async (email, key, folderId) => {
+    try {
+        let actualKey = key;
+        if (key.trim().startsWith('{')) {
+            try {
+                const parsed = JSON.parse(key);
+                if (parsed.private_key) actualKey = parsed.private_key;
+            } catch(e) {}
+        }
+
+        const formattedKey = actualKey.replace(/\\n/g, '\n');
+
+        const auth = new google.auth.JWT(
+            email,
+            null,
+            formattedKey,
+            ['https://www.googleapis.com/auth/drive']
+        );
+
+        await auth.authorize();
+        const drive = google.drive({ version: 'v3', auth });
+
+        // Test connection by fetching the folder details
+        const folder = await drive.files.get({
+            fileId: folderId,
+            fields: 'id, name',
+            supportsAllDrives: true
+        });
+
+        return folder.data;
+    } catch (error) {
+        throw new Error(error.message);
     }
 };

@@ -190,3 +190,18 @@ exports.updateSettings = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.testDriveConnection = async (req, res) => {
+    const { email, key, folderId } = req.body;
+    if (!email || !key || !folderId) {
+        return res.status(400).json({ message: 'Vui lòng điền đầy đủ Email, Key và Folder ID' });
+    }
+    
+    try {
+        const driveUtil = require('../utils/drive');
+        const folder = await driveUtil.testConnection(email, key, folderId);
+        res.json({ message: 'Kết nối thành công tới thư mục: ' + folder.name });
+    } catch (error) {
+        res.status(500).json({ error: 'Lỗi kết nối: ' + error.message });
+    }
+};
