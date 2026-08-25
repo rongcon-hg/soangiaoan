@@ -43,7 +43,7 @@ const initDb = async () => {
         }
 
         // Tạo tài khoản superadmin mặc định
-        const bcrypt = require('bcrypt');
+        const bcrypt = require('bcryptjs');
         const adminPass = await bcrypt.hash('Nsg@2026', 10);
         await client.query(`
             INSERT INTO users (username, password, role) 
