@@ -11,7 +11,7 @@ const sidebarHTML = `
             <i class="fas fa-user"></i> Thông tin cá nhân
         </a>
         <a href="/settings" class="nav-item" id="nav-settings">
-            <i class="fas fa-cog"></i> Cấu hình AI (Gemini)
+            <i class="fas fa-cog"></i> Cấu hình hệ thống
         </a>
         <a href="/users" class="nav-item" id="nav-users" style="display:none">
             <i class="fas fa-users"></i> Quản lý Người dùng

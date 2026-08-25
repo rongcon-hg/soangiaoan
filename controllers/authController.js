@@ -76,11 +76,40 @@ exports.me = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-    const { full_name, department, phone, email, avatar } = req.body;
+    let { full_name, department, phone, email, avatar } = req.body;
     try {
+        // Nếu avatar là chuỗi Base64 mới, ta upload lên Drive
+        if (avatar && avatar.startsWith('data:image')) {
+            // Lấy config Drive của Admin (hoặc của chính user nếu có)
+            const adminQuery = `SELECT settings FROM users WHERE role = 'Admin' LIMIT 1`;
+            const adminRes = await pool.query(adminQuery);
+            const adminSettings = adminRes.rows[0]?.settings || {};
+            
+            const driveEmail = adminSettings.drive_email;
+            const driveKey = adminSettings.drive_key;
+            const driveFolder = adminSettings.drive_folder;
+
+            if (driveEmail && driveKey && driveFolder) {
+                const driveUtil = require('../utils/drive');
+                // Tách header base64 (ví dụ: data:image/png;base64,iVBORw0...)
+                const matches = avatar.match(/^data:(.+);base64,(.+)$/);
+                if (matches && matches.length === 3) {
+                    const mimeType = matches[1];
+                    const base64Data = matches[2];
+                    const buffer = Buffer.from(base64Data, 'base64');
+                    const ext = mimeType.split('/')[1] || 'png';
+                    const fileName = `avatar_${req.user.id}_${Date.now()}.${ext}`;
+                    
+                    // Upload lên Drive
+                    const driveUrl = await driveUtil.uploadToDrive(driveEmail, driveKey, driveFolder, buffer, fileName, mimeType);
+                    avatar = driveUrl; // Thay thế base64 bằng link Drive
+                }
+            }
+        }
+
         const query = `UPDATE users SET full_name = $1, department = $2, phone = $3, email = $4, avatar = $5 WHERE id = $6`;
         await pool.query(query, [full_name, department, phone, email, avatar, req.user.id]);
-        res.json({ message: 'Profile updated successfully' });
+        res.json({ message: 'Profile updated successfully', avatar_url: avatar });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
