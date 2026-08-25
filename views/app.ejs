@@ -574,13 +574,17 @@ function parseProgramTable(htmlText, detailMap){
  holder.innerHTML=htmlText;
  const tables=[...holder.querySelectorAll(&quot;table&quot;)];
  let table=null;
-
+ let maxRows = 0;
+ let biggestTable = null;
  for(const t of tables){
    const txt=t.textContent||&quot;&quot;;
-   if(/Tên chương|Tên các bài|Tên bài/i.test(txt) &amp;&amp; /Lý thuyết/i.test(txt) &amp;&amp; /Thực hành/i.test(txt)){
+   const rowCount = t.querySelectorAll(&quot;tr&quot;).length;
+   if(rowCount &gt; maxRows) { maxRows = rowCount; biggestTable = t; }
+   if(/Tên chương|Tên các bài|Tên bài|Nội dung/i.test(txt) &amp;&amp; (/Lý thuyết|LT|Số tiết|Thời gian/i.test(txt))){
      table=t; break;
    }
  }
+ if(!table &amp;&amp; biggestTable &amp;&amp; maxRows &gt;= 2) table = biggestTable;
  if(!table) return [];
 
  const rows=[...table.querySelectorAll(&quot;tr&quot;)];
@@ -2680,11 +2684,11 @@ window.checkTime=function(){
 }
 
 function getAIKey(){
-  const key=$(&quot;#apiKey&quot;)?.value.trim() || localStorage.getItem(&quot;giaoan_gemini_key&quot;) || &quot;&quot;;
+  const key=$(&quot;#apiKey&quot;)?.value.trim() || (window.parent.GEMINI_KEY || "") || &quot;&quot;;
   return key;
 }
 function getAIModel(){
-  return $(&quot;#aiModel&quot;)?.value || localStorage.getItem(&quot;giaoan_gemini_model&quot;) || &quot;gemini-3.7-flash&quot;;
+  return $(&quot;#aiModel&quot;)?.value || (window.parent.GEMINI_MODEL || "gemini-1.5-flash") || &quot;gemini-3.7-flash&quot;;
 }
 function saveAISettings(){
   const key=$(&quot;#apiKey&quot;).value.trim();
@@ -2699,8 +2703,8 @@ function saveAISettings(){
   $(&quot;#aiStatus&quot;).textContent=`Đã lưu cài đặt Gemini. Model: ${model}.`;
 }
 function loadAISettings(){
-  const key=localStorage.getItem(&quot;giaoan_gemini_key&quot;)||&quot;&quot;;
-  let model=localStorage.getItem(&quot;giaoan_gemini_model&quot;)||&quot;gemini-3.7-flash&quot;;
+  const key=(window.parent.GEMINI_KEY || "")||&quot;&quot;;
+  let model=(window.parent.GEMINI_MODEL || "gemini-1.5-flash")||&quot;gemini-3.7-flash&quot;;
   const retired=[&quot;gemini-2.5-flash&quot;,&quot;gemini-2.5-pro&quot;,&quot;gemini-2.5-flash-lite&quot;];
   if(retired.includes(model)){
     model=&quot;gemini-3.7-flash&quot;;
@@ -3696,7 +3700,7 @@ init();
 <script src="/js/layout.js"></script>
 <script>
     injectLayout('projects', 'Soạn Giáo án');
-    checkAuth();
+    checkAuth().then(u => { if(u) { window.GEMINI_KEY = u.gemini_key; window.GEMINI_MODEL = u.gemini_model; } });
 
 window.addEventListener("message",e=>{
   if(e.data?.type==="OPEN_LESSON_PLAN_FROM_SCHEDULE"){
