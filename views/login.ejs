@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng nhập - Hệ thống Giáo án</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .password-container { position: relative; }
+        .password-container input { padding-right: 40px; }
+        .password-container i { position: absolute; right: 10px; top: 38px; cursor: pointer; color: var(--text-light); }
+    </style>
+</head>
+<body>
+    <div id="alert-box"></div>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2>Hệ thống Giáo án</h2>
+            <div class="auth-tabs" id="auth-tabs">
+                <div class="auth-tab active" onclick="setAuthMode('login')" id="tab-login">Đăng nhập</div>
+                <div class="auth-tab" onclick="setAuthMode('register')" id="tab-register">Đăng ký</div>
+            </div>
+
+            <!-- Login / Register Form -->
+            <form id="auth-form" onsubmit="handleAuth(event)">
+                <div class="form-group" id="email-group" style="display:none;">
+                    <label>Email (Nhận mã OTP)</label>
+                    <input type="email" id="auth-email" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="auth-username" class="form-control" required>
+                </div>
+                <div class="form-group password-container">
+                    <label>Mật khẩu</label>
+                    <input type="password" id="auth-password" class="form-control" required>
+                    <i class="fas fa-eye" onclick="togglePassword('auth-password', this)"></i>
+                </div>
+                <div style="text-align: right; margin-bottom: 15px; font-size: 14px;">
+                    <a href="#" onclick="showForgotPassword()" style="color: var(--primary); text-decoration: none;">Quên mật khẩu?</a>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%" id="auth-btn">Đăng nhập</button>
+            </form>
+
+            <!-- OTP Form -->
+            <form id="otp-form" onsubmit="verifyOtp(event)" style="display:none;">
+                <p style="margin-bottom:15px; text-align:center;">Vui lòng nhập mã OTP đã được gửi tới Email của bạn.</p>
+                <div class="form-group">
+                    <label>Mã OTP (6 số)</label>
+                    <input type="text" id="otp-code" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Xác thực OTP</button>
+                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px" onclick="cancelOtp()">Quay lại</button>
+            </form>
+
+            <!-- Forgot Password Form -->
+            <form id="forgot-form" onsubmit="forgotPassword(event)" style="display:none;">
+                <p style="margin-bottom:15px; text-align:center;">Nhập tên đăng nhập, chúng tôi sẽ gửi mật khẩu mới vào Email liên kết.</p>
+                <div class="form-group">
+                    <label>Tên đăng nhập</label>
+                    <input type="text" id="forgot-username" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Gửi mật khẩu mới</button>
+                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px" onclick="cancelForgot()">Quay lại</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        let isLoginMode = true;
+        let pendingUsername = '';
+
+        checkAuth(false).then(user => { if(user) window.location.href = '/'; });
+
+        function setAuthMode(mode) {
+            isLoginMode = (mode === 'login');
+            document.getElementById('tab-login').classList.toggle('active', isLoginMode);
+            document.getElementById('tab-register').classList.toggle('active', !isLoginMode);
+            document.getElementById('auth-btn').textContent = isLoginMode ? 'Đăng nhập' : 'Đăng ký';
+            document.getElementById('email-group').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('auth-email').required = !isLoginMode;
+        }
+
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.add('fa-eye');
+                icon.classList.remove('fa-eye-slash');
+            }
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('auth-username').value;
+            const password = document.getElementById('auth-password').value;
+            const email = document.getElementById('auth-email').value;
+            const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
+            
+            try {
+                const res = await fetch(API_URL + endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, email })
+                });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    if (data.requiresOtp) {
+                        pendingUsername = data.username || username;
+                        showOtpForm();
+                        return showAlert(data.message, 'error');
+                    }
+                    throw new Error(data.message || data.error);
+                }
+                
+                if (!isLoginMode) {
+                    pendingUsername = username;
+                    showAlert('Đăng ký thành công! Hãy kiểm tra Email để lấy mã OTP.', 'success');
+                    showOtpForm();
+                } else {
+                    localStorage.setItem('token', data.token);
+                    window.location.href = '/';
+                }
+            } catch (err) { showAlert(err.message); }
+        }
+
+        function showOtpForm() {
+            document.getElementById('auth-form').style.display = 'none';
+            document.getElementById('auth-tabs').style.display = 'none';
+            document.getElementById('otp-form').style.display = 'block';
+        }
+
+        function cancelOtp() {
+            document.getElementById('otp-form').style.display = 'none';
+            document.getElementById('auth-form').style.display = 'block';
+            document.getElementById('auth-tabs').style.display = 'flex';
+        }
+
+        async function verifyOtp(e) {
+            e.preventDefault();
+            const otp = document.getElementById('otp-code').value;
+            try {
+                const res = await fetch(API_URL + '/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: pendingUsername, otp })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                
+                showAlert('Xác thực thành công! Hãy đăng nhập.', 'success');
+                cancelOtp();
+                setAuthMode('login');
+                document.getElementById('auth-password').value = '';
+            } catch (err) { showAlert(err.message); }
+        }
+
+        function showForgotPassword() {
+            document.getElementById('auth-form').style.display = 'none';
+            document.getElementById('auth-tabs').style.display = 'none';
+            document.getElementById('forgot-form').style.display = 'block';
+        }
+
+        function cancelForgot() {
+            document.getElementById('forgot-form').style.display = 'none';
+            document.getElementById('auth-form').style.display = 'block';
+            document.getElementById('auth-tabs').style.display = 'flex';
+        }
+
+        async function forgotPassword(e) {
+            e.preventDefault();
+            const user = document.getElementById('forgot-username').value;
+            try {
+                const res = await fetch(API_URL + '/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                showAlert(data.message, 'success');
+                cancelForgot();
+            } catch(err) { showAlert(err.message); }
+        }
+    </script>
+</body>
+</html>

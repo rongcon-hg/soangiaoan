@@ -4,23 +4,84 @@ const pool = require('../config/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret_key';
 
+const mailer = require('../utils/mailer');
+
 exports.register = async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, email } = req.body;
     
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
+    if (!username || !password || !email) {
+        return res.status(400).json({ message: 'Username, password and email are required' });
     }
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const query = `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`;
+        const query = `INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING id`;
         
-        const result = await pool.query(query, [username, hashedPassword]);
-        res.status(201).json({ message: 'User registered successfully', userId: result.rows[0].id });
+        const result = await pool.query(query, [username, hashedPassword, email]);
+        
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const expires = new Date(Date.now() + 10 * 60000); // 10 phút
+        
+        await pool.query('UPDATE users SET otp_code = $1, otp_expires = $2 WHERE id = $3', [otpCode, expires, result.rows[0].id]);
+        
+        try {
+            await mailer.sendMail(email, 'Mã xác thực OTP - Hệ thống Giáo án', 'otp', { username, otp: otpCode });
+        } catch(e) {
+            console.error('Lỗi gửi mail', e);
+        }
+
+        res.status(201).json({ message: 'User registered successfully. Please verify OTP.', userId: result.rows[0].id });
     } catch (error) {
         if (error.code === '23505') {
             return res.status(400).json({ message: 'Username already exists' });
         }
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.verifyOtp = async (req, res) => {
+    const { username, otp } = req.body;
+    try {
+        const query = `SELECT id, otp_code, otp_expires FROM users WHERE username = $1`;
+        const result = await pool.query(query, [username]);
+        const user = result.rows[0];
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        
+        if (user.otp_code !== otp) return res.status(400).json({ message: 'Mã OTP không hợp lệ' });
+        if (new Date() > new Date(user.otp_expires)) return res.status(400).json({ message: 'Mã OTP đã hết hạn' });
+
+        // Kích hoạt
+        await pool.query(`UPDATE users SET is_verified = true, otp_code = NULL, otp_expires = NULL WHERE id = $1`, [user.id]);
+        res.json({ message: 'Xác thực tài khoản thành công!' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.forgotPassword = async (req, res) => {
+    const { username } = req.body;
+    try {
+        const query = `SELECT id, email FROM users WHERE username = $1`;
+        const result = await pool.query(query, [username]);
+        const user = result.rows[0];
+
+        if (!user || !user.email) return res.status(404).json({ message: 'Tài khoản không tồn tại hoặc chưa có email' });
+        
+        // Sinh mật khẩu mới ngẫu nhiên 6 ký tự
+        const newPassword = Math.random().toString(36).slice(-6);
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        await pool.query(`UPDATE users SET password = $1 WHERE id = $2`, [hashedPassword, user.id]);
+        
+        try {
+            await mailer.sendMail(user.email, 'Đặt lại mật khẩu - Hệ thống Giáo án', 'reset-password', { username, newPassword });
+        } catch(e) {
+            console.error('Lỗi gửi mail', e);
+        }
+
+        res.json({ message: 'Đã gửi mật khẩu mới vào Email của bạn.' });
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
@@ -41,6 +102,10 @@ exports.login = async (req, res) => {
 
         const match = await bcrypt.compare(password, user.password);
         if (!match) return res.status(401).json({ message: 'Invalid credentials' });
+
+        if (!user.is_verified) {
+            return res.status(403).json({ message: 'Vui lòng xác thực mã OTP trước khi đăng nhập', requiresOtp: true, username: user.username });
+        }
 
         const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
         res.json({ token, user: { id: user.id, username: user.username, role: user.role, gemini_api_key: user.gemini_api_key } });

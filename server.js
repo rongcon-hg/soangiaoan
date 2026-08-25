@@ -13,6 +13,10 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Thiết lập View Engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 // Basic check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok' });
@@ -22,16 +26,18 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/lessons', require('./routes/lessons'));
+app.use('/api/users', require('./routes/users'));
 
 // Page routes
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get('/profile', (req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
-app.get('/settings', (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));
-app.get('/users', (req, res) => res.sendFile(path.join(__dirname, 'public', 'users.html')));
+app.get('/login', (req, res) => res.render('login'));
+app.get('/profile', (req, res) => res.render('profile'));
+app.get('/settings', (req, res) => res.render('settings'));
+app.get('/users', (req, res) => res.render('users'));
+app.get('/app', (req, res) => res.render('app'));
 
 // Route chính trả về index.html (Dashboard)
 app.use((req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.render('index');
 });
 
 // Global error handler

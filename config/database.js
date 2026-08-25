@@ -30,7 +30,10 @@ const initDb = async () => {
                 phone VARCHAR(20),
                 email VARCHAR(255),
                 avatar TEXT,
-                settings JSONB DEFAULT '{}'
+                settings JSONB DEFAULT '{}',
+                is_verified BOOLEAN DEFAULT false,
+                otp_code VARCHAR(10),
+                otp_expires TIMESTAMP
             )
         `);
 
@@ -45,10 +48,10 @@ const initDb = async () => {
         const bcrypt = require('bcryptjs');
         const adminPass = await bcrypt.hash('Nsg@2026', 10);
         await client.query(`
-            INSERT INTO users (username, password, role) 
-            VALUES ('qtv', $1, 'Admin') 
+            INSERT INTO users (username, password, role, is_verified) 
+            VALUES ($1, $2, 'Admin', true) 
             ON CONFLICT (username) DO NOTHING
-        `, [adminPass]);
+        `, ['qtv', adminPass]);
 
         // Tạo bảng projects
         await client.query(`
