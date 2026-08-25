@@ -21,9 +21,26 @@ const initDb = async () => {
                 id SERIAL PRIMARY KEY,
                 username VARCHAR(255) UNIQUE NOT NULL,
                 password VARCHAR(255) NOT NULL,
+                role VARCHAR(50) DEFAULT 'User',
                 gemini_api_key TEXT
             )
         `);
+
+        // Đảm bảo cột role tồn tại (cho các database đã tạo)
+        try {
+            await client.query(`ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'User'`);
+        } catch (e) {
+            // Cột đã tồn tại, bỏ qua lỗi
+        }
+
+        // Tạo tài khoản superadmin mặc định
+        const bcrypt = require('bcrypt');
+        const adminPass = await bcrypt.hash('Nsg@2026', 10);
+        await client.query(`
+            INSERT INTO users (username, password, role) 
+            VALUES ('qtv', $1, 'Admin') 
+            ON CONFLICT (username) DO NOTHING
+        `, [adminPass]);
 
         // Tạo bảng projects
         await client.query(`

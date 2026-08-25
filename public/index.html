@@ -424,8 +424,8 @@
                 document.getElementById('profile-username').value = currentUser.username;
                 document.getElementById('settings-apikey').value = currentUser.gemini_api_key || '';
 
-                // Show Admin tab if username is admin
-                if(currentUser.username === 'admin') {
+                // Show Admin tab if user is Admin
+                if(currentUser.role === 'Admin') {
                     document.getElementById('nav-users').style.display = 'flex';
                 }
 
