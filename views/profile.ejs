@@ -83,9 +83,9 @@
     <script>
         let currentAvatarBase64 = null;
 
+        injectLayout('profile', 'Thông tin cá nhân');
         checkAuth().then(user => {
             if(user) {
-                injectLayout('profile', 'Thông tin cá nhân');
                 document.getElementById('profile-username').value = user.username;
                 document.getElementById('profile-role').value = user.role;
                 document.getElementById('profile-fullname').value = user.full_name || '';

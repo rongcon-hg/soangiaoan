@@ -64,13 +64,13 @@
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
     <script>
+        injectLayout('users', 'Quản lý Người dùng');
         checkAuth().then(user => {
             if(user) {
                 if(user.role !== 'Admin') {
                     window.location.href = '/';
                     return;
                 }
-                injectLayout('users', 'Quản lý Người dùng');
                 loadUsers();
             }
         });

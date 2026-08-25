@@ -121,10 +121,9 @@
     <script>
         let userSettings = {};
 
+        injectLayout('settings', 'Cấu hình Hệ thống');
         checkAuth().then(user => {
             if(user) {
-                injectLayout('settings', 'Cấu hình Hệ thống');
-                
                 // Đổ dữ liệu
                 document.getElementById('cfg-gemini-key').value = user.gemini_api_key || '';
                 

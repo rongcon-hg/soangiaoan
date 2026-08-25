@@ -46,9 +46,9 @@
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
     <script>
+        injectLayout('projects', 'Quản lý Môn học');
         checkAuth().then(user => {
             if(user) {
-                injectLayout('projects', 'Quản lý Môn học');
                 loadProjects();
             }
         });
