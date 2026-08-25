@@ -23,7 +23,13 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/lessons', require('./routes/lessons'));
 
-// Route chính trả về index.html
+// Page routes
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
+app.get('/profile', (req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
+app.get('/settings', (req, res) => res.sendFile(path.join(__dirname, 'public', 'settings.html')));
+app.get('/users', (req, res) => res.sendFile(path.join(__dirname, 'public', 'users.html')));
+
+// Route chính trả về index.html (Dashboard)
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

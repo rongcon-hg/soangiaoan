@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cấu hình AI - Hệ thống Giáo án</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div id="alert-box"></div>
+
+    <div class="card">
+        <div class="card-header"><h3 class="card-title">Cấu hình Trợ lý AI (Gemini)</h3></div>
+        <div style="max-width:600px">
+            <p style="margin-bottom:16px; color:var(--text-light)">Nhập mã API Key của bạn để sử dụng tính năng tạo Sổ đầu bài và Giáo án tự động. Mỗi giáo viên cần sử dụng mã riêng.</p>
+            <div class="form-group">
+                <label>Gemini API Key</label>
+                <input type="text" id="settings-apikey" class="form-control" placeholder="Nhập mã bắt đầu bằng AIzaSy...">
+            </div>
+            <button class="btn btn-primary" onclick="saveApiKey()">Cập nhật cấu hình</button>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/layout.js"></script>
+    <script>
+        checkAuth().then(user => {
+            if(user) {
+                injectLayout('settings', 'Cấu hình AI');
+                document.getElementById('settings-apikey').value = user.gemini_api_key || '';
+            }
+        });
+
+        async function saveApiKey() {
+            const apiKey = document.getElementById('settings-apikey').value.trim();
+            try {
+                const res = await fetch(API_URL + '/auth/apikey', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ apiKey })
+                });
+                if(!res.ok) throw new Error('Không thể lưu API Key');
+                
+                showAlert('Đã lưu cấu hình AI', 'success');
+            } catch(err) {
+                showAlert(err.message);
+            }
+        }
+    </script>
+</body>
+</html>
