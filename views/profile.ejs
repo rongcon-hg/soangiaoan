@@ -127,7 +127,8 @@
                     headers: getHeaders(),
                     body: JSON.stringify(payload)
                 });
-                if(!res.ok) throw new Error('Không thể lưu thông tin');
+                const data = await res.json();
+                if(!res.ok) throw new Error(data.error || data.message || 'Không thể lưu thông tin');
                 
                 showAlert('Đã cập nhật hồ sơ cá nhân', 'success');
             } catch(err) {

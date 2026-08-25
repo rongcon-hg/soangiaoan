@@ -32,6 +32,25 @@ router.post('/', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
+router.put('/:id', authenticateToken, isAdmin, async (req, res) => {
+    const { email, password, role } = req.body;
+    try {
+        let query, params;
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            query = `UPDATE users SET email = $1, role = $2, password = $3 WHERE id = $4`;
+            params = [email, role, hashedPassword, req.params.id];
+        } else {
+            query = `UPDATE users SET email = $1, role = $2 WHERE id = $3`;
+            params = [email, role, req.params.id];
+        }
+        await pool.query(query, params);
+        res.json({ message: 'User updated' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
     try {
         await pool.query(`DELETE FROM users WHERE id = $1`, [req.params.id]);
