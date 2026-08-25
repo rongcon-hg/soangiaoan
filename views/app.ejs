@@ -31,12 +31,14 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 }
 
 </style>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <div class="shell">
 <div class="hero">
   <h1>QUẢN LÝ SỔ ĐẦU BÀI & SOẠN GIÁO ÁN</h1>
-  <p>Được thiết kế bởi <b>Trần Hữu Nhân</b> - giảng viên khoa CNTT-KTĐ dưới sự hỗ trợ của AI</p>
+  
   <div class="steps"><div class="step-pill">BƯỚC 1 · Lập Sổ đầu bài</div><div class="step-pill">BƯỚC 2 · Soạn giáo án theo từng buổi</div></div>
 </div>
 
@@ -3690,7 +3692,12 @@ init();
 </section>
 </div>
 
+<script src="/js/api.js"></script>
+<script src="/js/layout.js"></script>
 <script>
+    injectLayout('projects', 'Soạn Giáo án');
+    checkAuth();
+
 window.addEventListener("message",e=>{
   if(e.data?.type==="OPEN_LESSON_PLAN_FROM_SCHEDULE"){
     const p=e.data.payload||{};
