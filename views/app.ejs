@@ -934,7 +934,7 @@ async function readProgramFile(file){
    updateCourseCards();
    renderConversionPreview();
    updateWeeklyCheck();
- if(typeof saveStateToBackend === "function") saveStateToBackend();
+ if(typeof saveStateToBackend === 'function') saveStateToBackend();
  }catch(e){
    lessons=[];
    programSequence=[];
@@ -1890,7 +1890,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
             &lt;button class=&quot;btn&quot; id=&quot;btnRefreshModels&quot;&gt;Tải danh sách model&lt;/button&gt;
             &lt;button class=&quot;btn primary&quot; id=&quot;btnAIWhole&quot;&gt;Gemini hoàn thiện toàn bộ giáo án&lt;/button&gt;
           &lt;/div&gt;
-          &lt;div class=&quot;hint&quot;&gt;<span style="display:none">Gemini API key được dùng trực tiếp từ trình duyệt theo yêu cầu của người dùng. Cách này tiện nhưng không an toàn nếu chia sẻ file hoặc máy.</span>&lt;/div&gt;
+          &lt;div class=&quot;hint&quot;&gt;<span style='display:none'>Gemini API key được dùng trực tiếp từ trình duyệt theo yêu cầu của người dùng. Cách này tiện nhưng không an toàn nếu chia sẻ file hoặc máy.</span>&lt;/div&gt;
           &lt;div id=&quot;aiStatus&quot; class=&quot;status&quot;&gt;Gemini chưa được cấu hình.&lt;/div&gt;
         &lt;/div&gt;
       &lt;/div&gt;
@@ -2804,11 +2804,11 @@ window.checkTime=function(){
 }
 
 function getAIKey(){
-  const key=$(&quot;#apiKey&quot;)?.value.trim() || (window.parent.GEMINI_KEY || "") || &quot;&quot;;
+  const key=$(&quot;#apiKey&quot;)?.value.trim() || (window.parent.GEMINI_KEY || '') || &quot;&quot;;
   return key;
 }
 function getAIModel(){
-  return $(&quot;#aiModel&quot;)?.value || (window.parent.GEMINI_MODEL || "gemini-1.5-flash") || &quot;gemini-3.7-flash&quot;;
+  return $(&quot;#aiModel&quot;)?.value || (window.parent.GEMINI_MODEL || 'gemini-1.5-flash') || &quot;gemini-3.7-flash&quot;;
 }
 function saveAISettings(){
   const key=$(&quot;#apiKey&quot;).value.trim();
