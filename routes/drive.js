@@ -8,7 +8,7 @@ const driveUtil = require('../utils/drive');
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB
 
 async function getAdminDriveSettings() {
-    const adminQuery = \`SELECT settings FROM users WHERE role = 'Admin' LIMIT 1\`;
+    const adminQuery = `SELECT settings FROM users WHERE role = 'Admin' LIMIT 1`;
     const adminRes = await pool.query(adminQuery);
     if (adminRes.rows.length > 0 && adminRes.rows[0].settings) {
         const adminSettings = typeof adminRes.rows[0].settings === 'string' ? JSON.parse(adminRes.rows[0].settings) : adminRes.rows[0].settings;
