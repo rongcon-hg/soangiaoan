@@ -148,7 +148,7 @@ exports.updateProfile = async (req, res) => {
             // Lấy config Drive của Admin (hoặc của chính user nếu có)
             const adminQuery = `SELECT settings FROM users WHERE role = 'Admin' LIMIT 1`;
             const adminRes = await pool.query(adminQuery);
-            const adminSettings = adminRes.rows[0]?.settings || {};
+            let adminSettings = {}; if(adminRes.rows.length > 0 && adminRes.rows[0].settings) { adminSettings = typeof adminRes.rows[0].settings === 'string' ? JSON.parse(adminRes.rows[0].settings) : adminRes.rows[0].settings; }
             
             const driveEmail = adminSettings.drive_email;
             const driveKey = adminSettings.drive_key;

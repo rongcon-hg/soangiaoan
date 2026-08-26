@@ -25,12 +25,11 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
         // Format the private key correctly
         const formattedKey = actualKey.replace(/\\n/g, '\n');
 
-        const auth = new google.auth.JWT(
-            email,
-            null,
-            formattedKey,
-            ['https://www.googleapis.com/auth/drive']
-        );
+        const auth = new google.auth.JWT({
+            email: email,
+            key: formattedKey,
+            scopes: ['https://www.googleapis.com/auth/drive']
+        });
 
         await auth.authorize();
 
@@ -120,12 +119,11 @@ exports.testConnection = async (email, key, folderId) => {
 
         const formattedKey = actualKey.replace(/\\n/g, '\n');
 
-        const auth = new google.auth.JWT(
-            email,
-            null,
-            formattedKey,
-            ['https://www.googleapis.com/auth/drive']
-        );
+        const auth = new google.auth.JWT({
+            email: email,
+            key: formattedKey,
+            scopes: ['https://www.googleapis.com/auth/drive']
+        });
 
         await auth.authorize();
         const drive = google.drive({ version: 'v3', auth });
