@@ -31,7 +31,8 @@ router.post('/upload', authenticateToken, upload.single('file'), async (req, res
             driveFolder,
             req.file.buffer,
             req.file.originalname,
-            req.file.mimetype
+            req.file.mimetype,
+            req.user.username
         );
 
         res.json({ message: 'Uploaded successfully', url: driveUrl });

@@ -11,7 +11,7 @@ const stream = require('stream');
  * @param {string} mimeType - MIME type of the file
  * @returns {Promise<string>} - The Google Drive file WebContentLink or WebViewLink
  */
-exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeType) => {
+exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeType, subFolderName) => {
     try {
         let actualKey = key;
         // Kiểm tra xem user có paste nguyên cục JSON không
@@ -37,7 +37,7 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
 
         // 1. Lấy tên thư mục theo năm-tháng hiện tại (VD: 2026-08)
         const date = new Date();
-        const folderName = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const folderName = subFolderName || `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
         // 2. Tìm xem thư mục này đã tồn tại trong folder gốc chưa
         const searchRes = await drive.files.list({
