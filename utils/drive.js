@@ -51,7 +51,7 @@ exports.startResumableUpload = async (email, key, folderId, fileName, mimeType, 
         const { targetFolderId, token } = await getAuthAndFolder(email, key, folderId, subFolderName);
         const metadata = { name: fileName, parents: [targetFolderId] };
         
-        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable', {
+        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&supportsAllDrives=true', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
