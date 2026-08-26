@@ -483,7 +483,11 @@ window.addEventListener(&quot;message&quot;, e => {
         }
         
         const status = document.getElementById(&quot;fileStatus&quot;);
-        status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b>`;
+        if(course.driveLink) {
+            status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b><br>📁 <a href="${course.driveLink}" target="_blank" style="color:#16469d;font-weight:bold;text-decoration:underline;">Mở file Chương trình môn học trên Google Drive</a>`;
+        } else {
+            status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b>`;
+        }
     }
 });
 
@@ -876,7 +880,9 @@ async function readProgramFile(file){
              headers: { 'Authorization': 'Bearer ' + window.parent.localStorage.getItem('token') },
              body: formData
          }).then(res => res.json()).then(data => {
-             status.innerHTML = oldHtml + &quot;<br><span style='color:#166534;'>✅ <b>Đã upload thành công lên Google Drive của bạn!</b></span>&quot;;
+             status.innerHTML = oldHtml + &quot;<br><span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='&quot; + data.url + &quot;' target='_blank'>Xem trên Google Drive</a></span>&quot;;
+             course.driveLink = data.url;
+             if(typeof saveStateToBackend === 'function') saveStateToBackend();
          }).catch(err => {
              console.error(err);
              status.innerHTML = oldHtml + &quot;<br><span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive.</b></span>&quot;;
