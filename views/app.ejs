@@ -934,6 +934,7 @@ async function readProgramFile(file){
    updateCourseCards();
    renderConversionPreview();
    updateWeeklyCheck();
+ if(typeof saveStateToBackend === "function") saveStateToBackend();
  }catch(e){
    lessons=[];
    programSequence=[];
@@ -1148,6 +1149,7 @@ function refreshScheduleAfterCalendarChange(){
   if(programSequence.length &amp;&amp; document.getElementById(&quot;startDate&quot;).value){
     buildSchedule();
   }
+  if(typeof saveStateToBackend === 'function') saveStateToBackend();
 }
 
 
