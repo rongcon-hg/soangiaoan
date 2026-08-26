@@ -484,7 +484,7 @@ window.addEventListener(&quot;message&quot;, e => {
         
         const status = document.getElementById(&quot;fileStatus&quot;);
         if(course.driveLink) {
-            status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b><br>📁 <a href="${course.driveLink}" target="_blank" style="color:#16469d;font-weight:bold;text-decoration:underline;">Mở file Chương trình môn học trên Google Drive</a>`;
+            status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b><br>📁 <a href='${course.driveLink}' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Mở file Chương trình môn học trên Google Drive</a>`;
         } else {
             status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b>`;
         }
