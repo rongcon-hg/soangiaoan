@@ -1,7 +1,7 @@
 const sidebarHTML = `
 <div class="sidebar">
     <div class="sidebar-header">
-        <h2><i class="fas fa-book-open"></i> Sổ Giáo Án</h2>
+        <h2><i class="fas fa-book-open"></i> Giáo án điện tử</h2>
     </div>
     <div class="nav-menu">
         <a href="/" class="nav-item" id="nav-projects">
@@ -36,7 +36,10 @@ function injectLayout(pageId, pageTitle) {
 
     const topbar = `
         <div class="topbar">
-            <div style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
+            <div style="display:flex; align-items:center;">
+                <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+            <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
+            </div>
             <div>
                 <span>Xin chào, <b id="topbar-username">...</b></span>
             </div>

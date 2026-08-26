@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Đăng nhập - Hệ thống Giáo án</title>
+    <title>Đăng nhập - Giáo án điện tử</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <style>
@@ -15,7 +15,8 @@
     <div id="alert-box"></div>
     <div class="auth-wrapper">
         <div class="auth-card">
-            <h2>Hệ thống Giáo án</h2>
+            <h2>Giáo án điện tử</h2>
+            <p style="text-align: center; color: var(--text-light); margin-top: -15px; margin-bottom: 25px; font-size: 14px; line-height: 1.4;">Phần hỗ trợ tạo giáo án điện tử và lịch giảng dạy bằng AI</p>
             <div class="auth-tabs" id="auth-tabs">
                 <div class="auth-tab active" onclick="setAuthMode('login')" id="tab-login">Đăng nhập</div>
                 <div class="auth-tab" onclick="setAuthMode('register')" id="tab-register">Đăng ký</div>
@@ -189,5 +190,11 @@
             } catch(err) { showAlert(err.message); }
         }
     </script>
+
+    <div style="position: absolute; bottom: 20px; width: 100%; text-align: center; color: rgba(255,255,255,0.8); font-size: 13px; line-height: 1.6;">
+        Bản quyền năm &copy; 2026 - Khoa Công nghệ thông tin - Kỹ thuật điện<br>
+        Hỗ trợ: nguyenluyen@nsg.edu.vn - 0917.919.522
+    </div>
+
 </body>
 </html>

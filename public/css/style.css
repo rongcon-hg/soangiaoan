@@ -138,3 +138,84 @@ body {
 .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
 .auth-tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: 600; color: var(--text-light); }
 .auth-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -2px; }
+
+/* Responsive Styles */
+.mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    margin-right: 15px;
+    color: var(--text);
+}
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+.sidebar-overlay.active {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .mobile-toggle {
+        display: inline-block;
+    }
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        width: 260px;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    .sidebar.open {
+        left: 0;
+    }
+    .main-content {
+        width: 100%;
+        margin-left: 0;
+    }
+    .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+    .topbar {
+        padding: 15px;
+    }
+    .content-area {
+        padding: 15px;
+    }
+}
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+    .topbar span {
+        font-size: 14px;
+    }
+}
+
+/* Responsive Table */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+@media (max-width: 768px) {
+    table {
+        min-width: 600px; /* Ensures table is horizontally scrollable rather than squished */
+    }
+}
