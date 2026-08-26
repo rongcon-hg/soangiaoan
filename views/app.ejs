@@ -418,13 +418,13 @@ let currentSessions = [];
 
 function saveStateToBackend() {
     const scheduleSettings = {
-        startDate: document.getElementById("startDate").value,
-        slotCount: document.getElementById("slotCount").value,
+        startDate: document.getElementById(&quot;startDate&quot;).value,
+        slotCount: document.getElementById(&quot;slotCount&quot;).value,
         slots: []
     };
     for(let i = 0; i < Number(scheduleSettings.slotCount||0); i++) {
-        const wd = document.getElementById("wd"+i);
-        const cp = document.getElementById("cp"+i);
+        const wd = document.getElementById(&quot;wd&quot;+i);
+        const cp = document.getElementById(&quot;cp&quot;+i);
         if(wd && cp) {
             scheduleSettings.slots.push({ weekday: wd.value, periods: cp.value });
         }
@@ -440,13 +440,13 @@ function saveStateToBackend() {
     };
     
     window.parent.postMessage({
-        type: "SAVE_PROJECT_STATE",
+        type: &quot;SAVE_PROJECT_STATE&quot;,
         payload: payload
-    }, "*");
+    }, &quot;*&quot;);
 }
 
-window.addEventListener("message", e => {
-    if (e.data?.type === "LOAD_PROJECT_STATE") {
+window.addEventListener(&quot;message&quot;, e => {
+    if (e.data?.type === &quot;LOAD_PROJECT_STATE&quot;) {
         const payload = e.data.payload;
         if (!payload) return;
         
@@ -458,14 +458,14 @@ window.addEventListener("message", e => {
         
         // Restore scheduleConfig
         if (payload.scheduleSettings) {
-            if(payload.scheduleSettings.startDate) document.getElementById("startDate").value = payload.scheduleSettings.startDate;
+            if(payload.scheduleSettings.startDate) document.getElementById(&quot;startDate&quot;).value = payload.scheduleSettings.startDate;
             if(payload.scheduleSettings.slotCount) {
-                document.getElementById("slotCount").value = payload.scheduleSettings.slotCount;
+                document.getElementById(&quot;slotCount&quot;).value = payload.scheduleSettings.slotCount;
                 renderWeeklySlots(); // render inputs
                 // Now fill the values
                 payload.scheduleSettings.slots.forEach((s, idx) => {
-                    const wd = document.getElementById("wd"+idx);
-                    const cp = document.getElementById("cp"+idx);
+                    const wd = document.getElementById(&quot;wd&quot;+idx);
+                    const cp = document.getElementById(&quot;cp&quot;+idx);
                     if (wd) wd.value = s.weekday;
                     if (cp) cp.value = s.periods;
                 });
@@ -482,7 +482,7 @@ window.addEventListener("message", e => {
             updateWeeklyCheck();
         }
         
-        const status = document.getElementById("fileStatus");
+        const status = document.getElementById(&quot;fileStatus&quot;);
         status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b>`;
     }
 });
@@ -868,18 +868,18 @@ async function readProgramFile(file){
      // Upload background
      if(window.parent.localStorage.getItem('token')) {
          const oldHtml = status.innerHTML;
-         status.innerHTML = oldHtml + "<br><span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>";
+         status.innerHTML = oldHtml + &quot;<br><span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>&quot;;
          const formData = new FormData();
-         formData.append("file", file);
+         formData.append(&quot;file&quot;, file);
          fetch('/api/drive/upload', {
              method: 'POST',
              headers: { 'Authorization': 'Bearer ' + window.parent.localStorage.getItem('token') },
              body: formData
          }).then(res => res.json()).then(data => {
-             status.innerHTML = oldHtml + "<br><span style='color:#166534;'>✅ <b>Đã upload thành công lên Google Drive của bạn!</b></span>";
+             status.innerHTML = oldHtml + &quot;<br><span style='color:#166534;'>✅ <b>Đã upload thành công lên Google Drive của bạn!</b></span>&quot;;
          }).catch(err => {
              console.error(err);
-             status.innerHTML = oldHtml + "<br><span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive.</b></span>";
+             status.innerHTML = oldHtml + &quot;<br><span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive.</b></span>&quot;;
          });
      }
 
@@ -1862,8 +1862,8 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
       &lt;div class=&quot;card&quot; style=&quot;margin-top:16px&quot;&gt;
         &lt;h2&gt;3. Cài đặt AI&lt;/h2&gt;
         &lt;div class=&quot;panel&quot;&gt;
-          &lt;label&gt;Google/Gemini API Key&lt;/label&gt;
-          &lt;input id=&quot;apiKey&quot; type=&quot;password&quot; placeholder=&quot;AIza... hoặc API key từ Google AI Studio&quot;&gt;
+          &lt;label style=&quot;display:none&quot;&gt;Google/Gemini API Key&lt;/label&gt;
+          &lt;input style=&quot;display:none&quot; id=&quot;apiKey&quot; type=&quot;password&quot; placeholder=&quot;AIza... hoặc API key từ Google AI Studio&quot;&gt;
           &lt;div class=&quot;row2&quot;&gt;
             &lt;div&gt;
               &lt;label&gt;Model&lt;/label&gt;
@@ -1874,13 +1874,13 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
                 &lt;option value=&quot;gemini-3.5-flash-lite&quot;&gt;gemini-3.5-flash-lite&lt;/option&gt;
               &lt;/select&gt;
             &lt;/div&gt;
-            &lt;div&gt;
+            &lt;div style=&quot;display:none&quot;&gt;&lt;div&gt;
               &lt;label&gt;Lưu khóa trên máy&lt;/label&gt;
               &lt;select id=&quot;saveKey&quot;&gt;
                 &lt;option value=&quot;yes&quot; selected&gt;Có&lt;/option&gt;
                 &lt;option value=&quot;no&quot;&gt;Không&lt;/option&gt;
               &lt;/select&gt;
-            &lt;/div&gt;
+            &lt;/div&gt;&lt;/div&gt;
           &lt;/div&gt;
           &lt;div class=&quot;toolbar&quot; style=&quot;margin-top:12px&quot;&gt;
             &lt;button class=&quot;btn&quot; id=&quot;btnSaveAI&quot;&gt;Lưu cài đặt AI&lt;/button&gt;
@@ -1888,7 +1888,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
             &lt;button class=&quot;btn&quot; id=&quot;btnRefreshModels&quot;&gt;Tải danh sách model&lt;/button&gt;
             &lt;button class=&quot;btn primary&quot; id=&quot;btnAIWhole&quot;&gt;Gemini hoàn thiện toàn bộ giáo án&lt;/button&gt;
           &lt;/div&gt;
-          &lt;div class=&quot;hint&quot;&gt;Gemini API key được dùng trực tiếp từ trình duyệt theo yêu cầu của người dùng. Cách này tiện nhưng không an toàn nếu chia sẻ file hoặc máy.&lt;/div&gt;
+          &lt;div class=&quot;hint&quot;&gt;<span style="display:none">Gemini API key được dùng trực tiếp từ trình duyệt theo yêu cầu của người dùng. Cách này tiện nhưng không an toàn nếu chia sẻ file hoặc máy.</span>&lt;/div&gt;
           &lt;div id=&quot;aiStatus&quot; class=&quot;status&quot;&gt;Gemini chưa được cấu hình.&lt;/div&gt;
         &lt;/div&gt;
       &lt;/div&gt;
