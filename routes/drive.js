@@ -50,7 +50,7 @@ router.post('/start-upload', authenticateToken, express.json(), async (req, res)
     }
 });
 
-router.put('/upload-chunk', authenticateToken, express.raw({ type: '*/*', limit: '4mb' }), async (req, res) => {
+router.put('/upload-chunk', authenticateToken, express.raw({ type: () => true, limit: '4mb' }), async (req, res) => {
     try {
         const uploadUrl = req.headers['x-upload-url'];
         const contentRange = req.headers['content-range'];
@@ -59,9 +59,9 @@ router.put('/upload-chunk', authenticateToken, express.raw({ type: '*/*', limit:
             method: 'PUT',
             headers: {
                 'Content-Range': contentRange,
-                'Content-Length': req.body.length
+                'Content-Length': (req.body ? req.body.length : 0)
             },
-            body: req.body
+            body: req.body || Buffer.alloc(0)
         });
         
         if (gRes.status === 308) {

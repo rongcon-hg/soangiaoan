@@ -895,7 +895,8 @@ async function readProgramFile(file){
                          headers: {
                              'Authorization': 'Bearer ' + token,
                              'X-Upload-Url': uploadUrl,
-                             'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + file.size
+                             'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + file.size,
+                             'Content-Type': 'application/octet-stream'
                          },
                          body: chunk
                      });
