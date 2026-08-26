@@ -33,7 +33,7 @@ async function checkAuth(redirectIfNotAuth = true) {
         
         // Cập nhật thông tin UI nếu có
         const nameEl = document.getElementById('topbar-username');
-        if(nameEl) nameEl.textContent = currentUser.username;
+        if(nameEl) nameEl.textContent = currentUser.full_name || currentUser.username;
 
         // Hiện tab admin
         if(currentUser.role === 'Admin') {
