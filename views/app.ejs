@@ -30,6 +30,32 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
   font-family:"Times New Roman",Times,serif;
 }
 
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+.status.warn {
+  animation: pulse 1.5s infinite;
+  background-color: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+.status.warn {
+  animation: pulse 1.5s infinite;
+  background-color: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
 </style>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
@@ -841,13 +867,20 @@ async function readProgramFile(file){
      
      // Upload background
      if(window.parent.localStorage.getItem('token')) {
+         const oldHtml = status.innerHTML;
+         status.innerHTML = oldHtml + "<br><span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>";
          const formData = new FormData();
          formData.append("file", file);
          fetch('/api/drive/upload', {
              method: 'POST',
              headers: { 'Authorization': 'Bearer ' + window.parent.localStorage.getItem('token') },
              body: formData
-         }).catch(err => console.error(err));
+         }).then(res => res.json()).then(data => {
+             status.innerHTML = oldHtml + "<br><span style='color:#166534;'>✅ <b>Đã upload thành công lên Google Drive của bạn!</b></span>";
+         }).catch(err => {
+             console.error(err);
+             status.innerHTML = oldHtml + "<br><span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive.</b></span>";
+         });
      }
 
      const htmlResult=await mammoth.convertToHtml({arrayBuffer:buf.slice(0)});
@@ -2788,8 +2821,8 @@ function saveAISettings(){
   $(&quot;#aiStatus&quot;).textContent=`Đã lưu cài đặt Gemini. Model: ${model}.`;
 }
 function loadAISettings(){
-  const key=(window.parent.GEMINI_KEY || "")||&quot;&quot;;
-  let model=(window.parent.GEMINI_MODEL || "gemini-1.5-flash")||&quot;gemini-3.7-flash&quot;;
+  const key=window.parent.GEMINI_KEY || localStorage.getItem(&quot;giaoan_gemini_key&quot;) || &quot;&quot;;
+  let model=window.parent.GEMINI_MODEL || localStorage.getItem(&quot;giaoan_gemini_model&quot;) || &quot;gemini-3.7-flash&quot;;
   const retired=[&quot;gemini-2.5-flash&quot;,&quot;gemini-2.5-pro&quot;,&quot;gemini-2.5-flash-lite&quot;];
   if(retired.includes(model)){
     model=&quot;gemini-3.7-flash&quot;;
@@ -3785,9 +3818,66 @@ init();
 <script src="/js/layout.js"></script>
 <script>
     injectLayout('projects', 'Soạn Giáo án');
-    checkAuth().then(u => { if(u) { window.GEMINI_KEY = u.gemini_key; window.GEMINI_MODEL = u.gemini_model; } });
+    
+    let currentProject = null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('project');
 
-window.addEventListener("message",e=>{
+    checkAuth().then(async u => { 
+        if(!u) return;
+        window.GEMINI_KEY = u.gemini_key; 
+        window.GEMINI_MODEL = u.gemini_model; 
+
+        // Update plannerFrame AI settings
+        const pf = document.getElementById("plannerFrame");
+        if(pf && pf.contentWindow && pf.contentWindow.loadAISettings) {
+            pf.contentWindow.loadAISettings();
+        }
+
+        if(projectId) {
+            try {
+                const res = await fetch(API_URL + '/projects/' + projectId, { headers: getHeaders() });
+                if(res.ok) {
+                    currentProject = await res.json();
+                    
+                    const iframe = document.getElementById("scheduleFrame");
+                    const sendData = () => {
+                        if(currentProject.program_data) {
+                            iframe.contentWindow.postMessage({
+                                type: "LOAD_PROJECT_STATE",
+                                payload: currentProject.program_data
+                            }, "*");
+                        }
+                    };
+                    
+                    iframe.addEventListener('load', sendData);
+                    sendData();
+                }
+            } catch(e) {
+                console.error("Failed to load project", e);
+            }
+        }
+    });
+
+window.addEventListener("message", async e => {
+  if(e.data?.type === "SAVE_PROJECT_STATE" && projectId && currentProject) {
+      try {
+          await fetch(API_URL + '/projects/' + projectId, {
+              method: 'PUT',
+              headers: getHeaders(),
+              body: JSON.stringify({
+                  name: e.data.payload?.courseInfo?.name || currentProject.name,
+                  course_code: e.data.payload?.courseInfo?.code || currentProject.course_code,
+                  total_hours: e.data.payload?.courseInfo?.total || currentProject.total_hours,
+                  program_data: e.data.payload
+              })
+          });
+          console.log("Đã lưu trạng thái vào CSDL");
+      } catch(err) {
+          console.error("Lỗi lưu trạng thái", err);
+      }
+  }
+
   if(e.data?.type==="OPEN_LESSON_PLAN_FROM_SCHEDULE"){
     const p=e.data.payload||{};
     const st=document.getElementById("transferStatus");
