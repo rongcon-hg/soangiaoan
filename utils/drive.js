@@ -87,15 +87,29 @@ exports.setPublicPermission = async (email, key, fileId) => {
         await auth.authorize();
         const drive = google.drive({ version: 'v3', auth });
 
-        await drive.permissions.create({
-            fileId: fileId,
-            requestBody: { role: 'reader', type: 'anyone' },
-            supportsAllDrives: true
-        });
-
-        const file = await drive.files.get({
-            fileId, fields: 'webViewLink', supportsAllDrives: true
-        });
+        // Thêm cơ chế retry (thử lại tối đa 3 lần) cho Eventual Consistency của Google Drive
+        let retries = 3;
+        let file = null;
+        while (retries > 0) {
+            try {
+                await drive.permissions.create({
+                    fileId: fileId,
+                    requestBody: { role: 'reader', type: 'anyone' },
+                    supportsAllDrives: true
+                });
+                file = await drive.files.get({
+                    fileId, fields: 'webViewLink', supportsAllDrives: true
+                });
+                break;
+            } catch (err) {
+                if (err.message && err.message.includes('File not found') && retries > 1) {
+                    retries--;
+                    await new Promise(res => setTimeout(res, 2000)); // Đợi 2s rồi thử lại
+                } else {
+                    throw err;
+                }
+            }
+        }
         return file.data.webViewLink;
     } catch (error) {
         throw new Error('Set Permission Error: ' + error.message);
