@@ -419,7 +419,7 @@ let currentSessions = [];
 function saveStateToBackend() {
     const scheduleSettings = {
         startDate: document.getElementById(&quot;startDate&quot;).value,
-        slotCount: document.getElementById(&quot;slotCount&quot;).value,
+        slotCount: document.getElementById(&quot;weeklyCount&quot;).value,
         slots: []
     };
     for(let i = 0; i < Number(scheduleSettings.slotCount||0); i++) {
@@ -460,7 +460,7 @@ window.addEventListener(&quot;message&quot;, e => {
         if (payload.scheduleSettings) {
             if(payload.scheduleSettings.startDate) document.getElementById(&quot;startDate&quot;).value = payload.scheduleSettings.startDate;
             if(payload.scheduleSettings.slotCount) {
-                document.getElementById(&quot;slotCount&quot;).value = payload.scheduleSettings.slotCount;
+                document.getElementById(&quot;weeklyCount&quot;).value = payload.scheduleSettings.slotCount;
                 renderWeeklySlots(); // render inputs
                 // Now fill the values
                 payload.scheduleSettings.slots.forEach((s, idx) => {
