@@ -13,4 +13,6 @@ router.put('/profile', authenticateToken, authController.updateProfile);
 router.put('/settings', authenticateToken, authController.updateSettings);
 router.post('/test-drive', authenticateToken, authController.testDriveConnection);
 
+router.post('/test-smtp', authenticateToken, authController.testSmtpConnection);
+
 module.exports = router;
