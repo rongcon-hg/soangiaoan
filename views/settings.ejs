@@ -43,8 +43,8 @@
     <div class="card">
         <div class="settings-tabs">
             <div class="s-tab active" onclick="switchSettingsTab('gemini', this)"><i class="fas fa-brain"></i> AI (Gemini)</div>
-            <div class="s-tab" id="tab-smtp" style="display:none" onclick="switchSettingsTab(\'smtp\', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
-            <div class="s-tab" id="tab-gdrive" style="display:none" onclick="switchSettingsTab(\'gdrive\', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
+            <div class="s-tab" id="tab-smtp" style="display:none" onclick="switchSettingsTab('smtp', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
+            <div class="s-tab" id="tab-gdrive" style="display:none" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
         </div>
 
         <form id="settingsForm" onsubmit="saveSettings(event)">
