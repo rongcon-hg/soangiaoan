@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Đăng nhập - Giáo án điện tử</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <style>
@@ -15,7 +16,7 @@
     <div id="alert-box"></div>
     <div class="auth-wrapper">
         <div class="auth-card">
-            <h2>Giáo án điện tử</h2>
+            <h2 style="display:flex; flex-direction:column; align-items:center; gap:10px;"><i class="fas fa-book-open" style="font-size:36px;"></i>Giáo án điện tử</h2>
             <p style="text-align: center; color: var(--text-light); margin-top: -15px; margin-bottom: 25px; font-size: 14px; line-height: 1.4;">Phần hỗ trợ tạo giáo án điện tử và lịch giảng dạy bằng AI</p>
             <div class="auth-tabs" id="auth-tabs">
                 <div class="auth-tab active" onclick="setAuthMode('login')" id="tab-login">Đăng nhập</div>
@@ -40,7 +41,7 @@
                 <div style="text-align: right; margin-bottom: 15px; font-size: 14px;">
                     <a href="#" onclick="showForgotPassword()" style="color: var(--primary); text-decoration: none;"><i class="fas fa-question-circle"></i> Quên mật khẩu?</a>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%; font-weight:600; font-size:15px; padding:10px" id="auth-btn"><i class="fas fa-sign-in-alt" style="margin-right:6px"></i> Đăng nhập</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; font-weight:600; font-size:15px; padding:10px; display:flex; justify-content:center; align-items:center;" id="auth-btn"><i class="fas fa-sign-in-alt" style="margin-right:6px"></i> Đăng nhập</button>
             </form>
 
             <!-- OTP Form -->
@@ -50,8 +51,8 @@
                     <label><i class="fas fa-key" style="color:var(--secondary); margin-right:5px"></i> Mã OTP (6 số)</label>
                     <input type="text" id="otp-code" class="form-control" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%; padding:10px"><i class="fas fa-check-circle" style="margin-right:6px"></i> Xác thực OTP</button>
-                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px; padding:10px" onclick="cancelOtp()"><i class="fas fa-arrow-left" style="margin-right:6px"></i> Quay lại</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:10px; display:flex; justify-content:center; align-items:center;"><i class="fas fa-check-circle" style="margin-right:6px"></i> Xác thực OTP</button>
+                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px; padding:10px; display:flex; justify-content:center; align-items:center;" onclick="cancelOtp()"><i class="fas fa-arrow-left" style="margin-right:6px"></i> Quay lại</button>
             </form>
 
             <!-- Forgot Password Form -->
@@ -61,8 +62,8 @@
                     <label><i class="fas fa-user" style="color:var(--secondary); margin-right:5px"></i> Tên đăng nhập</label>
                     <input type="text" id="forgot-username" class="form-control" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%; padding:10px"><i class="fas fa-paper-plane" style="margin-right:6px"></i> Gửi mật khẩu mới</button>
-                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px; padding:10px" onclick="cancelForgot()"><i class="fas fa-arrow-left" style="margin-right:6px"></i> Quay lại</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:10px; display:flex; justify-content:center; align-items:center;"><i class="fas fa-paper-plane" style="margin-right:6px"></i> Gửi mật khẩu mới</button>
+                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px; padding:10px; display:flex; justify-content:center; align-items:center;" onclick="cancelForgot()"><i class="fas fa-arrow-left" style="margin-right:6px"></i> Quay lại</button>
             </form>
         </div>
     </div>
