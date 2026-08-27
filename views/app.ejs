@@ -6,7 +6,7 @@
 <title>Quản lý Sổ đầu bài & Soạn giáo án</title>
 <style>
 body{margin:0;background:#eef3f9;font-family:"Times New Roman",Times,serif;color:#172033}
-.shell{max-width:1540px;margin:0 auto;padding:16px}
+.shell{/*max-width:1540px;margin:0 auto;padding:16px*/}
 .hero{background:#16469d;color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:16px;box-shadow:0 8px 24px rgba(22,70,157,.18)}
 .hero h1{margin:0 0 6px;font-size:26px}
 .hero p{margin:0;opacity:.95}
@@ -336,7 +336,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;schedule-inline&quot;&gt;
   &lt;div class=&quot;field-box field-date&quot;&gt;
     &lt;label&gt;Ngày bắt đầu&lt;/label&gt;
-    &lt;input id=&quot;startDate&quot; type=&quot;date&quot; value=&quot;2026-07-07&quot;&gt;
+    &lt;input id=&quot;startDate&quot; type=&quot;date&quot; value=&quot;2026-07-07&quot; onchange=&quot;if(typeof saveStateToBackend === \'function\') saveStateToBackend();&quot;&gt;
   &lt;/div&gt;
   &lt;div class=&quot;field-box field-count&quot;&gt;
     &lt;label&gt;Số buổi học / tuần&lt;/label&gt;
@@ -1005,11 +1005,11 @@ function renderWeeklySlots(){
    const div=document.createElement(&quot;div&quot;);div.className=&quot;slot&quot;;
    div.innerHTML=`&lt;label&gt;Buổi ${i+1}&lt;/label&gt;
    &lt;div class=&quot;slot-row&quot;&gt;
-     &lt;select class=&quot;weekday&quot; onchange=&quot;updateWeeklyCheck()&quot;&gt;
+     &lt;select class=&quot;weekday&quot; id=&quot;wd${i}&quot; onchange=&quot;updateWeeklyCheck()&quot;&gt;
        &lt;option value=&quot;1&quot;&gt;Thứ 2&lt;/option&gt;&lt;option value=&quot;2&quot;&gt;Thứ 3&lt;/option&gt;&lt;option value=&quot;3&quot;&gt;Thứ 4&lt;/option&gt;
        &lt;option value=&quot;4&quot;&gt;Thứ 5&lt;/option&gt;&lt;option value=&quot;5&quot;&gt;Thứ 6&lt;/option&gt;&lt;option value=&quot;6&quot;&gt;Thứ 7&lt;/option&gt;&lt;option value=&quot;0&quot;&gt;Chủ nhật&lt;/option&gt;
      &lt;/select&gt;
-     &lt;input class=&quot;periods&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;10&quot; value=&quot;${old[i]?.periods||5}&quot; oninput=&quot;updateWeeklyCheck()&quot;&gt;
+     &lt;input class=&quot;periods&quot; id=&quot;cp${i}&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;10&quot; value=&quot;${old[i]?.periods||5}&quot; oninput=&quot;updateWeeklyCheck()&quot;&gt;
      &lt;span class=&quot;slot-period-label&quot;&gt;tiết&lt;/span&gt;
    &lt;/div&gt;`;
    box.appendChild(div);
@@ -1034,6 +1034,7 @@ function updateWeeklyCheck(){
    `&lt;b&gt;${slots.length} buổi/tuần&lt;/b&gt; · &lt;b&gt;${total} tiết/tuần&lt;/b&gt;&lt;br&gt;`+
    `${detail}&lt;br&gt;`+
    `&lt;span style=&quot;color:#475569&quot;&gt;Lặp cấu hình này đến khi đủ ${target}. Ngày nghỉ chỉ bị bỏ qua, không chuyển số tiết sang ngày khác.&lt;/span&gt;`;
+ if(typeof saveStateToBackend === \'function\') saveStateToBackend();
 }
 
 function balancedTypes(lt,th){
@@ -1504,6 +1505,7 @@ function buildSchedule(){
    &lt;td class=&quot;sign&quot;&gt;&lt;/td&gt;`;
    tb.appendChild(tr);
  });
+ if(typeof saveStateToBackend === \'function\') saveStateToBackend();
 }
 
 
