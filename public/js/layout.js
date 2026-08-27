@@ -61,6 +61,52 @@ function injectLayout(pageId, pageTitle) {
 
     mainContent.appendChild(contentArea);
     document.body.appendChild(mainContent);
+    document.body.insertAdjacentHTML('beforeend', `
+<!-- Back to Top Button -->
+<button class="back-to-top" onclick="scrollToTop()" title="Lên đầu trang"><i class="fas fa-arrow-up"></i></button>
+`);
+    setupBackToTop();
 }
 
-function toggleSidebar() { const sidebar = document.querySelector('.sidebar'); const overlay = document.querySelector('.sidebar-overlay'); sidebar.classList.toggle('open'); if(overlay) overlay.classList.toggle('active'); }
+
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.querySelector('.sidebar-overlay');
+    if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('open');
+        if(overlay) overlay.classList.toggle('active');
+    } else {
+        sidebar.classList.toggle('collapsed');
+    }
+}
+
+function scrollToTop() {
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) contentArea.scrollTo({ top: 0, behavior: 'smooth' });
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setupBackToTop() {
+    const btn = document.querySelector('.back-to-top');
+    if(!btn) return;
+    const checkScroll = (e) => {
+        if (e.target.scrollTop > 300) {
+            btn.style.display = 'flex';
+        } else {
+            btn.style.display = 'none';
+        }
+    };
+    
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) contentArea.addEventListener('scroll', checkScroll);
+    
+    const mainContent = document.querySelector('.main-content');
+    if (mainContent) mainContent.addEventListener('scroll', checkScroll);
+    
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) btn.style.display = 'flex';
+        else btn.style.display = 'none';
+    });
+}
