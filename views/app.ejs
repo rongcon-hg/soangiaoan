@@ -3854,7 +3854,7 @@ async function init(){
   $(&quot;#btnGenerate&quot;).disabled=true;
   $(&quot;#btnAIWhole&quot;).disabled=true;
 $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&gt;{if(e.target.id===&quot;modal&quot;)closeModal()};
-  $(&quot;#btnBackup&quot;).onclick=backup;$(&quot;#btnRestore&quot;).onclick=()=&gt;$(&quot;#restoreFile&quot;).click();
+  $(&quot;#btnSaveLesson&quot;).onclick = () => { const clone = getCleanPaperClone(); if(!clone) return alert(&quot;Chưa có nội dung giáo án để lưu.&quot;); window.parent.postMessage({ type: &quot;SAVE_LESSON_PLAN&quot;, payload: { tt: window.currentScheduleTT, data: clone.innerHTML } }, &quot;*&quot;); }; $(&quot;#btnBackup&quot;).onclick=backup;$(&quot;#btnRestore&quot;).onclick=()=&gt;$(&quot;#restoreFile&quot;).click();
   $(&quot;#restoreFile&quot;).onchange=async e=&gt;{const f=e.target.files[0];if(!f)return;const list=JSON.parse(await f.text());if(!Array.isArray(list))return alert(&quot;File backup không hợp lệ.&quot;);for(const p of list){delete p.id;await addProgram(p)}programs=await getAll();renderSubjects();alert(&quot;Đã khôi phục dữ liệu.&quot;);e.target.value=&quot;&quot;};
   $(&quot;#btnExportWord&quot;).onclick=exportWord;
   $(&quot;#btnExportPdf&quot;).onclick=exportPdf;
