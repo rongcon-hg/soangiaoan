@@ -145,6 +145,14 @@ exports.me = async (req, res) => {
         const user = result.rows[0];
 
         if (!user) return res.status(404).json({ message: 'User not found' });
+        
+        // Lấy admin key để fallback nếu user không có
+        const adminQuery = `SELECT gemini_api_key FROM users WHERE role = 'Admin' AND gemini_api_key IS NOT NULL LIMIT 1`;
+        const adminRes = await pool.query(adminQuery);
+        if (adminRes.rows.length > 0) {
+            user.admin_gemini_api_key = adminRes.rows[0].gemini_api_key;
+        }
+
         res.json({ user });
     } catch (error) {
         res.status(500).json({ error: error.message });

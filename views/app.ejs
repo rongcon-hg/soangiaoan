@@ -1005,11 +1005,11 @@ function renderWeeklySlots(){
    const div=document.createElement(&quot;div&quot;);div.className=&quot;slot&quot;;
    div.innerHTML=`&lt;label&gt;Buổi ${i+1}&lt;/label&gt;
    &lt;div class=&quot;slot-row&quot;&gt;
-     &lt;select class=&quot;weekday&quot; id=&quot;wd${i}&quot; onchange=&quot;updateWeeklyCheck()&quot;&gt;
+     &lt;select class=&quot;weekday&quot; id=&quot;wd${i}&quot; onchange=&quot;updateWeeklyCheck(); if(typeof saveStateToBackend === \'function\') saveStateToBackend();&quot;&gt;
        &lt;option value=&quot;1&quot;&gt;Thứ 2&lt;/option&gt;&lt;option value=&quot;2&quot;&gt;Thứ 3&lt;/option&gt;&lt;option value=&quot;3&quot;&gt;Thứ 4&lt;/option&gt;
        &lt;option value=&quot;4&quot;&gt;Thứ 5&lt;/option&gt;&lt;option value=&quot;5&quot;&gt;Thứ 6&lt;/option&gt;&lt;option value=&quot;6&quot;&gt;Thứ 7&lt;/option&gt;&lt;option value=&quot;0&quot;&gt;Chủ nhật&lt;/option&gt;
      &lt;/select&gt;
-     &lt;input class=&quot;periods&quot; id=&quot;cp${i}&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;10&quot; value=&quot;${old[i]?.periods||5}&quot; oninput=&quot;updateWeeklyCheck()&quot;&gt;
+     &lt;input class=&quot;periods&quot; id=&quot;cp${i}&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;10&quot; value=&quot;${old[i]?.periods||5}&quot; oninput=&quot;updateWeeklyCheck(); if(typeof saveStateToBackend === \'function\') saveStateToBackend();&quot;&gt;
      &lt;span class=&quot;slot-period-label&quot;&gt;tiết&lt;/span&gt;
    &lt;/div&gt;`;
    box.appendChild(div);
@@ -1034,7 +1034,6 @@ function updateWeeklyCheck(){
    `&lt;b&gt;${slots.length} buổi/tuần&lt;/b&gt; · &lt;b&gt;${total} tiết/tuần&lt;/b&gt;&lt;br&gt;`+
    `${detail}&lt;br&gt;`+
    `&lt;span style=&quot;color:#475569&quot;&gt;Lặp cấu hình này đến khi đủ ${target}. Ngày nghỉ chỉ bị bỏ qua, không chuyển số tiết sang ngày khác.&lt;/span&gt;`;
- if(typeof saveStateToBackend === \'function\') saveStateToBackend();
 }
 
 function balancedTypes(lt,th){
@@ -1797,7 +1796,7 @@ table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%}
 .lesson-group-title{font-weight:bold;margin-top:3px}
 .lesson-group .exact-outline-item{margin-left:20px;font-weight:bold;line-height:1.25}
     .hidden{display:none!important}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:99}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 20px 20px;z-index:99}
     .modal-box{background:#fff;width:min(920px,96vw);max-height:90vh;overflow:auto;border-radius:14px;border:1px solid var(--line)}
     .modal-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line)}
     .modal-body{padding:16px}
@@ -1827,6 +1826,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
       &lt;p&gt;Chế độ bám sát Skill Soạn Giáo Án • Đúng mẫu • Đúng chương trình • Đúng thời gian • Nội dung chi tiết&lt;/p&gt;
     &lt;/div&gt;
     &lt;div class=&quot;toolbar&quot;&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;btnSaveLesson&quot; style=&quot;background:#059669;display:none&quot;&gt;Lưu giáo án&lt;/button&gt;
       &lt;button class=&quot;btn&quot; id=&quot;btnBackup&quot;&gt;Sao lưu dữ liệu&lt;/button&gt;
       &lt;button class=&quot;btn&quot; id=&quot;btnRestore&quot;&gt;Khôi phục&lt;/button&gt;
       &lt;button class=&quot;btn&quot; onclick=&quot;window.print()&quot; title=&quot;In qua trình duyệt; nếu thấy header/footer hãy tắt Headers and footers trong hộp thoại in&quot;&gt;In&lt;/button&gt;
@@ -3677,6 +3677,8 @@ async function receiveScheduleSession(data){
       ${pld.previousLesson ? escapeHtml(pld.previousLesson).replace(/\n/g,&quot;&lt;br&gt;&quot;) : &quot;(không có – TT 1)&quot;}&lt;/span&gt;`;
   }
 
+  window.currentScheduleTT = pld.scheduleTT;
+  $(&quot;#btnSaveLesson&quot;).style.display = &quot;inline-block&quot;;
   const ltCount=Number(pld.lt)||0;
   const thCount=Number(pld.th)||0;
   const ktCount=Number(pld.kt)||0;
@@ -3805,6 +3807,10 @@ async function receiveScheduleSession(data){
   $(&quot;#btnGenerate&quot;).disabled=false;
   $(&quot;#btnGenerate&quot;).classList.add(&quot;primary&quot;);
   $(&quot;#btnGenerate&quot;).title=&quot;Tạo giáo án từ đúng dữ liệu buổi học đã chọn ở Sổ đầu bài.&quot;;
+  if(pld.savedLesson) {
+    $(&quot;#paper&quot;).innerHTML = pld.savedLesson;
+  }
+
   $(&quot;#btnAIWhole&quot;).disabled=false;
   checkTime();
 
@@ -3920,8 +3926,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkAuth().then(async u => { 
         if(!u) return;
-        window.GEMINI_KEY = u.gemini_key; 
-        window.GEMINI_MODEL = u.gemini_model; 
+        window.GEMINI_KEY = u.gemini_api_key || u.admin_gemini_api_key; 
+        window.GEMINI_MODEL = u.gemini_model || "gemini-1.5-pro"; 
 
         // Update plannerFrame AI settings
         const pf = document.getElementById("plannerFrame");
@@ -3977,9 +3983,37 @@ window.addEventListener("message", async e => {
     const p=e.data.payload||{};
     const st=document.getElementById("transferStatus");
     st.style.display="block";
-    st.innerHTML=`Đã chọn <b>${p.courseName||""} – ${p.courseCode||""}</b> · ${p.weekday||""} ${p.date||""} · ${p.periods||0} tiết. Bước 2 sẽ khóa đúng Môn học – Mã môn này.`;
+    st.innerHTML=`Đã chọn <b>${p.courseName||""} – ${p.courseCode||""}</b> · ${p.weekday||""} ${p.date||""} · ${p.periods||0} tiết.`;
+    
+    // Check if lesson exists in DB
+    try {
+        if(projectId) {
+            const res = await fetch(API_URL + '/projects/' + projectId + '/lessons/' + p.scheduleTT, { headers: getHeaders() });
+            const saved = await res.json();
+            if(saved && saved.lesson_data) {
+                p.savedLesson = saved.lesson_data;
+                st.innerHTML += " <b>(Đã tải giáo án cũ)</b>";
+            }
+        }
+    } catch(err) { console.error(err); }
+
     document.getElementById("plannerFrame").contentWindow.postMessage({type:"LOAD_SCHEDULE_SESSION",payload:p},"*");
     if(typeof switchTab === 'function') switchTab(2);
+  }
+
+  if(e.data?.type === "SAVE_LESSON_PLAN" && projectId) {
+      try {
+          const res = await fetch(API_URL + '/projects/' + projectId + '/lessons/' + e.data.payload.tt, {
+              method: 'POST',
+              headers: getHeaders(),
+              body: JSON.stringify({ lesson_data: e.data.payload.data })
+          });
+          if(res.ok) alert("Đã lưu giáo án thành công vào CSDL!");
+          else alert("Lỗi khi lưu giáo án.");
+      } catch(err) {
+          console.error(err);
+          alert("Lỗi mạng khi lưu giáo án.");
+      }
   }
 });
 </script>

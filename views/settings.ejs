@@ -43,8 +43,8 @@
     <div class="card">
         <div class="settings-tabs">
             <div class="s-tab active" onclick="switchSettingsTab('gemini', this)"><i class="fas fa-brain"></i> AI (Gemini)</div>
-            <div class="s-tab" onclick="switchSettingsTab('smtp', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
-            <div class="s-tab" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
+            <div class="s-tab" id="tab-smtp" style="display:none" onclick="switchSettingsTab(\'smtp\', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
+            <div class="s-tab" id="tab-gdrive" style="display:none" onclick="switchSettingsTab(\'gdrive\', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
         </div>
 
         <form id="settingsForm" onsubmit="saveSettings(event)">
@@ -122,8 +122,15 @@
         let userSettings = {};
 
         injectLayout('settings', 'Cấu hình Hệ thống');
-        checkAuth().then(user => {
+                checkAuth().then(user => {
             if(user) {
+                if(user.role === 'Admin') {
+                    document.getElementById('tab-smtp').style.display = 'block';
+                    document.getElementById('tab-gdrive').style.display = 'block';
+                } else {
+                    document.getElementById('panel-smtp').remove();
+                    document.getElementById('panel-gdrive').remove();
+                }
                 // Đổ dữ liệu
                 document.getElementById('cfg-gemini-key').value = user.gemini_api_key || '';
                 
