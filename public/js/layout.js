@@ -16,8 +16,8 @@ const sidebarHTML = `
         <a href="/users" class="nav-item" id="nav-users" style="display:none">
             <i class="fas fa-users"></i> Quản lý Người dùng
         </a>
-        <a href="#" class="nav-item" onclick="logout()" style="margin-top:auto; border-top:1px solid #e2e8f0;">
-            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        <a href="#" class="nav-item" onclick="logout()" style="margin-top:auto; border-top:1px solid #e2e8f0; color:var(--danger);" onmouseover="this.style.background=\'#fee2e2\'" onmouseout="this.style.background=\'transparent\'">
+            <i class="fas fa-sign-out-alt" style="color:var(--danger);"></i> Đăng xuất
         </a>
     </div>
 </div>

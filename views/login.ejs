@@ -29,40 +29,40 @@
                     <input type="email" id="auth-email" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label>Tên đăng nhập</label>
+                    <label><i class="fas fa-user" style="color:var(--secondary); margin-right:5px"></i> Tên đăng nhập</label>
                     <input type="text" id="auth-username" class="form-control" required>
                 </div>
                 <div class="form-group password-container">
-                    <label>Mật khẩu</label>
+                    <label><i class="fas fa-lock" style="color:var(--secondary); margin-right:5px"></i> Mật khẩu</label>
                     <input type="password" id="auth-password" class="form-control" required>
                     <i class="fas fa-eye" onclick="togglePassword('auth-password', this)"></i>
                 </div>
                 <div style="text-align: right; margin-bottom: 15px; font-size: 14px;">
-                    <a href="#" onclick="showForgotPassword()" style="color: var(--primary); text-decoration: none;">Quên mật khẩu?</a>
+                    <a href="#" onclick="showForgotPassword()" style="color: var(--primary); text-decoration: none;"><i class="fas fa-question-circle"></i> Quên mật khẩu?</a>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%" id="auth-btn">Đăng nhập</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; font-weight:600; font-size:15px; padding:10px" id="auth-btn"><i class="fas fa-sign-in-alt" style="margin-right:6px"></i> Đăng nhập</button>
             </form>
 
             <!-- OTP Form -->
             <form id="otp-form" onsubmit="verifyOtp(event)" style="display:none;">
                 <p style="margin-bottom:15px; text-align:center;">Vui lòng nhập mã OTP đã được gửi tới Email của bạn.</p>
                 <div class="form-group">
-                    <label>Mã OTP (6 số)</label>
+                    <label><i class="fas fa-key" style="color:var(--secondary); margin-right:5px"></i> Mã OTP (6 số)</label>
                     <input type="text" id="otp-code" class="form-control" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Xác thực OTP</button>
-                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px" onclick="cancelOtp()">Quay lại</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:10px"><i class="fas fa-check-circle" style="margin-right:6px"></i> Xác thực OTP</button>
+                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px; padding:10px" onclick="cancelOtp()"><i class="fas fa-arrow-left" style="margin-right:6px"></i> Quay lại</button>
             </form>
 
             <!-- Forgot Password Form -->
             <form id="forgot-form" onsubmit="forgotPassword(event)" style="display:none;">
                 <p style="margin-bottom:15px; text-align:center;">Nhập tên đăng nhập, chúng tôi sẽ gửi mật khẩu mới vào Email liên kết.</p>
                 <div class="form-group">
-                    <label>Tên đăng nhập</label>
+                    <label><i class="fas fa-user" style="color:var(--secondary); margin-right:5px"></i> Tên đăng nhập</label>
                     <input type="text" id="forgot-username" class="form-control" required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Gửi mật khẩu mới</button>
-                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px" onclick="cancelForgot()">Quay lại</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; padding:10px"><i class="fas fa-paper-plane" style="margin-right:6px"></i> Gửi mật khẩu mới</button>
+                <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px; padding:10px" onclick="cancelForgot()"><i class="fas fa-arrow-left" style="margin-right:6px"></i> Quay lại</button>
             </form>
         </div>
     </div>
@@ -78,7 +78,7 @@
             isLoginMode = (mode === 'login');
             document.getElementById('tab-login').classList.toggle('active', isLoginMode);
             document.getElementById('tab-register').classList.toggle('active', !isLoginMode);
-            document.getElementById('auth-btn').textContent = isLoginMode ? 'Đăng nhập' : 'Đăng ký';
+            document.getElementById('auth-btn').innerHTML = isLoginMode ? '<i class="fas fa-sign-in-alt" style="margin-right:6px"></i> Đăng nhập' : '<i class="fas fa-user-plus" style="margin-right:6px"></i> Đăng ký';
             document.getElementById('email-group').style.display = isLoginMode ? 'none' : 'block';
             document.getElementById('auth-email').required = !isLoginMode;
         }
