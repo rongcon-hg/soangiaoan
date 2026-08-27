@@ -252,3 +252,22 @@ table {
     background: var(--primary-dark);
     opacity: 1;
 }
+
+/* Topbar user greeting */
+.user-greeting {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+@media (max-width: 768px) {
+    .user-greeting {
+        flex-direction: column;
+        align-items: flex-end;
+        line-height: 1.2;
+        font-size: 13px;
+    }
+    .user-greeting .hello-text {
+        font-size: 11px;
+        color: var(--text-light);
+    }
+}
