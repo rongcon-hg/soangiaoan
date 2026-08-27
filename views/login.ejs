@@ -9,7 +9,7 @@
     <style>
         .password-container { position: relative; }
         .password-container input { padding-right: 40px; }
-        .password-container i { position: absolute; right: 10px; top: 38px; cursor: pointer; color: var(--text-light); }
+        .password-container > i { position: absolute; right: 10px; top: 38px; cursor: pointer; color: var(--text-light); }
     </style>
 </head>
 <body>
@@ -26,7 +26,7 @@
             <!-- Login / Register Form -->
             <form id="auth-form" onsubmit="handleAuth(event)">
                 <div class="form-group" id="email-group" style="display:none;">
-                    <label>Email (Nhận mã OTP)</label>
+                    <label><i class="fas fa-envelope" style="color:var(--secondary); margin-right:5px"></i> Email (Nhận mã OTP)</label>
                     <input type="email" id="auth-email" class="form-control">
                 </div>
                 <div class="form-group">
