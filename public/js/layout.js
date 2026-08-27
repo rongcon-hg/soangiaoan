@@ -24,7 +24,7 @@ const sidebarHTML = `
 `;
 
 function injectLayout(pageId, pageTitle) {
-    document.body.insertAdjacentHTML('afterbegin', sidebarHTML);
+    document.body.insertAdjacentHTML('afterbegin', '<div class=\x22sidebar-overlay\x22 onclick=\x22toggleSidebar()\x22></div>' + sidebarHTML);
     
     // Set active
     const activeNav = document.getElementById('nav-' + pageId);
@@ -62,3 +62,5 @@ function injectLayout(pageId, pageTitle) {
     mainContent.appendChild(contentArea);
     document.body.appendChild(mainContent);
 }
+
+function toggleSidebar() { const sidebar = document.querySelector('.sidebar'); const overlay = document.querySelector('.sidebar-overlay'); sidebar.classList.toggle('open'); if(overlay) overlay.classList.toggle('active'); }
