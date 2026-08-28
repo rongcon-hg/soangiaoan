@@ -798,7 +798,7 @@ function parseProgramTable(htmlText, detailMap){
       const ltHours=cellNumber(cells[3]);
       const thHours=cellNumber(cells[4]);
       sequence.push({
-        kind:"lesson",
+        kind:&quot;lesson&quot;,
         no: 9999 + sequence.length,
         title: name.trim(),
         ltHours,
@@ -2200,7 +2200,7 @@ function renderLessons(){
 }
 function currentLesson(){const p=currentProgram();return p?.lessons?.[Number($(&quot;#lesson&quot;).value)]}
 function renderSections(){
-  const l=currentLesson();$(&quot;#section&quot;).innerHTML=(l?.sections||[]).map((s,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;\${s.title || "Nội dung từ Sổ đầu bài"}&lt;/option&gt;`).join(&quot;&quot;);
+  const l=currentLesson();$(&quot;#section&quot;).innerHTML=(l?.sections||[]).map((s,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;\${s.title || &quot;Nội dung từ Sổ đầu bài&quot;}&lt;/option&gt;`).join(&quot;&quot;);
   renderSubitems()
 }
 function currentSection(){return currentLesson()?.sections?.[Number($(&quot;#section&quot;).value)]}
