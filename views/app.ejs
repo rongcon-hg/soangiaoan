@@ -322,8 +322,12 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;section-title&quot;&gt;1. Tải Chương trình môn học&lt;/div&gt;
 &lt;div class=&quot;filebox&quot;&gt;
 &lt;label&gt;Chọn file chương trình môn học&lt;/label&gt;
-&lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
-&lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
+&lt;div style=&quot;display:flex; gap:10px; align-items:center; margin-top:8px;&quot;&gt;
+    &lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
+    &lt;button id=&quot;btnUploadDrive&quot; type=&quot;button&quot; class=&quot;secondary&quot; onclick=&quot;uploadToDrive()&quot; style=&quot;display:none; padding:6px 12px; font-size:13px; white-space:nowrap; border-radius:6px; cursor:pointer;&quot;&gt;Tải lên Drive&lt;/button&gt;
+&lt;/div&gt;
+&lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
+&lt;div id=&quot;driveStatusBox&quot;&gt;&lt;/div&gt;
 &lt;/div&gt;
 &lt;div class=&quot;grid&quot; style=&quot;margin-top:12px&quot;&gt;
 &lt;div class=&quot;kpi&quot;&gt;Tên môn học&lt;b id=&quot;courseName&quot;&gt;Chưa tải chương trình môn học&lt;/b&gt;&lt;/div&gt;
