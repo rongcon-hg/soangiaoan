@@ -794,17 +794,19 @@ function parseProgramTable(htmlText, detailMap){
      continue;
    }
 
-   if(/^(Bài tập tổng hợp)/i.test(name)){
-      const ltHours=cellNumber(cells[3]);
-      const thHours=cellNumber(cells[4]);
+   if(/^(Bài tập|Bài tập tổng hợp)/i.test(name)){
+      const rawLt=cellNumber(cells[3]);
+      const rawTh=cellNumber(cells[4]);
+      const rawTotal=cellNumber(cells[2]);
+      const totalToConvert = rawTotal || (rawLt + rawTh);
       sequence.push({
         kind:&quot;lesson&quot;,
         no: 9999 + sequence.length,
         title: name.trim(),
-        ltHours,
-        thHours,
-        ltPeriods:Math.ceil(ltHours),
-        thPeriods:Math.ceil(thHours*60/45),
+        ltHours: 0,
+        thHours: totalToConvert,
+        ltPeriods: 0,
+        thPeriods: Math.ceil(totalToConvert*60/45),
         items: [],
         itemCount: 0
       });
@@ -3311,7 +3313,7 @@ function basicParseText(text, filename){
   const hours=Number((clean.match(/(?:Thời gian thực hiện môn học|Thời gian môn học)\s*:?\s*(\d+)\s*giờ/i)||[])[1])||0;
   const lines=clean.split(&quot;\n&quot;).map(x=&gt;x.trim()).filter(Boolean);
   const lessonIdx=[];
-  lines.forEach((x,i)=&gt;{if(/^(Bài|Chương)\s*\d+\s*(:|\.)/i.test(x) || /^(Bài tập tổng hợp|Kiểm tra|Thi(?: kết thúc)?)/i.test(x))lessonIdx.push(i)});
+  lines.forEach((x,i)=&gt;{if(/^(Bài|Chương)\s*\d+\s*(:|\.)/i.test(x) || /^(Bài tập|Bài tập tổng hợp|Kiểm tra|Thi(?: kết thúc)?)/i.test(x))lessonIdx.push(i)});
   const lessons=[];
   for(let k=0;k&lt;lessonIdx.length;k++){
     const start=lessonIdx[k],end=lessonIdx[k+1]??lines.length,title=lines[start];
