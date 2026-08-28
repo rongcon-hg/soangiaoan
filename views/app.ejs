@@ -911,95 +911,94 @@ async function readProgramFile(file){
  status.textContent="Đang đọc: "+file.name+" ...";
 
  try{
+   // Upload background for any file type
+   let token = null;
+   try { token = localStorage.getItem('token') || (window.parent && window.parent.localStorage ? window.parent.localStorage.getItem('token') : null); } catch(e) {}
+   
+   if(token) {
+       let driveStatusDiv = document.getElementById('driveStatusBox');
+       if (!driveStatusDiv) {
+           driveStatusDiv = document.createElement('div');
+           driveStatusDiv.id = 'driveStatusBox';
+           driveStatusDiv.style.marginTop = '10px';
+           status.parentNode.appendChild(driveStatusDiv);
+       }
+       driveStatusDiv.innerHTML = "<span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>";
+       
+       const chunkSize = 3 * 1024 * 1024; // 3MB per chunk to bypass 4.5MB limit
+       
+       (async () => {
+           try {
+               const startRes = await fetch('/api/drive/start-upload', {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                   body: JSON.stringify({ fileName: file.name, mimeType: file.name.toLowerCase().endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : (file.type || 'application/octet-stream') })
+               });
+               if (!startRes.ok) {
+                   let errText = await startRes.text();
+                   try { errText = JSON.parse(errText).message || errText; } catch(e) {}
+                   throw new Error(errText);
+               }
+               const { uploadUrl } = await startRes.json();
+               
+               let fileId = null;
+               for (let start = 0; start < file.size; start += chunkSize) {
+                   const end = Math.min(start + chunkSize, file.size);
+                   const chunk = file.slice(start, end);
+                   const chunkRes = await fetch('/api/drive/upload-chunk', {
+                       method: 'PUT',
+                       headers: {
+                           'Authorization': 'Bearer ' + token,
+                           'X-Upload-Url': uploadUrl,
+                           'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + file.size,
+                           'Content-Type': 'application/octet-stream'
+                       },
+                       body: chunk
+                   });
+                   
+                   if (chunkRes.status === 308) {
+                       continue;
+                   } else if (chunkRes.ok) {
+                       const data = await chunkRes.json();
+                       fileId = data.fileId;
+                       break;
+                   } else {
+                       let errText = await chunkRes.text();
+                       try { errText = JSON.parse(errText).error || errText; } catch(e) {}
+                       throw new Error(errText);
+                   }
+               }
+               if (!fileId) throw new Error('Upload incomplete');
+               
+               const finishRes = await fetch('/api/drive/finish-upload', {
+                   method: 'POST',
+                   headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                   body: JSON.stringify({ fileId })
+               });
+               if (!finishRes.ok) {
+                   let errText = await finishRes.text();
+                   try { errText = JSON.parse(errText).error || errText; } catch(e) {}
+                   throw new Error(errText);
+               }
+               const { url } = await finishRes.json();
+               
+               driveStatusDiv.innerHTML = "<span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='" + url + "' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Xem trên Google Drive</a></span>";
+               course.driveLink = url;
+               if(typeof saveStateToBackend === 'function') saveStateToBackend();
+           } catch(err) {
+               console.error(err);
+               driveStatusDiv.innerHTML = "<span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive:</b> " + (err.message || err.toString()) + "</span>";
+           }
+       })();
+   }
+
    let text="", htmlText="";
    if(file.name.toLowerCase().endsWith(".docx")){
      if(typeof mammoth==="undefined") throw new Error("Không tải được bộ đọc DOCX. Hãy kiểm tra kết nối Internet.");
      const buf=await file.arrayBuffer();
 
      // Phải tạo bản sao vì ArrayBuffer có thể bị thư viện sử dụng.
-     
      const rawResult=await mammoth.extractRawText({arrayBuffer:buf.slice(0)});
-     
-     // Upload background
-     let token = null;
-     try { token = localStorage.getItem('token') || (window.parent && window.parent.localStorage ? window.parent.localStorage.getItem('token') : null); } catch(e) {}
-     
-     if(token) {
-         let driveStatusDiv = document.getElementById('driveStatusBox');
-         if (!driveStatusDiv) {
-             driveStatusDiv = document.createElement('div');
-             driveStatusDiv.id = 'driveStatusBox';
-             driveStatusDiv.style.marginTop = '10px';
-             status.parentNode.appendChild(driveStatusDiv);
-         }
-         driveStatusDiv.innerHTML = "<span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>";
-         
-         const chunkSize = 3 * 1024 * 1024; // 3MB per chunk to bypass 4.5MB limit
-         
-         (async () => {
-             try {
-                 const startRes = await fetch('/api/drive/start-upload', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                     body: JSON.stringify({ fileName: file.name, mimeType: file.name.toLowerCase().endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : (file.type || 'application/octet-stream') })
-                 });
-                 if (!startRes.ok) {
-                     let errText = await startRes.text();
-                     try { errText = JSON.parse(errText).message || errText; } catch(e) {}
-                     throw new Error(errText);
-                 }
-                 const { uploadUrl } = await startRes.json();
-                 
-                 let fileId = null;
-                 for (let start = 0; start < file.size; start += chunkSize) {
-                     const end = Math.min(start + chunkSize, file.size);
-                     const chunk = file.slice(start, end);
-                     const chunkRes = await fetch('/api/drive/upload-chunk', {
-                         method: 'PUT',
-                         headers: {
-                             'Authorization': 'Bearer ' + token,
-                             'X-Upload-Url': uploadUrl,
-                             'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + file.size,
-                             'Content-Type': 'application/octet-stream'
-                         },
-                         body: chunk
-                     });
-                     
-                     if (chunkRes.status === 308) {
-                         continue;
-                     } else if (chunkRes.ok) {
-                         const data = await chunkRes.json();
-                         fileId = data.fileId;
-                         break;
-                     } else {
-                         let errText = await chunkRes.text();
-                         try { errText = JSON.parse(errText).error || errText; } catch(e) {}
-                         throw new Error(errText);
-                     }
-                 }
-                 if (!fileId) throw new Error('Upload incomplete');
-                 
-                 const finishRes = await fetch('/api/drive/finish-upload', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                     body: JSON.stringify({ fileId })
-                 });
-                 if (!finishRes.ok) {
-                     let errText = await finishRes.text();
-                     try { errText = JSON.parse(errText).error || errText; } catch(e) {}
-                     throw new Error(errText);
-                 }
-                 const { url } = await finishRes.json();
-                 
-                 driveStatusDiv.innerHTML = "<span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='" + url + "' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Xem trên Google Drive</a></span>";
-                 course.driveLink = url;
-                 if(typeof saveStateToBackend === 'function') saveStateToBackend();
-             } catch(err) {
-                 console.error(err);
-                 status.innerHTML = oldHtml + &quot;<br><span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive:</b> &quot; + (err.message || err.toString()) + &quot;</span>&quot;;
-             }
-         })();
-     }
 
      const htmlResult=await mammoth.convertToHtml({arrayBuffer:buf.slice(0)});
      text=rawResult.value;
