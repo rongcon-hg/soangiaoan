@@ -874,28 +874,46 @@ function renderConversionPreview(){
      &lt;/tr&gt;`;
    }
  });
- box.innerHTML=`&lt;table style=&quot;width:100%;border-collapse:collapse&quot;&gt;
- &lt;thead&gt;&lt;tr&gt;
- &lt;th style=&quot;border-bottom:1px solid #ddd;padding:7px;text-align:left&quot;&gt;Bài / Mốc&lt;/th&gt;
- &lt;th style=&quot;border-bottom:1px solid #ddd;padding:7px&quot;&gt;LT giờ&lt;/th&gt;
- &lt;th style=&quot;border-bottom:1px solid #ddd;padding:7px&quot;&gt;TH giờ&lt;/th&gt;
- &lt;th style=&quot;border-bottom:1px solid #ddd;padding:7px;text-align:left&quot;&gt;Sau quy đổi&lt;/th&gt;
- &lt;/tr&gt;&lt;/thead&gt;
- &lt;tbody&gt;${rows}&lt;/tbody&gt;
- &lt;tfoot&gt;&lt;tr&gt;&lt;td colspan=&quot;3&quot; style=&quot;padding:8px;text-align:right&quot;&gt;&lt;b&gt;TỔNG SAU QUY ĐỔI&lt;/b&gt;&lt;/td&gt;
- &lt;td style=&quot;padding:8px&quot;&gt;&lt;b&gt;${conversionSummary().total} tiết&lt;/b&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;
- &lt;/table&gt;`;
+ let rows="";
+ programSequence.forEach(x=>{
+   if(x.kind==="lesson"){
+     rows+=`<tr>
+       <td><b>${esc(x.title)}</b></td>
+       <td style="text-align:center">${x.ltHours}</td>
+       <td style="text-align:center">${x.thHours}</td>
+       <td><b>${x.ltPeriods} LT + ${x.thPeriods} TH = ${x.ltPeriods+x.thPeriods} tiết</b></td>
+     </tr>`;
+   }else{
+     rows+=`<tr>
+       <td><b>${esc(x.title)} (Thực hành)</b></td>
+       <td style="text-align:center">—</td>
+       <td style="text-align:center">${x.rawHours} giờ</td>
+       <td><b>${x.rawHours} giờ KT × 60/45 → ${x.periods} tiết; phân bổ: ${x.periodsKT||0} KT + ${x.periodsTH||0} TH</b></td>
+     </tr>`;
+   }
+ });
+ box.innerHTML=`<table style="width:100%;border-collapse:collapse">
+ <thead><tr>
+ <th style="border-bottom:1px solid #ddd;padding:7px;text-align:left">Bài / Mốc</th>
+ <th style="border-bottom:1px solid #ddd;padding:7px">LT giờ</th>
+ <th style="border-bottom:1px solid #ddd;padding:7px">TH giờ</th>
+ <th style="border-bottom:1px solid #ddd;padding:7px;text-align:left">Sau quy đổi</th>
+ </tr></thead>
+ <tbody>${rows}</tbody>
+ <tfoot><tr><td colspan="3" style="padding:8px;text-align:right"><b>TỔNG SAU QUY ĐỔI</b></td>
+ <td style="padding:8px"><b>${conversionSummary().total} tiết</b></td></tr></tfoot>
+ </table>`;
 }
 
 async function readProgramFile(file){
  if(!file)return;
- const status=document.getElementById(&quot;fileStatus&quot;);
- status.textContent=&quot;Đang đọc: &quot;+file.name+&quot; ...&quot;;
+ const status=document.getElementById("fileStatus");
+ status.textContent="Đang đọc: "+file.name+" ...";
 
  try{
-   let text=&quot;&quot;, htmlText=&quot;&quot;;
-   if(file.name.toLowerCase().endsWith(&quot;.docx&quot;)){
-     if(typeof mammoth===&quot;undefined&quot;) throw new Error(&quot;Không tải được bộ đọc DOCX. Hãy kiểm tra kết nối Internet.&quot;);
+   let text="", htmlText="";
+   if(file.name.toLowerCase().endsWith(".docx")){
+     if(typeof mammoth==="undefined") throw new Error("Không tải được bộ đọc DOCX. Hãy kiểm tra kết nối Internet.");
      const buf=await file.arrayBuffer();
 
      // Phải tạo bản sao vì ArrayBuffer có thể bị thư viện sử dụng.
@@ -903,10 +921,19 @@ async function readProgramFile(file){
      const rawResult=await mammoth.extractRawText({arrayBuffer:buf.slice(0)});
      
      // Upload background
-     if(window.parent.localStorage.getItem('token')) {
-         const oldHtml = status.innerHTML;
-         status.innerHTML = oldHtml + &quot;<br><span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>&quot;;
-                  const token = window.parent.localStorage.getItem('token');
+     let token = null;
+     try { token = localStorage.getItem('token') || (window.parent && window.parent.localStorage ? window.parent.localStorage.getItem('token') : null); } catch(e) {}
+     
+     if(token) {
+         let driveStatusDiv = document.getElementById('driveStatusBox');
+         if (!driveStatusDiv) {
+             driveStatusDiv = document.createElement('div');
+             driveStatusDiv.id = 'driveStatusBox';
+             driveStatusDiv.style.marginTop = '10px';
+             status.parentNode.appendChild(driveStatusDiv);
+         }
+         driveStatusDiv.innerHTML = "<span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>";
+         
          const chunkSize = 3 * 1024 * 1024; // 3MB per chunk to bypass 4.5MB limit
          
          (async () => {
@@ -916,7 +943,11 @@ async function readProgramFile(file){
                      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                      body: JSON.stringify({ fileName: file.name, mimeType: file.name.toLowerCase().endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : (file.type || 'application/octet-stream') })
                  });
-                 if (!startRes.ok) throw new Error(await startRes.text());
+                 if (!startRes.ok) {
+                     let errText = await startRes.text();
+                     try { errText = JSON.parse(errText).message || errText; } catch(e) {}
+                     throw new Error(errText);
+                 }
                  const { uploadUrl } = await startRes.json();
                  
                  let fileId = null;
@@ -941,7 +972,9 @@ async function readProgramFile(file){
                          fileId = data.fileId;
                          break;
                      } else {
-                         throw new Error(await chunkRes.text());
+                         let errText = await chunkRes.text();
+                         try { errText = JSON.parse(errText).error || errText; } catch(e) {}
+                         throw new Error(errText);
                      }
                  }
                  if (!fileId) throw new Error('Upload incomplete');
@@ -951,10 +984,14 @@ async function readProgramFile(file){
                      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                      body: JSON.stringify({ fileId })
                  });
-                 if (!finishRes.ok) throw new Error(await finishRes.text());
+                 if (!finishRes.ok) {
+                     let errText = await finishRes.text();
+                     try { errText = JSON.parse(errText).error || errText; } catch(e) {}
+                     throw new Error(errText);
+                 }
                  const { url } = await finishRes.json();
                  
-                 status.innerHTML = oldHtml + &quot;<br><span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='&quot; + url + &quot;' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Xem trên Google Drive</a></span>&quot;;
+                 driveStatusDiv.innerHTML = "<span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='" + url + "' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Xem trên Google Drive</a></span>";
                  course.driveLink = url;
                  if(typeof saveStateToBackend === 'function') saveStateToBackend();
              } catch(err) {
