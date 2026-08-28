@@ -927,7 +927,7 @@ async function uploadToDrive() {
            driveStatusDiv.style.marginTop = '10px';
            
        }
-       driveStatusDiv.innerHTML = "<span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>";
+       driveStatusDiv.innerHTML = &quot;<span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>&quot;;
        
        const chunkSize = 3 * 1024 * 1024; // 3MB per chunk to bypass 4.5MB limit
        
@@ -986,12 +986,12 @@ async function uploadToDrive() {
                }
                const { url } = await finishRes.json();
                
-               driveStatusDiv.innerHTML = "<span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='" + url + "' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Xem trên Google Drive</a></span>";
+               driveStatusDiv.innerHTML = &quot;<span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='&quot; + url + &quot;' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Xem trên Google Drive</a></span>&quot;;
                course.driveLink = url;
                if(typeof saveStateToBackend === 'function') saveStateToBackend();
            } catch(err) {
                console.error(err);
-               driveStatusDiv.innerHTML = "<span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive:</b> " + (err.message || err.toString()) + "</span>";
+               driveStatusDiv.innerHTML = &quot;<span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive:</b> &quot; + (err.message || err.toString()) + &quot;</span>&quot;;
            }
        })();
    }
@@ -999,16 +999,16 @@ async function uploadToDrive() {
 
 async function readProgramFile(file){
  if(!file)return;
- const status=document.getElementById("fileStatus");
- status.textContent="Đang đọc: "+file.name+" ...";
+ const status=document.getElementById(&quot;fileStatus&quot;);
+ status.textContent=&quot;Đang đọc: &quot;+file.name+&quot; ...&quot;;
 
  try{
    // Upload moved to manual button
    document.getElementById('btnUploadDrive').style.display = 'block';
 
-   let text="", htmlText="";
-   if(file.name.toLowerCase().endsWith(".docx")){
-     if(typeof mammoth==="undefined") throw new Error("Không tải được bộ đọc DOCX. Hãy kiểm tra kết nối Internet.");
+   let text=&quot;&quot;, htmlText=&quot;&quot;;
+   if(file.name.toLowerCase().endsWith(&quot;.docx&quot;)){
+     if(typeof mammoth===&quot;undefined&quot;) throw new Error(&quot;Không tải được bộ đọc DOCX. Hãy kiểm tra kết nối Internet.&quot;);
      const buf=await file.arrayBuffer();
 
      // Phải tạo bản sao vì ArrayBuffer có thể bị thư viện sử dụng.
