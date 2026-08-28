@@ -3153,6 +3153,10 @@ QUY TẮC ĐẦU RA:
 `;
 }
 window.runRowAI=async function(btn,action){
+  const originalHtml=btn.innerHTML;
+  btn.innerHTML="⏳ Đang xử lý...";
+  btn.disabled=true;
+
   const cell=btn.closest(&quot;.ai-content-cell&quot;);
   if(!cell)return;
   const oldText=cell.querySelector(&quot;.ai-text&quot;)?.innerText.trim()||&quot;&quot;;
@@ -3170,6 +3174,8 @@ window.runRowAI=async function(btn,action){
     alert(&quot;Không gọi được Gemini: &quot;+e.message);
   }finally{
     btn.closest(&quot;.ai-tools&quot;).classList.remove(&quot;ai-loading&quot;);
+    btn.innerHTML=originalHtml;
+    btn.disabled=false;
   }
 }
 function showAICompare(cell,oldText,newText){
@@ -3196,6 +3202,9 @@ function showAICompare(cell,oldText,newText){
 }
 async function runWholeAI(){
   if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước.&quot;);
+  const btn=document.getElementById("btnAIWhole");
+  const originalHtml=btn?btn.innerHTML:"";
+  if(btn){btn.innerHTML="⏳ Đang xử lý toàn bộ...";btn.disabled=true;}
   try{
     if(document.fonts &amp;&amp; document.fonts.ready){
       await document.fonts.ready;
@@ -3258,6 +3267,7 @@ Yêu cầu:
     $(&quot;#aiStatus&quot;).textContent=&quot;Lỗi Gemini: &quot;+e.message;
     alert(e.message);
   }
+  if(btn){btn.innerHTML=originalHtml;btn.disabled=false;}
 }
 
 function runTimeCheck(){
