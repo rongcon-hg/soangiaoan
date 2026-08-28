@@ -3154,7 +3154,7 @@ QUY TẮC ĐẦU RA:
 }
 window.runRowAI=async function(btn,action){
   const originalHtml=btn.innerHTML;
-  btn.innerHTML="⏳ Đang xử lý...";
+  btn.innerHTML=&quot;⏳ Đang xử lý...&quot;;
   btn.disabled=true;
 
   const cell=btn.closest(&quot;.ai-content-cell&quot;);
@@ -3202,9 +3202,9 @@ function showAICompare(cell,oldText,newText){
 }
 async function runWholeAI(){
   if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước.&quot;);
-  const btn=document.getElementById("btnAIWhole");
-  const originalHtml=btn?btn.innerHTML:"";
-  if(btn){btn.innerHTML="⏳ Đang xử lý toàn bộ...";btn.disabled=true;}
+  const btn=document.getElementById(&quot;btnAIWhole&quot;);
+  const originalHtml=btn?btn.innerHTML:&quot;&quot;;
+  if(btn){btn.innerHTML=&quot;⏳ Đang xử lý toàn bộ...&quot;;btn.disabled=true;}
   try{
     if(document.fonts &amp;&amp; document.fonts.ready){
       await document.fonts.ready;
