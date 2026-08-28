@@ -59,6 +59,7 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 
 
     .download-btn-mobile { margin-left: auto; }
+    @media(max-width: 1250px) { .btn-text { display: none !important; } button.secondary { padding: 8px 10px !important; } }
     @media(max-width: 768px) {
         .download-btn-mobile { margin-left: 0; width: 100%; justify-content: center; margin-top: 10px; }
         .steps { flex-direction: column; align-items: stretch !important; gap: 8px; }
@@ -1723,7 +1724,7 @@ document.getElementById(&quot;tbody&quot;).innerHTML=&quot;&quot;;
       <h2>BƯỚC 2. SOẠN GIÁO ÁN TỪ SỔ ĐẦU BÀI</h2>
       <p>Bước 2 để trống hoàn toàn cho đến khi Bước 1 tải chương trình, chia lịch và chọn một buổi học. Khi đó Môn học – Mã môn, Bài/Chương, Loại giáo án, Số tiết và Tổng thời gian được truyền/tính trực tiếp từ đúng buổi trong Sổ đầu bài và bị khóa, không cho chọn lại.</p>
     </div>
-    <div class="actions"><button class="secondary" onclick="switchTab(1)">← Quay lại Sổ đầu bài</button></div>
+    <div class="actions"><button class="secondary" onclick="switchTab(1)" title="Quay lại Sổ đầu bài" style="display:inline-flex;align-items:center;gap:6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> <span class="btn-text">Quay lại Sổ đầu bài</span></button></div>
   </div>
   <div id="transferStatus"></div>
   <iframe id="plannerFrame" srcdoc="&lt;!doctype html&gt;
@@ -1857,6 +1858,8 @@ table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%}
     .checkitem input{width:auto;margin-top:4px}
     .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--primary);font-size:12px}
     .note{background:#fffceb;border:1px solid #f2df91;padding:10px;border-radius:9px;font-size:13px}
+    button { display: inline-flex; align-items: center; gap: 6px; justify-content: center; } button svg { flex-shrink: 0; }
+    @media(max-width:1250px) { .btn-text { display: none !important; } .btn { padding: 9px !important; } }
     @media(max-width:1000px){.grid{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.preview-wrap{overflow:auto}}
     @media print{
       body{background:#fff}.topbar,.left,.no-print{display:none!important}.grid{display:block}.card{border:0;box-shadow:none}.preview-wrap{padding:0}
@@ -1878,12 +1881,12 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
       &lt;p&gt;Chế độ bám sát Skill Soạn Giáo Án • Đúng mẫu • Đúng chương trình • Đúng thời gian • Nội dung chi tiết&lt;/p&gt;
     &lt;/div&gt;
     &lt;div class=&quot;toolbar&quot;&gt;
-      &lt;button class=&quot;btn primary&quot; id=&quot;btnSaveLesson&quot; style=&quot;background:#059669;display:none&quot;&gt;Lưu giáo án&lt;/button&gt;
-      &lt;button class=&quot;btn&quot; id=&quot;btnBackup&quot;&gt;Sao lưu dữ liệu&lt;/button&gt;
-      &lt;button class=&quot;btn&quot; id=&quot;btnRestore&quot;&gt;Khôi phục&lt;/button&gt;
-      &lt;button class=&quot;btn&quot; onclick=&quot;window.print()&quot; title=&quot;In qua trình duyệt; nếu thấy header/footer hãy tắt Headers and footers trong hộp thoại in&quot;&gt;In&lt;/button&gt;
-      &lt;button class=&quot;btn primary&quot; id=&quot;btnExportWord&quot;&gt;Xuất Word&lt;/button&gt;
-      &lt;button class=&quot;btn primary&quot; id=&quot;btnExportPdf&quot; title=&quot;Xuất PDF A4 sạch, không có header/footer của trình duyệt&quot;&gt;Xuất PDF&lt;/button&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;btnSaveLesson&quot; title=&quot;Lưu giáo án&quot; style=&quot;background:#059669;display:none&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;17 21 17 13 7 13 7 21&quot;&gt;&lt;/polyline&gt;&lt;polyline points=&quot;7 3 7 8 15 8&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Lưu giáo án&lt;/span&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; id=&quot;btnBackup&quot; title=&quot;Sao lưu dữ liệu&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;7 10 12 15 17 10&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;12&quot; y1=&quot;15&quot; x2=&quot;12&quot; y2=&quot;3&quot;&gt;&lt;/line&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Sao lưu dữ liệu&lt;/span&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; id=&quot;btnRestore&quot; title=&quot;Khôi phục&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;17 8 12 3 7 8&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;12&quot; y1=&quot;3&quot; x2=&quot;12&quot; y2=&quot;15&quot;&gt;&lt;/line&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Khôi phục&lt;/span&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; onclick=&quot;window.print()&quot; title=&quot;In qua trình duyệt; nếu thấy header/footer hãy tắt Headers and footers trong hộp thoại in&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;polyline points=&quot;6 9 6 2 18 2 18 9&quot;&gt;&lt;/polyline&gt;&lt;path d=&quot;M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2&quot;&gt;&lt;/path&gt;&lt;rect x=&quot;6&quot; y=&quot;14&quot; width=&quot;12&quot; height=&quot;8&quot;&gt;&lt;/rect&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;In&lt;/span&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;btnExportWord&quot; title=&quot;Xuất Word&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;8 10 10 16 12 10 14 16 16 10&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Xuất Word&lt;/span&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;btnExportPdf&quot; title=&quot;Xuất PDF A4 sạch, không có header/footer của trình duyệt&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;14 2 14 8 20 8&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;16&quot; y1=&quot;13&quot; x2=&quot;8&quot; y2=&quot;13&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;16&quot; y1=&quot;17&quot; x2=&quot;8&quot; y2=&quot;17&quot;&gt;&lt;/line&gt;&lt;polyline points=&quot;10 9 9 9 8 9&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Xuất PDF&lt;/span&gt;&lt;/button&gt;
     &lt;/div&gt;
   &lt;/div&gt;
 
