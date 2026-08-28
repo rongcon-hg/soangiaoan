@@ -1337,31 +1337,29 @@ function isExcludedDate(d){
 }
 
 function nextScheduledDates(start, slots, needed){
- // Map cố định: thứ nào học bao nhiêu tiết thì giữ nguyên suốt khóa.
- const weekdayPeriods=new Map();
- slots.forEach(s=&gt;weekdayPeriods.set(Number(s.day), Number(s.periods)));
+  const slotsByDay = new Map();
+  slots.forEach(s =&gt; {
+    const wd = Number(s.day);
+    if (!slotsByDay.has(wd)) slotsByDay.set(wd, []);
+    slotsByDay.get(wd).push(Number(s.periods));
+  });
 
- let dates=[];
- let d=new Date(start);
- let guard=0;
+  let dates=[];
+  let d=new Date(start);
+  let guard=0;
 
- while(dates.length&lt;needed &amp;&amp; guard&lt;3000){
-   const wd=d.getDay();
-
-   // Chỉ xếp lịch nếu đúng một thứ đã khai báo và ngày đó không nằm trong kỳ nghỉ.
-   if(weekdayPeriods.has(wd) &amp;&amp; !isExcludedDate(d)){
-     dates.push({
-       date:new Date(d),
-       weekday:wd,
-       periods:weekdayPeriods.get(wd)
-     });
-   }
-
-   // Ngày nghỉ chỉ bị bỏ qua. Không chuyển &quot;quota tiết&quot; của ngày nghỉ sang ngày kế tiếp.
-   d.setDate(d.getDate()+1);
-   guard++;
- }
- return dates;
+  while(dates.length&lt;needed &amp;&amp; guard&lt;3000){
+    const wd=d.getDay();
+    if(slotsByDay.has(wd) &amp;&amp; !isExcludedDate(d)){
+      const daySlots = slotsByDay.get(wd);
+      for(const periods of daySlots) {
+        dates.push({ date:new Date(d), weekday:wd, periods:periods });
+      }
+    }
+    d.setDate(d.getDate()+1);
+    guard++;
+  }
+  return dates;
 }
 
 
@@ -1410,11 +1408,7 @@ function buildSchedule(){
    return;
  }
 
- const unique=new Set(slots.map(x=&gt;x.day));
- if(unique.size!==slots.length){
-   alert(&quot;Các buổi trong tuần không được chọn trùng cùng một thứ.&quot;);
-   return;
- }
+ 
 
  const weeklyPeriods=slots.reduce((s,x)=&gt;s+x.periods,0);
  const estimatedWeeks=Math.ceil(units.length/Math.max(1,weeklyPeriods));
@@ -1428,15 +1422,6 @@ function buildSchedule(){
  const start=new Date(startValue+&quot;T00:00:00&quot;);
  const dates=nextScheduledDates(start,slots,needed);
 
- // Kiểm tra an toàn: số tiết của mỗi ngày phải đúng cấu hình của chính thứ đó.
- const weekdayConfig=new Map(slots.map(s=&gt;[Number(s.day),Number(s.periods)]));
- for(const x of dates){
-   const expected=weekdayConfig.get(x.date.getDay());
-   if(expected!==x.periods){
-     alert(&quot;Lỗi cấu hình lịch: số tiết của ngày &quot;+fmt(x.date)+&quot; không khớp với thứ trong tuần.&quot;);
-     return;
-   }
- }
 
  const sessions=[];
  let cursor=0,di=0;
@@ -2166,7 +2151,7 @@ function renderLessons(){
 }
 function currentLesson(){const p=currentProgram();return p?.lessons?.[Number($(&quot;#lesson&quot;).value)]}
 function renderSections(){
-  const l=currentLesson();$(&quot;#section&quot;).innerHTML=(l?.sections||[]).map((s,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;${s.title}&lt;/option&gt;`).join(&quot;&quot;);
+  const l=currentLesson();$(&quot;#section&quot;).innerHTML=(l?.sections||[]).map((s,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;\${s.title || "Nội dung từ Sổ đầu bài"}&lt;/option&gt;`).join(&quot;&quot;);
   renderSubitems()
 }
 function currentSection(){return currentLesson()?.sections?.[Number($(&quot;#section&quot;).value)]}
@@ -3277,7 +3262,7 @@ function basicParseText(text, filename){
   const hours=Number((clean.match(/(?:Thời gian thực hiện môn học|Thời gian môn học)\s*:?\s*(\d+)\s*giờ/i)||[])[1])||0;
   const lines=clean.split(&quot;\n&quot;).map(x=&gt;x.trim()).filter(Boolean);
   const lessonIdx=[];
-  lines.forEach((x,i)=&gt;{if(/^(Bài|Chương)\s*\d+\s*:/i.test(x))lessonIdx.push(i)});
+  lines.forEach((x,i)=&gt;{if(/^(Bài|Chương)\s*\d+\s*(:|\.)/i.test(x) || /^(Bài tập tổng hợp|Kiểm tra|Thi(?: kết thúc)?)/i.test(x))lessonIdx.push(i)});
   const lessons=[];
   for(let k=0;k&lt;lessonIdx.length;k++){
     const start=lessonIdx[k],end=lessonIdx[k+1]??lines.length,title=lines[start];
