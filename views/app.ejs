@@ -905,13 +905,13 @@ function renderConversionPreview(){
  </table>`;
 }
 
-async function readProgramFile(file){
- if(!file)return;
- const status=document.getElementById("fileStatus");
- status.textContent="Đang đọc: "+file.name+" ...";
 
- try{
-   // Upload background for any file type
+async function uploadToDrive() {
+    const fileInput = document.getElementById('programFile');
+    const file = fileInput.files[0];
+    if (!file) return;
+
+
    let token = null;
    try { token = localStorage.getItem('token') || (window.parent && window.parent.localStorage ? window.parent.localStorage.getItem('token') : null); } catch(e) {}
    
@@ -921,7 +921,7 @@ async function readProgramFile(file){
            driveStatusDiv = document.createElement('div');
            driveStatusDiv.id = 'driveStatusBox';
            driveStatusDiv.style.marginTop = '10px';
-           status.parentNode.appendChild(driveStatusDiv);
+           
        }
        driveStatusDiv.innerHTML = "<span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>";
        
@@ -991,6 +991,16 @@ async function readProgramFile(file){
            }
        })();
    }
+}
+
+async function readProgramFile(file){
+ if(!file)return;
+ const status=document.getElementById("fileStatus");
+ status.textContent="Đang đọc: "+file.name+" ...";
+
+ try{
+   // Upload moved to manual button
+   document.getElementById('btnUploadDrive').style.display = 'block';
 
    let text="", htmlText="";
    if(file.name.toLowerCase().endsWith(".docx")){
