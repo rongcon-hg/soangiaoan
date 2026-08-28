@@ -790,7 +790,24 @@ function parseProgramTable(htmlText, detailMap){
      continue;
    }
 
-   if(/^(Kiểm tra|Thi)/i.test(name)){
+   if(/^(Bài tập tổng hợp)/i.test(name)){
+      const ltHours=cellNumber(cells[3]);
+      const thHours=cellNumber(cells[4]);
+      sequence.push({
+        kind:"lesson",
+        no: 9999 + sequence.length,
+        title: name.trim(),
+        ltHours,
+        thHours,
+        ltPeriods:Math.ceil(ltHours),
+        thPeriods:Math.ceil(thHours*60/45),
+        items: [],
+        itemCount: 0
+      });
+      continue;
+    }
+    
+    if(/^(Kiểm tra|Thi)/i.test(name)){
      if(/^Thi\s+kết\s+thúc\s+môn/i.test(name)) continue;
 
      const ktLt=cellNumber(cells[5]);
@@ -897,7 +914,7 @@ async function readProgramFile(file){
                  const startRes = await fetch('/api/drive/start-upload', {
                      method: 'POST',
                      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                     body: JSON.stringify({ fileName: file.name, mimeType: file.type || 'application/octet-stream' })
+                     body: JSON.stringify({ fileName: file.name, mimeType: file.name.toLowerCase().endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : (file.type || 'application/octet-stream') })
                  });
                  if (!startRes.ok) throw new Error(await startRes.text());
                  const { uploadUrl } = await startRes.json();
