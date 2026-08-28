@@ -321,9 +321,13 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;card&quot;&gt;
 &lt;div class=&quot;section-title&quot;&gt;1. Tải Chương trình môn học&lt;/div&gt;
 &lt;div class=&quot;filebox&quot;&gt;
-&lt;label&gt;Chọn file chương trình môn học&lt;/label&gt;
-&lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
-&lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
+<label>Chọn file chương trình môn học</label>
+<div style="display:flex; gap:10px; align-items:center; margin-top:8px;">
+    <input id="programFile" type="file" accept=".docx,.txt,.md" onchange="readProgramFile(this.files[0])">
+    <button id="btnUploadDrive" type="button" class="secondary" onclick="uploadToDrive()" style="display:none; padding:6px 12px; font-size:13px; white-space:nowrap; border-radius:6px; cursor:pointer;">Tải lên Drive</button>
+</div>
+<div class="file-status" id="fileStatus" style="margin-top:8px;">Chưa chọn file. Demo đang dùng sẵn dữ liệu —.</div>
+<div id="driveStatusBox"></div>
 &lt;/div&gt;
 &lt;div class=&quot;grid&quot; style=&quot;margin-top:12px&quot;&gt;
 &lt;div class=&quot;kpi&quot;&gt;Tên môn học&lt;b id=&quot;courseName&quot;&gt;Chưa tải chương trình môn học&lt;/b&gt;&lt;/div&gt;
