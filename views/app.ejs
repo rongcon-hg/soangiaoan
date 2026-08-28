@@ -878,35 +878,17 @@ function renderConversionPreview(){
      &lt;/tr&gt;`;
    }
  });
- let rows="";
- programSequence.forEach(x=>{
-   if(x.kind==="lesson"){
-     rows+=`<tr>
-       <td><b>${esc(x.title)}</b></td>
-       <td style="text-align:center">${x.ltHours}</td>
-       <td style="text-align:center">${x.thHours}</td>
-       <td><b>${x.ltPeriods} LT + ${x.thPeriods} TH = ${x.ltPeriods+x.thPeriods} tiết</b></td>
-     </tr>`;
-   }else{
-     rows+=`<tr>
-       <td><b>${esc(x.title)} (Thực hành)</b></td>
-       <td style="text-align:center">—</td>
-       <td style="text-align:center">${x.rawHours} giờ</td>
-       <td><b>${x.rawHours} giờ KT × 60/45 → ${x.periods} tiết; phân bổ: ${x.periodsKT||0} KT + ${x.periodsTH||0} TH</b></td>
-     </tr>`;
-   }
- });
- box.innerHTML=`<table style="width:100%;border-collapse:collapse">
- <thead><tr>
- <th style="border-bottom:1px solid #ddd;padding:7px;text-align:left">Bài / Mốc</th>
- <th style="border-bottom:1px solid #ddd;padding:7px">LT giờ</th>
- <th style="border-bottom:1px solid #ddd;padding:7px">TH giờ</th>
- <th style="border-bottom:1px solid #ddd;padding:7px;text-align:left">Sau quy đổi</th>
- </tr></thead>
- <tbody>${rows}</tbody>
- <tfoot><tr><td colspan="3" style="padding:8px;text-align:right"><b>TỔNG SAU QUY ĐỔI</b></td>
- <td style="padding:8px"><b>${conversionSummary().total} tiết</b></td></tr></tfoot>
- </table>`;
+ box.innerHTML=`&lt;table style=&quot;width:100%;border-collapse:collapse&quot;&gt;
+ &lt;thead&gt;&lt;tr&gt;
+ &lt;th style=&quot;border-bottom:1px solid #ddd;padding:7px;text-align:left&quot;&gt;Bài / Mốc&lt;/th&gt;
+ &lt;th style=&quot;border-bottom:1px solid #ddd;padding:7px&quot;&gt;LT giờ&lt;/th&gt;
+ &lt;th style=&quot;border-bottom:1px solid #ddd;padding:7px&quot;&gt;TH giờ&lt;/th&gt;
+ &lt;th style=&quot;border-bottom:1px solid #ddd;padding:7px;text-align:left&quot;&gt;Sau quy đổi&lt;/th&gt;
+ &lt;/tr&gt;&lt;/thead&gt;
+ &lt;tbody&gt;${rows}&lt;/tbody&gt;
+ &lt;tfoot&gt;&lt;tr&gt;&lt;td colspan=&quot;3&quot; style=&quot;padding:8px;text-align:right&quot;&gt;&lt;b&gt;TỔNG SAU QUY ĐỔI&lt;/b&gt;&lt;/td&gt;
+ &lt;td style=&quot;padding:8px&quot;&gt;&lt;b&gt;${conversionSummary().total} tiết&lt;/b&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tfoot&gt;
+ &lt;/table&gt;`;
 }
 
 
