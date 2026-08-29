@@ -2193,13 +2193,13 @@ table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%}
     .footer-sign-table{width:100%;border-collapse:collapse;margin-top:28px}
     .footer-sign-table td{border:none!important;text-align:center;vertical-align:top;padding:0}
 .top-template{width:100%;border-collapse:collapse;margin-bottom:0}
-.top-template td{border:1px dashed #999;padding:6px 8px;vertical-align:middle}
+.top-template td{border:none!important;padding:6px 8px;vertical-align:middle}
 .top-template .logo-cell{width:28%;height:76px}
 .top-template .appendix-cell{text-align:center;height:76px;line-height:1.2}
 .top-template .appendix-title{font-weight:bold;font-size:16px}
 .top-template .appendix-note{font-style:italic;font-size:14px}
 .meta-template{width:93%;margin:0 auto;border-collapse:collapse}
-.meta-template td{border:1px dashed #999;padding:6px 8px;vertical-align:top}
+.meta-template td{border:none!important;padding:6px 8px;vertical-align:top}
 .meta-template .left-meta{width:40%;font-weight:bold}
 .meta-template .right-meta{width:60%;line-height:1.2}
 .lesson-heading{margin-top:16px;font-size:12pt;line-height:1.2}
@@ -3157,7 +3157,7 @@ function buildPaper(){
   &lt;/tr&gt;`).join(&quot;&quot;);
 
   $(&quot;#paper&quot;).innerHTML=`
-    &lt;table class=&quot;top-template&quot;&gt;
+    &lt;table class=&quot;top-template&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;border:none!important&quot;&gt;
       &lt;tr&gt;
         &lt;td class=&quot;logo-cell&quot;&gt;&lt;/td&gt;
         &lt;td class=&quot;appendix-cell&quot;&gt;
@@ -3167,7 +3167,7 @@ function buildPaper(){
       &lt;/tr&gt;
     &lt;/table&gt;
 
-    &lt;table class=&quot;meta-template&quot;&gt;
+    &lt;table class=&quot;meta-template&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;border:none!important&quot;&gt;
       &lt;tr&gt;
         &lt;td class=&quot;left-meta&quot;&gt;
           GIÁO ÁN SỐ: &lt;span contenteditable=&quot;true&quot;&gt;${escapeHtml($(&quot;#gaNumber&quot;).value||&quot;............................&quot;)}&lt;/span&gt;
@@ -3812,6 +3812,7 @@ function exportWord(){
     @page{size:A4 portrait;margin:20mm 15mm 20mm 20mm}
     body{font-family:&quot;Times New Roman&quot;,serif;font-size:12pt;color:#111;margin:0}
     table{border-collapse:collapse;width:100%;table-layout:fixed}
+    .top-template td,.meta-template td{border:none!important;padding:4px 6px;vertical-align:top}
     th,td{border:1px solid #222;padding:5px;vertical-align:top;line-height:1.2}
     .top-template td,.meta-template td{border:1px dashed #999}
     .top-template{width:100%;border-collapse:collapse;margin-bottom:0}
@@ -3897,7 +3898,7 @@ async function exportPdf(){
       border-collapse: collapse !important;
     }
     .top-template td, .meta-template td {
-      border: 1px dashed #777 !important;
+      border: none !important;
       padding: 6px 8px !important;
       vertical-align: top !important;
     }
