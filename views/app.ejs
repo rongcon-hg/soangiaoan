@@ -2897,7 +2897,7 @@ function activityRows(type,items,total){
   function coreStage(type,item,slotIndex){
     if(type===&quot;theory&quot;){
       return {
-        label:&quot;Nội dung cốt lõi&quot;,
+        label:&quot;&quot;,
         content:`Trình bày trực tiếp ${item}: làm rõ khái niệm, mục đích, đặc điểm, nguyên tắc hoặc trường hợp áp dụng phù hợp với phạm vi của đề mục; liên hệ ngắn với kiến thức trước và nội dung tiếp theo.`,
         gv:&quot;Giải thích; minh họa.&quot;,
         sv:&quot;Lắng nghe; ghi chép; trả lời.&quot;
@@ -2905,7 +2905,7 @@ function activityRows(type,items,total){
     }
     if(type===&quot;practice&quot;){
       return {
-        label:&quot;Thao tác cốt lõi&quot;,
+        label:&quot;&quot;,
         content:`Thực hiện ${item} theo đúng quy trình: chuẩn bị dữ liệu/công cụ, thao tác theo thứ tự, kiểm tra kết quả sau từng bước và lưu kết quả đúng yêu cầu.`,
         gv:&quot;Thao tác mẫu; hướng dẫn.&quot;,
         sv:&quot;Quan sát; thực hành.&quot;
@@ -4052,6 +4052,22 @@ function cleanTitleForSearch(s) {
     .trim();
 }
 
+function extractNumberPrefix(s) {
+  const m = String(s || '').match(/^(\d+(?:\.\d+)*)/);
+  return m ? m[1] : '';
+}
+
+function wordOverlapScore(s1, s2) {
+  const w1 = new Set(s1.split(' ').filter(w => w.length >= 2));
+  const w2 = new Set(s2.split(' ').filter(w => w.length >= 2));
+  if (!w1.size || !w2.size) return 0;
+  let matches = 0;
+  for (const w of w1) {
+    if (w2.has(w)) matches++;
+  }
+  return matches / Math.min(w1.size, w2.size);
+}
+
 function extractTextbookSnippet(fullText, title, sectionText) {
   if (!fullText) return null;
 
@@ -4069,6 +4085,7 @@ function extractTextbookSnippet(fullText, title, sectionText) {
 
   const bodyLines = rawLines.slice(bodyStartIndex);
   const targetText = cleanTitleForSearch(title);
+  const targetNum = extractNumberPrefix(title);
   if (!targetText || targetText.length < 2) return null;
 
   let bestIdx = -1;
@@ -4076,20 +4093,34 @@ function extractTextbookSnippet(fullText, title, sectionText) {
 
   for (let i = 0; i < bodyLines.length; i++) {
     const rawLine = bodyLines[i].trim();
-    if (!rawLine || rawLine.length > 120) continue;
+    if (!rawLine || rawLine.length > 150) continue;
     // Skip TOC page number lines
     if (rawLine.match(/\s+\d{1,3}$/) && i < 200) continue;
 
     const lineNorm = cleanTitleForSearch(rawLine);
+    const lineNum = extractNumberPrefix(rawLine);
     if (!lineNorm) continue;
 
     let score = 0;
     if (lineNorm === targetText) {
-      score = 100;
-    } else if (lineNorm.includes(targetText)) {
-      score = 70 + Math.min(20, Math.floor((targetText.length / lineNorm.length) * 20));
-    } else if (targetText.includes(lineNorm) && lineNorm.length >= 4) {
-      score = 50 + Math.min(20, Math.floor((lineNorm.length / targetText.length) * 20));
+      score += 100;
+    } else {
+      const overlap = wordOverlapScore(lineNorm, targetText);
+      if (overlap >= 0.6) {
+        score += Math.round(overlap * 80);
+      }
+    }
+
+    if (targetNum && lineNum) {
+      if (targetNum === lineNum) {
+        score += 50;
+      } else {
+        const tParts = targetNum.split('.');
+        const lParts = lineNum.split('.');
+        if (tParts.slice(-2).join('.') === lParts.slice(-2).join('.')) {
+          score += 35;
+        }
+      }
     }
 
     if (score > bestScore) {
