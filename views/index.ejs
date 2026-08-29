@@ -57,6 +57,17 @@ window.customConfirm = async function(msg) {
                     <input type="text" id="project-code" class="form-control" placeholder="VD: IT101">
                 </div>
                 <div class="form-group">
+                    <label>Hệ đào tạo</label>
+                    <select id="project-system" class="form-control" style="background:#fff;">
+                        <option value="Trung cấp" selected>Trung cấp</option>
+                        <option value="Cao đẳng">Cao đẳng</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Lớp học</label>
+                    <input type="text" id="project-class" class="form-control" placeholder="VD: CD-CNTT22A hoặc TC-TH23">
+                </div>
+                <div class="form-group">
                     <label>Tổng số giờ</label>
                     <input type="number" id="project-hours" class="form-control" value="30">
                 </div>
@@ -95,9 +106,12 @@ window.customConfirm = async function(msg) {
 
                 grid.innerHTML = projects.map(p => `
                     <div class="project-card">
-                        <div class="project-title">${p.name}</div>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                            <div class="project-title" style="margin-bottom:0;">${escapeHtml(p.name)}</div>
+                            <span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:6px; background:${p.system_type === 'Cao đẳng' ? '#e0e7ff; color:#3730a3;' : '#fef3c7; color:#92400e;'}">${escapeHtml(p.system_type || 'Trung cấp')}</span>
+                        </div>
                         <div class="project-meta">
-                            Mã: ${p.course_code || '---'} &bull; Tổng giờ: ${p.total_hours || 0}
+                            Mã: <b>${escapeHtml(p.course_code || '---')}</b> &bull; Lớp: <b>${escapeHtml(p.class_name || '---')}</b> &bull; Tổng giờ: <b>${p.total_hours || 0}</b>
                         </div>
                         <div style="display:flex; gap:10px; margin-top:16px;">
                             <button class="btn btn-primary" onclick="openApp(${p.id})"><i class="fas fa-edit"></i> Soạn Giáo Án</button>
@@ -110,12 +124,16 @@ window.customConfirm = async function(msg) {
             }
         }
 
+        function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }
+
         function openNewProjectForm() { document.getElementById('new-project-form').style.display = 'block'; }
         function closeNewProjectForm() { document.getElementById('new-project-form').style.display = 'none'; }
 
         async function createProject() {
             const name = document.getElementById('project-name').value;
             const course_code = document.getElementById('project-code').value;
+            const system_type = document.getElementById('project-system').value;
+            const class_name = document.getElementById('project-class').value;
             const total_hours = document.getElementById('project-hours').value;
             
             if(!name) return showAlert('Vui lòng nhập tên môn học');
@@ -124,13 +142,20 @@ window.customConfirm = async function(msg) {
                 const res = await fetch(API_URL + '/projects', {
                     method: 'POST',
                     headers: getHeaders(),
-                    body: JSON.stringify({ name, course_code, total_hours: Number(total_hours) })
+                    body: JSON.stringify({ 
+                        name, 
+                        course_code, 
+                        system_type, 
+                        class_name, 
+                        total_hours: Number(total_hours) 
+                    })
                 });
                 if(!res.ok) throw new Error('Không thể tạo môn học');
                 
                 closeNewProjectForm();
                 document.getElementById('project-name').value = '';
                 document.getElementById('project-code').value = '';
+                document.getElementById('project-class').value = '';
                 loadProjects();
                 showAlert('Tạo thành công!', 'success');
             } catch (err) {

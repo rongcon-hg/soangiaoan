@@ -363,6 +363,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;grid&quot; style=&quot;margin-top:12px&quot;&gt;
 &lt;div class=&quot;kpi&quot;&gt;Tên môn học&lt;b id=&quot;courseName&quot;&gt;Chưa tải chương trình môn học&lt;/b&gt;&lt;/div&gt;
 &lt;div class=&quot;kpi&quot;&gt;Mã môn&lt;b id=&quot;courseCode&quot;&gt;—&lt;/b&gt;&lt;/div&gt;
+&lt;div class=&quot;kpi&quot;&gt;Hệ &amp; Lớp&lt;b id=&quot;courseSystemClass&quot;&gt;—&lt;/b&gt;&lt;/div&gt;
 &lt;div class=&quot;kpi&quot;&gt;Tổng giờ&lt;b id=&quot;totalHours&quot;&gt;—&lt;/b&gt;&lt;/div&gt;
 &lt;div class=&quot;kpi&quot;&gt;Sau quy đổi&lt;b id=&quot;converted&quot;&gt;—&lt;/b&gt;&lt;div id=&quot;convertedBreakdown&quot; class=&quot;breakdown&quot;&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;/div&gt;
@@ -521,7 +522,11 @@ window.addEventListener(&quot;message&quot;, e => {
         const payload = e.data.payload;
         if (!payload) return;
         
-        if (payload.courseInfo) course = payload.courseInfo;
+        if (payload.courseInfo) {
+            course = payload.courseInfo;
+            if (payload.system_type) course.systemType = payload.system_type;
+            if (payload.class_name) course.className = payload.class_name;
+        }
         if (payload.syllabus) lessons = payload.syllabus;
         if (payload.programSequence) programSequence = payload.programSequence;
         if (payload.textbookData) {
@@ -608,6 +613,16 @@ function updateCourseCards(){
  const hasCourse=!!(course.name||course.code||course.total||course.lt||course.th||course.kt);
  document.getElementById(&quot;courseName&quot;).textContent=course.name||&quot;Chưa tải chương trình môn học&quot;;
  document.getElementById(&quot;courseCode&quot;).textContent=course.code||&quot;—&quot;;
+ const scEl=document.getElementById(&quot;courseSystemClass&quot;);
+ if(scEl){
+   const sys = course.systemType || &quot;&quot;;
+   const cls = course.className || &quot;&quot;;
+   if(sys || cls){
+     scEl.textContent = (sys ? sys : &quot;Trung cấp&quot;) + (cls ? &quot; • &quot; + cls : &quot;&quot;);
+   } else {
+     scEl.textContent = &quot;—&quot;;
+   }
+ }
  document.getElementById(&quot;totalHours&quot;).textContent=hasCourse ? (course.total||0)+&quot; giờ&quot; : &quot;—&quot;;
 
  const s=conversionSummary();
@@ -1949,6 +1964,8 @@ function sendSessionToPlanner(index){
    source:&quot;so-dau-bai&quot;,
    courseName:course.name||&quot;&quot;,
    courseCode:course.code||&quot;&quot;,
+   systemType:course.systemType||&quot;&quot;,
+   className:course.className||&quot;&quot;,
    date:fmt(new Date(s.date)),
    weekday:weekdayName(new Date(s.date)),
    periods: (totalCalculatedPeriods > 0 ? totalCalculatedPeriods : s.units.length),
@@ -4236,7 +4253,8 @@ async function receiveScheduleSession(data){
 
   if(info){
     info.className=&quot;status ok&quot;;
-    info.innerHTML=`&lt;b&gt;Môn học – Mã môn từ Bước 1:&lt;/b&gt; ${escapeHtml(sourceName)} – ${escapeHtml(sourceCode)}&lt;br&gt;
+    const scInfo = (pld.systemType || pld.className) ? `&lt;br&gt;&lt;b&gt;Hệ đào tạo:&lt;/b&gt; ${escapeHtml(pld.systemType || &quot;Trung cấp&quot;)}${pld.className ? &quot; &bull; &lt;b&gt;Lớp:&lt;/b&gt; &quot; + escapeHtml(pld.className) : &quot;&quot;}` : &quot;&quot;;
+    info.innerHTML=`&lt;b&gt;Môn học – Mã môn từ Bước 1:&lt;/b&gt; ${escapeHtml(sourceName)} – ${escapeHtml(sourceCode)}${scInfo}&lt;br&gt;
       &lt;b&gt;TT ${pld.scheduleTT||&quot;&quot;}&lt;/b&gt; · ${escapeHtml(pld.weekday||&quot;&quot;)} ${escapeHtml(pld.date||&quot;&quot;)} ·
       &lt;b&gt;${pld.periods||0} tiết&lt;/b&gt; (khóa theo Sổ đầu bài) · &lt;b&gt;${(Number(pld.periods)||0)*45} phút&lt;/b&gt; · LT ${pld.lt||0} · TH ${pld.th||0} · KT ${pld.kt||0}&lt;br&gt;
       &lt;span style=&quot;font-size:13px&quot;&gt;${escapeHtml(pld.summaryText||&quot;&quot;)}&lt;/span&gt;&lt;br&gt;
@@ -4510,9 +4528,28 @@ document.addEventListener("DOMContentLoaded", () => {
                     const iframe = document.getElementById("scheduleFrame");
                     const sendData = () => {
                         if(currentProject.program_data) {
+                            const pdata = Object.assign({}, currentProject.program_data, {
+                                system_type: currentProject.system_type,
+                                class_name: currentProject.class_name
+                            });
                             iframe.contentWindow.postMessage({
                                 type: "LOAD_PROJECT_STATE",
-                                payload: currentProject.program_data
+                                payload: pdata
+                            }, "*");
+                        } else {
+                            iframe.contentWindow.postMessage({
+                                type: "LOAD_PROJECT_STATE",
+                                payload: {
+                                    courseInfo: {
+                                        name: currentProject.name,
+                                        code: currentProject.course_code,
+                                        total: currentProject.total_hours,
+                                        systemType: currentProject.system_type,
+                                        className: currentProject.class_name
+                                    },
+                                    system_type: currentProject.system_type,
+                                    class_name: currentProject.class_name
+                                }
                             }, "*");
                         }
                     };
@@ -4536,6 +4573,8 @@ window.addEventListener("message", async e => {
                   name: e.data.payload?.courseInfo?.name || currentProject.name,
                   course_code: e.data.payload?.courseInfo?.code || currentProject.course_code,
                   total_hours: e.data.payload?.courseInfo?.total || currentProject.total_hours,
+                  system_type: currentProject.system_type,
+                  class_name: currentProject.class_name,
                   program_data: e.data.payload
               })
           });
@@ -4553,7 +4592,8 @@ window.addEventListener("message", async e => {
     const p=e.data.payload||{};
     const st=document.getElementById("transferStatus");
     st.style.display="block";
-    st.innerHTML=`Đã chọn <b>${p.courseName||""} – ${p.courseCode||""}</b> · ${p.weekday||""} ${p.date||""} · ${p.periods||0} tiết.`;
+    const sysClassBadge = (p.systemType || p.className) ? ` [<b>${p.systemType || "Trung cấp"}${p.className ? " • Lớp: " + p.className : ""}</b>] · ` : "";
+    st.innerHTML=`Đã chọn <b>${p.courseName||""} – ${p.courseCode||""}</b> · ${sysClassBadge}${p.weekday||""} ${p.date||""} · ${p.periods||0} tiết.`;
     
     // Check if lesson exists in DB
     try {

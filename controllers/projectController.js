@@ -44,15 +44,17 @@ exports.getProjectById = async (req, res) => {
 
 exports.createProject = async (req, res) => {
     const userId = req.user.id;
-    const { name, course_code, total_hours, program_data } = req.body;
+    const { name, course_code, total_hours, system_type, class_name, program_data } = req.body;
     
     if (!name) return res.status(400).json({ message: 'Project name is required' });
     
     const programDataStr = program_data ? JSON.stringify(program_data) : null;
+    const finalSystemType = system_type || 'Trung cấp';
+    const finalClassName = class_name || null;
     
     try {
-        const query = `INSERT INTO projects (user_id, name, course_code, total_hours, program_data) VALUES ($1, $2, $3, $4, $5) RETURNING id`;
-        const result = await pool.query(query, [userId, name, course_code, total_hours, programDataStr]);
+        const query = `INSERT INTO projects (user_id, name, course_code, total_hours, system_type, class_name, program_data) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`;
+        const result = await pool.query(query, [userId, name, course_code, total_hours, finalSystemType, finalClassName, programDataStr]);
         res.status(201).json({ message: 'Project created successfully', projectId: result.rows[0].id });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -62,13 +64,13 @@ exports.createProject = async (req, res) => {
 exports.updateProject = async (req, res) => {
     const userId = req.user.id;
     const projectId = req.params.id;
-    const { name, course_code, total_hours, program_data } = req.body;
+    const { name, course_code, total_hours, system_type, class_name, program_data } = req.body;
     
     const programDataStr = program_data ? JSON.stringify(program_data) : null;
     
     try {
-        const query = `UPDATE projects SET name = $1, course_code = $2, total_hours = $3, program_data = $4 WHERE id = $5 AND user_id = $6`;
-        const result = await pool.query(query, [name, course_code, total_hours, programDataStr, projectId, userId]);
+        const query = `UPDATE projects SET name = COALESCE($1, name), course_code = COALESCE($2, course_code), total_hours = COALESCE($3, total_hours), system_type = COALESCE($4, system_type), class_name = COALESCE($5, class_name), program_data = COALESCE($6, program_data) WHERE id = $7 AND user_id = $8`;
+        const result = await pool.query(query, [name, course_code, total_hours, system_type, class_name, programDataStr, projectId, userId]);
         
         if (result.rowCount === 0) return res.status(404).json({ message: 'Project not found or unauthorized' });
         res.json({ message: 'Project updated successfully' });

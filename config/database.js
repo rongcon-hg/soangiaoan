@@ -61,9 +61,18 @@ const initDb = async () => {
                 name VARCHAR(255) NOT NULL,
                 course_code VARCHAR(100),
                 total_hours INTEGER,
+                system_type VARCHAR(50) DEFAULT 'Trung cấp',
+                class_name VARCHAR(100),
                 program_data TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
+        `);
+
+        // Migration nếu thiếu cột cho projects
+        await client.query(`
+            ALTER TABLE projects 
+            ADD COLUMN IF NOT EXISTS system_type VARCHAR(50) DEFAULT 'Trung cấp',
+            ADD COLUMN IF NOT EXISTS class_name VARCHAR(100);
         `);
 
         // Tạo bảng schedules
@@ -94,6 +103,21 @@ const initDb = async () => {
     }
 };
 
-// initDb(); // Disabled for Vercel optimization. Run manually via API if needed.
+// Auto migrate columns safely
+let migrated = false;
+pool.on('connect', async (client) => {
+    if (!migrated) {
+        migrated = true;
+        try {
+            await client.query(`
+                ALTER TABLE projects 
+                ADD COLUMN IF NOT EXISTS system_type VARCHAR(50) DEFAULT 'Trung cấp',
+                ADD COLUMN IF NOT EXISTS class_name VARCHAR(100);
+            `);
+        } catch(e) {
+            console.error('Auto migration warning:', e.message);
+        }
+    }
+});
 
 module.exports = pool;
