@@ -3143,13 +3143,13 @@ function buildPaper(){
     &lt;table class=&quot;meta-template&quot;&gt;
       &lt;tr&gt;
         &lt;td class=&quot;left-meta&quot;&gt;
-          GIÁO ÁN SỐ: &lt;span contenteditable=&quot;true&quot;&gt;${escapeHtml($(&quot;#gaNumber&quot;).value||&quot;............................&quot;)}&lt;/span&gt;&lt;br&gt;
-          &lt;span contenteditable=&quot;true&quot;&gt;${classDisplay}&lt;/span&gt;
+          GIÁO ÁN SỐ: &lt;span contenteditable=&quot;true&quot;&gt;${escapeHtml($(&quot;#gaNumber&quot;).value||&quot;............................&quot;)}&lt;/span&gt;
         &lt;/td&gt;
         &lt;td class=&quot;right-meta&quot;&gt;
           &lt;b&gt;Thời gian thực hiện:&lt;/b&gt; ${total} phút (${String(Number($(&quot;#periods&quot;).value)).padStart(2,&quot;0&quot;)} tiết)&lt;br&gt;
           ${lead}&lt;br&gt;
-          &lt;span contenteditable=&quot;true&quot;&gt;${dateDisplay}&lt;/span&gt;
+          &lt;span contenteditable=&quot;true&quot;&gt;${dateDisplay}&lt;/span&gt;&lt;br&gt;
+          &lt;span contenteditable=&quot;true&quot;&gt;${classDisplay}&lt;/span&gt;
         &lt;/td&gt;
       &lt;/tr&gt;
     &lt;/table&gt;
