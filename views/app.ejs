@@ -370,7 +370,20 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;/div&gt;
 
 &lt;div class=&quot;card&quot;&gt;
-&lt;div class=&quot;section-title&quot;&gt;2. Kiểm tra quy đổi theo từng Bài / Kiểm tra / Thi&lt;/div&gt;
+&lt;div class=&quot;section-title&quot;&gt;2. Tải lên Giáo trình môn học&lt;/div&gt;
+&lt;div class=&quot;filebox&quot;&gt;
+&lt;label&gt;Chọn file giáo trình (Word .docx, Text .txt, .md)&lt;/label&gt;
+&lt;div style=&quot;display:flex; gap:10px; align-items:center; margin-top:8px;&quot;&gt;
+    &lt;input id=&quot;textbookFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readTextbookFile(this.files[0])&quot;&gt;
+    &lt;button id=&quot;btnUploadTextbookDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; white-space:nowrap; border-radius:7px; cursor:pointer;&quot; onclick=&quot;uploadTextbookToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
+&lt;/div&gt;
+&lt;div class=&quot;file-status&quot; id=&quot;textbookFileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa tải giáo trình môn học. Khi có giáo trình, Bước 2 có thể tự động trích xuất nội dung bài học tương ứng.&lt;/div&gt;
+&lt;div id=&quot;textbookDriveStatusBox&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;card&quot;&gt;
+&lt;div class=&quot;section-title&quot;&gt;3. Kiểm tra quy đổi theo từng Bài / Kiểm tra / Thi&lt;/div&gt;
 &lt;div id=&quot;conversionPreview&quot; style=&quot;overflow:auto&quot;&gt;
 &lt;div style=&quot;color:#64748b;font-size:13px&quot;&gt;Tải Chương trình môn học để xem kết quả quy đổi.&lt;/div&gt;
 &lt;/div&gt;
@@ -379,7 +392,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;card schedule-card&quot;&gt;
 &lt;div class=&quot;schedule-head&quot;&gt;
   &lt;div&gt;
-    &lt;div class=&quot;section-title&quot;&gt;3. Thiết lập lịch học trong tuần&lt;/div&gt;
+    &lt;div class=&quot;section-title&quot;&gt;4. Thiết lập lịch học trong tuần&lt;/div&gt;
     &lt;div class=&quot;schedule-sub&quot;&gt;Chọn ngày bắt đầu và cấu hình số tiết cố định cho từng buổi học trong tuần.&lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
@@ -441,7 +454,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 
 &lt;div class=&quot;card&quot;&gt;
 &lt;div style=&quot;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;&quot;&gt;
-&lt;div class=&quot;section-title&quot; style=&quot;margin:0;&quot;&gt;4. Sổ đầu bài&lt;/div&gt;
+&lt;div class=&quot;section-title&quot; style=&quot;margin:0;&quot;&gt;5. Sổ đầu bài&lt;/div&gt;
 &lt;div style=&quot;display:flex;gap:8px;&quot;&gt;
   &lt;button type=&quot;button&quot; onclick=&quot;updateScheduleProgression()&quot; style=&quot;background:#16469d;color:#fff;padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:5px;border-radius:6px;&quot; title=&quot;Tự động tính lại nội dung và tiến độ các buổi sau khi chỉnh số tiết&quot;&gt;🔄 CẬP NHẬT LẠI TIẾN ĐỘ&lt;/button&gt;
 &lt;/div&gt;
@@ -471,6 +484,7 @@ let course = {name:&quot;&quot;,code:&quot;&quot;,total:0,lt:0,th:0,kt:0};
 let lessons = [];
 let programSequence = []; // đúng thứ tự: Bài -&gt; Kiểm tra -&gt; Bài -&gt; ... -&gt; Thi
 let currentSessions = [];
+let textbookData = { fileName: &quot;&quot;, text: &quot;&quot;, driveLink: &quot;&quot; };
 
 function saveStateToBackend() {
     const scheduleSettings = {
@@ -490,6 +504,7 @@ function saveStateToBackend() {
         courseInfo: course,
         syllabus: lessons,
         programSequence: programSequence,
+        textbookData: textbookData,
         exclusions: exclusions,
         scheduleSettings: scheduleSettings,
         generatedSchedule: currentSessions
@@ -509,6 +524,18 @@ window.addEventListener(&quot;message&quot;, e => {
         if (payload.courseInfo) course = payload.courseInfo;
         if (payload.syllabus) lessons = payload.syllabus;
         if (payload.programSequence) programSequence = payload.programSequence;
+        if (payload.textbookData) {
+            textbookData = payload.textbookData;
+            const tbStatus = document.getElementById(&quot;textbookFileStatus&quot;);
+            if (tbStatus) {
+                if (textbookData.text) {
+                    tbStatus.innerHTML = `&lt;b&gt;Đã có giáo trình:&lt;/b&gt; ${escapeHtml(textbookData.fileName || 'Giáo trình môn học')} (${(textbookData.text.length / 1000).toFixed(1)}k ký tự).` +
+                        (textbookData.driveLink ? `&lt;br&gt;📁 &lt;a href='${textbookData.driveLink}' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'&gt;Mở trên Google Drive&lt;/a&gt;` : '');
+                } else {
+                    tbStatus.textContent = &quot;Chưa tải giáo trình môn học.&quot;;
+                }
+            }
+        }
         if (payload.exclusions) exclusions = payload.exclusions;
         if (payload.generatedSchedule) currentSessions = payload.generatedSchedule;
         
@@ -929,6 +956,105 @@ function renderConversionPreview(){
  &lt;/table&gt;`;
 }
 
+
+async function uploadTextbookToDrive() {
+    const fileInput = document.getElementById('textbookFile');
+    const file = fileInput.files[0];
+    if (!file) {
+        alert('Vui lòng chọn file giáo trình trước khi tải lên Drive.');
+        return;
+    }
+
+    let token = null;
+    try { token = localStorage.getItem('token') || (window.parent && window.parent.localStorage ? window.parent.localStorage.getItem('token') : null); } catch(e) {}
+    
+    if(token) {
+        let driveStatusDiv = document.getElementById('textbookDriveStatusBox');
+        if (!driveStatusDiv) {
+            driveStatusDiv = document.createElement('div');
+            driveStatusDiv.id = 'textbookDriveStatusBox';
+            driveStatusDiv.style.marginTop = '10px';
+        }
+        driveStatusDiv.innerHTML = &quot;&lt;span style='color:#7c3aed;'&gt;⏳ &lt;b&gt;Đang tải giáo trình lên Google Drive, vui lòng chờ...&lt;/b&gt;&lt;/span&gt;&quot;;
+        
+        const chunkSize = 3 * 1024 * 1024;
+        (async () =&gt; {
+            try {
+                const startRes = await fetch('/api/drive/start-upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ fileName: file.name, mimeType: file.name.toLowerCase().endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : (file.type || 'application/octet-stream') })
+                });
+                if (!startRes.ok) throw new Error('Không thể khởi tạo upload Drive');
+                const { uploadUrl } = await startRes.json();
+                
+                let fileId = null;
+                for (let start = 0; start &lt; file.size; start += chunkSize) {
+                    const end = Math.min(start + chunkSize, file.size);
+                    const chunk = file.slice(start, end);
+                    const chunkRes = await fetch('/api/drive/upload-chunk', {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': 'Bearer ' + token,
+                            'X-Upload-Url': uploadUrl,
+                            'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + file.size,
+                            'Content-Type': 'application/octet-stream'
+                        },
+                        body: chunk
+                    });
+                    if (chunkRes.status === 308) continue;
+                    if (chunkRes.ok) {
+                        const data = await chunkRes.json();
+                        fileId = data.fileId;
+                        break;
+                    }
+                }
+                if (!fileId) throw new Error('Upload incomplete');
+                
+                const finishRes = await fetch('/api/drive/finish-upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ fileId })
+                });
+                const { url } = await finishRes.json();
+                
+                driveStatusDiv.innerHTML = &quot;&lt;span style='color:#166534;'&gt;✅ &lt;b&gt;Đã upload giáo trình thành công:&lt;/b&gt; &lt;a href='&quot; + url + &quot;' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'&gt;Xem trên Google Drive&lt;/a&gt;&lt;/span&gt;&quot;;
+                textbookData.driveLink = url;
+                if(typeof saveStateToBackend === 'function') saveStateToBackend();
+            } catch(err) {
+                console.error(err);
+                driveStatusDiv.innerHTML = &quot;&lt;span style='color:#b45309;'&gt;❌ &lt;b&gt;Lỗi upload giáo trình:&lt;/b&gt; &quot; + (err.message || err.toString()) + &quot;&lt;/span&gt;&quot;;
+            }
+        })();
+    }
+}
+
+async function readTextbookFile(file) {
+    if(!file) return;
+    const status = document.getElementById(&quot;textbookFileStatus&quot;);
+    status.textContent = &quot;Đang đọc giáo trình: &quot; + file.name + &quot; ...&quot;;
+    try {
+        let text = &quot;&quot;;
+        if(file.name.toLowerCase().endsWith(&quot;.docx&quot;)) {
+            if(typeof mammoth === &quot;undefined&quot;) throw new Error(&quot;Không tải được thư viện đọc Word DOCX.&quot;);
+            const buf = await file.arrayBuffer();
+            const rawResult = await mammoth.extractRawText({ arrayBuffer: buf });
+            text = rawResult.value;
+        } else {
+            text = await file.text();
+        }
+        textbookData = {
+            fileName: file.name,
+            text: text,
+            driveLink: textbookData?.driveLink || &quot;&quot;
+        };
+        status.innerHTML = `&lt;b style=&quot;color:#166534;&quot;&gt;✅ Đã đọc thành công giáo trình:&lt;/b&gt; ${escapeHtml(file.name)} (${(text.length/1000).toFixed(1)}k ký tự). Nội dung này sẽ dùng để trích xuất tự động tại Bước 2.`;
+        if(typeof saveStateToBackend === 'function') saveStateToBackend();
+    } catch(err) {
+        console.error(err);
+        status.innerHTML = `&lt;span style=&quot;color:#dc2626;&quot;&gt;❌ Lỗi đọc giáo trình: ${escapeHtml(err.message)}&lt;/span&gt;`;
+    }
+}
 
 async function uploadToDrive() {
     const fileInput = document.getElementById('programFile');
@@ -1831,6 +1957,7 @@ function sendSessionToPlanner(index){
      kt:Number(course.kt||0)
    },
    fullProgram:programSequence.map(x=&gt;JSON.parse(JSON.stringify(x))),
+    textbookData: textbookData,
 
    summaryText:lessons.join(&quot; | &quot;) + (items.length ? &quot; | &quot; + items.join(&quot; | &quot;) : &quot;&quot;)
  };
@@ -2953,7 +3080,8 @@ function buildPaper(){
     &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
     &lt;td class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title)}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
       &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
-        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'expand')&quot;&gt;✨ Triển khai&lt;/button&gt;
+        &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
+        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'expand')&quot;&gt;✨ Triển khai bằng AI&lt;/button&gt;
         &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'rewrite')&quot;&gt;✍ Viết lại&lt;/button&gt;
         &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'example')&quot;&gt;➕ Ví dụ&lt;/button&gt;
         &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'steps')&quot;&gt;🔧 Thao tác&lt;/button&gt;
@@ -3896,8 +4024,105 @@ function toggleFullProgram(){
   btn.textContent=hidden ? &quot;Ẩn chương trình môn học&quot; : &quot;Xem toàn bộ chương trình&quot;;
 }
 
+let currentTextbookData = null;
+
+function normalizeSearchKeyword(str) {
+  return String(str || '')
+    .toLowerCase()
+    .replace(/^[0-9]+[.\s-]+/g, '')
+    .replace(/[–—:-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractTextbookSnippet(fullText, title, sectionText) {
+  if (!fullText) return null;
+  const cleanTitle = normalizeSearchKeyword(title);
+  const cleanSection = normalizeSearchKeyword(sectionText);
+  const lowerFull = fullText.toLowerCase();
+
+  let foundIdx = -1;
+  let matchQuery = '';
+
+  if (cleanSection && cleanSection.length > 3) {
+    foundIdx = lowerFull.indexOf(cleanSection);
+    matchQuery = cleanSection;
+  }
+  if (foundIdx === -1 && cleanTitle && cleanTitle.length > 3) {
+    foundIdx = lowerFull.indexOf(cleanTitle);
+    matchQuery = cleanTitle;
+  }
+
+  if (foundIdx === -1) {
+    const words = cleanTitle.split(' ').filter(w => w.length > 3);
+    for (const w of words) {
+      const idx = lowerFull.indexOf(w);
+      if (idx !== -1) {
+        foundIdx = idx;
+        matchQuery = w;
+        break;
+      }
+    }
+  }
+
+  if (foundIdx !== -1) {
+    const start = Math.max(0, foundIdx);
+    const end = Math.min(fullText.length, start + 1200);
+    let snippet = fullText.substring(start, end).trim();
+    const lastPeriod = snippet.lastIndexOf('.');
+    if (lastPeriod > 300) {
+      snippet = snippet.substring(0, lastPeriod + 1);
+    }
+    return snippet;
+  }
+  return null;
+}
+
+window.runRowTextbook = function(btn) {
+  const cell = btn.closest('.ai-content-cell');
+  if(!cell) return;
+  const oldText = cell.querySelector('.ai-text')?.innerText.trim() || '';
+  const rowTitle = cell.querySelector('b')?.innerText.trim() || '';
+
+  if (!currentTextbookData || !currentTextbookData.text) {
+    alert('Chưa có dữ liệu Giáo trình môn học. Vui lòng tải file Giáo trình ở Bước 1 trước khi sử dụng tính năng này.');
+    return;
+  }
+
+  const snippet = extractTextbookSnippet(currentTextbookData.text, rowTitle, oldText);
+  if (!snippet) {
+    alert('Không tìm thấy đoạn nội dung phù hợp với \'' + rowTitle + '\' trong file Giáo trình. Bạn có thể sử dụng nút \'✨ Triển khai bằng AI\' để AI tự biên soạn.');
+    return;
+  }
+
+  showModal('Trích xuất từ Giáo trình (' + escapeHtml(currentTextbookData.fileName || 'Giáo trình') + ')', `
+    &lt;div class=&quot;row2&quot;&gt;
+      &lt;div&gt;&lt;label&gt;Nội dung hiện tại&lt;/label&gt;&lt;textarea id=&quot;aiOld&quot; style=&quot;min-height:300px&quot;&gt;${escapeHtml(oldText)}&lt;/textarea&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;label&gt;Nội dung trích xuất từ Giáo trình&lt;/label&gt;&lt;textarea id=&quot;aiNew&quot; style=&quot;min-height:300px&quot;&gt;${escapeHtml(snippet)}&lt;/textarea&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;toolbar&quot; style=&quot;margin-top:12px&quot;&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;aiReplace&quot;&gt;Thay thế&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; id=&quot;aiAppend&quot;&gt;Chèn thêm&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; id=&quot;aiCancel&quot;&gt;Hủy&lt;/button&gt;
+    &lt;/div&gt;`);
+
+  document.getElementById('aiReplace').onclick = () => {
+    cell.querySelector('.ai-text').innerText = document.getElementById('aiNew').value.trim();
+    closeModal();
+  };
+  document.getElementById('aiAppend').onclick = () => {
+    const current = cell.querySelector('.ai-text').innerText.trim();
+    cell.querySelector('.ai-text').innerText = current + '\n' + document.getElementById('aiNew').value.trim();
+    closeModal();
+  };
+  document.getElementById('aiCancel').onclick = closeModal;
+};
+
 async function receiveScheduleSession(data){
   const pld=data||{};
+  if (pld.textbookData) {
+    currentTextbookData = pld.textbookData;
+  }
   const sourceName=String(pld.courseName||&quot;&quot;).trim();
   const sourceCode=String(pld.courseCode||&quot;&quot;).trim();
   const info=$(&quot;#scheduleImportInfo&quot;);
