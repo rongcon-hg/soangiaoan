@@ -2912,7 +2912,7 @@ function activityRows(type,items,total){
       };
     }
     return {
-      label:&quot;Kiến thức và thao tác cốt lõi&quot;,
+      label:&quot;&quot;,
       content:`Làm rõ kiến thức trực tiếp phục vụ ${item}, minh họa thao tác chính và yêu cầu người học thực hiện ngay trên dữ liệu được giao; kiểm tra kết quả trước khi chuyển nội dung.`,
       gv:&quot;Giải thích; thao tác mẫu; hướng dẫn.&quot;,
       sv:&quot;Quan sát; thực hành; kiểm tra.&quot;
@@ -2925,7 +2925,8 @@ function activityRows(type,items,total){
     times.forEach((t,i)=&gt;{
       if(i===0){
         const c=coreStage(type,item,i);
-        push(`${item} – ${c.label}`,c.content,c.gv,c.sv,t);
+        const rowTitle = c.label ? `${item} – ${c.label}` : item;
+        push(rowTitle,c.content,c.gv,c.sv,t);
       }else{
         const e=getEnrichment(item);
         push(`${item} – ${e.label}`,e.content(item),e.gv,e.sv,t);
