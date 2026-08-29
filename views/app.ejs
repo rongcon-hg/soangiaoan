@@ -4057,6 +4057,10 @@ function extractNumberPrefix(s) {
   return m ? m[1] : '';
 }
 
+function getHeadingDepth(numStr) {
+  return numStr ? numStr.split('.').length : 0;
+}
+
 function wordOverlapScore(s1, s2) {
   const w1 = new Set(s1.split(' ').filter(w => w.length >= 2));
   const w2 = new Set(s2.split(' ').filter(w => w.length >= 2));
@@ -4130,19 +4134,38 @@ function extractTextbookSnippet(fullText, title, sectionText) {
   }
 
   if (bestIdx !== -1 && bestScore >= 50) {
+    const matchedLine = bodyLines[bestIdx].trim();
+    const matchedNum = extractNumberPrefix(matchedLine);
+    const matchedDepth = getHeadingDepth(matchedNum);
+
     const passage = [];
     let wordCount = 0;
+
     for (let j = bestIdx + 1; j < bodyLines.length; j++) {
       const l = bodyLines[j].trim();
       if (!l) continue;
-      // Stop condition: next section heading
-      if (l.match(/^\d+\.\d+(\.\d+)*\.?\s+[A-ZÀ-Ỹ]/) || l.match(/^(?:CHƯƠNG|Chương|BÀI|Bài)\s+[IVXLCDM\d]+/i)) {
+
+      // Skip image captions and links
+      if (l.match(/^Hình\s+\d+(\.\d+)*\./i) || l.match(/^https?:\/\//i)) continue;
+
+      const nextNum = extractNumberPrefix(l);
+      const nextDepth = getHeadingDepth(nextNum);
+
+      // Stop if chapter heading
+      if (l.match(/^(?:CHƯƠNG|Chương|BÀI|Bài)\s+[IVXLCDM\d]+/i)) {
         if (passage.length > 0) break;
       }
+
+      // Stop if next heading is at the SAME level or HIGHER level
+      if (nextDepth > 0 && matchedDepth > 0 && nextDepth <= matchedDepth) {
+        if (passage.length > 0) break;
+      }
+
       passage.push(l);
       wordCount += l.split(/\s+/).length;
-      if (wordCount >= 180) break;
+      if (wordCount >= 250) break;
     }
+
     if (passage.length > 0) {
       return passage.join('\n\n');
     }
