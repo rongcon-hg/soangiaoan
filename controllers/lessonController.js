@@ -85,7 +85,7 @@ exports.saveLesson = async (req, res) => {
     const { lesson_data } = req.body;
     
     // Lưu trực tiếp string HTML hoặc stringify nếu là object
-    const lessonStr = typeof lesson_data === string ? lesson_data : JSON.stringify(lesson_data);
+    const lessonStr = typeof lesson_data === 'string' ? lesson_data : JSON.stringify(lesson_data);
     
     try {
         const checkQuery = `SELECT id FROM lessons WHERE project_id = $1 AND schedule_tt = $2`;
