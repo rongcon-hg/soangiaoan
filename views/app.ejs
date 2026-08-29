@@ -647,7 +647,7 @@ function updateCourseCards(){
  document.getElementById(&quot;formulaInfo&quot;).innerHTML=
    `&lt;b&gt;Quy tắc đang áp dụng:&lt;/b&gt; quy đổi &lt;b&gt;riêng từng Bài&lt;/b&gt;. `+
    `LT = giờ LT; TH = CEILING(giờ TH × 60/45). `+
-   `&lt;b&gt;Kiểm tra:&lt;/b&gt; CEILING(giờ KT × 60/45). Sau quy đổi, &lt;b&gt;1 tiết đưa vào cột Kiểm tra&lt;/b&gt;, số tiết còn lại đưa vào &lt;b&gt;Thực hành&lt;/b&gt;. `+
+   `&lt;b&gt;Kiểm tra:&lt;/b&gt; nếu ở cột LT thì giữ nguyên số giờ = số tiết KT; nếu ở cột TH thì CEILING(giờ KT × 60/45) phân bổ 1 tiết KT + số còn lại vào TH. `+
    `&lt;b&gt;Thi kết thúc môn học không đưa vào Sổ đầu bài.&lt;/b&gt;`;
 }
 
@@ -918,12 +918,24 @@ function parseProgramTable(htmlText, detailMap){
      const hoursLT=ktLt+thiLt;
      const hoursTH=ktTh+thiTh;
      const rawHours=(hoursLT+hoursTH) || cellNumber(cells[2]) || 1;
-     const autoPeriods=Math.ceil(rawHours*60/45);
+     const isTheory = hoursLT > 0 || (hoursTH === 0 && (ktLt > 0 || cellNumber(cells[3]) > 0));
 
-     if(autoPeriods&gt;0){
+     if(isTheory){
        sequence.push({
          kind:&quot;assessment&quot;,
-         title:name.trim(), // nguyên văn
+         title:name.trim(),
+         rawHours,
+         assessmentType:&quot;Lý thuyết&quot;,
+         periodsLT:0,
+         periodsKT:rawHours,
+         periodsTH:0,
+         periods:rawHours
+       });
+     } else {
+       const autoPeriods=Math.ceil(rawHours*60/45);
+       sequence.push({
+         kind:&quot;assessment&quot;,
+         title:name.trim(),
          rawHours,
          assessmentType:&quot;Thực hành&quot;,
          periodsLT:0,
@@ -941,12 +953,19 @@ function parseProgramTable(htmlText, detailMap){
 function recalcAssessments(){
  programSequence.forEach(x=&gt;{
    if(x.kind!==&quot;assessment&quot;) return;
-   const converted=Math.ceil(x.rawHours*60/45);
-   x.assessmentType=&quot;Thực hành&quot;;
-   x.periodsKT=converted&gt;0 ? 1 : 0;
-   x.periodsTH=Math.max(0,converted-x.periodsKT);
-   x.periodsLT=0;
-   x.periods=converted;
+   if(x.assessmentType === &quot;Lý thuyết&quot;){
+     x.periodsKT=Number(x.rawHours)||1;
+     x.periodsTH=0;
+     x.periodsLT=0;
+     x.periods=x.periodsKT;
+   } else {
+     const converted=Math.ceil(x.rawHours*60/45);
+     x.assessmentType=&quot;Thực hành&quot;;
+     x.periodsKT=converted&gt;0 ? 1 : 0;
+     x.periodsTH=Math.max(0,converted-x.periodsKT);
+     x.periodsLT=0;
+     x.periods=converted;
+   }
  });
 }
 
@@ -967,10 +986,10 @@ function renderConversionPreview(){
      &lt;/tr&gt;`;
    }else{
      rows+=`&lt;tr&gt;
-       &lt;td&gt;&lt;b&gt;${esc(x.title)} (Thực hành)&lt;/b&gt;&lt;/td&gt;
-       &lt;td style=&quot;text-align:center&quot;&gt;—&lt;/td&gt;
-       &lt;td style=&quot;text-align:center&quot;&gt;${x.rawHours} giờ&lt;/td&gt;
-       &lt;td&gt;&lt;b&gt;${x.rawHours} giờ KT × 60/45 → ${x.periods} tiết; phân bổ: ${x.periodsKT||0} KT + ${x.periodsTH||0} TH&lt;/b&gt;&lt;/td&gt;
+       &lt;td&gt;&lt;b&gt;${esc(x.title)} (${x.assessmentType || &quot;Kiểm tra&quot;})&lt;/b&gt;&lt;/td&gt;
+       &lt;td style=&quot;text-align:center&quot;&gt;${x.assessmentType===&quot;Lý thuyết&quot; ? x.rawHours+&quot; giờ&quot; : &quot;—&quot;}&lt;/td&gt;
+       &lt;td style=&quot;text-align:center&quot;&gt;${x.assessmentType===&quot;Lý thuyết&quot; ? &quot;—&quot; : x.rawHours+&quot; giờ&quot;}&lt;/td&gt;
+       &lt;td&gt;&lt;b&gt;${x.assessmentType===&quot;Lý thuyết&quot; ? `${x.rawHours} giờ KT Lý thuyết = ${x.periods} tiết KT (không quy đổi TH)` : `${x.rawHours} giờ KT × 60/45 → ${x.periods} tiết; phân bổ: ${x.periodsKT||0} KT + ${x.periodsTH||0} TH`}&lt;/b&gt;&lt;/td&gt;
      &lt;/tr&gt;`;
    }
  });
