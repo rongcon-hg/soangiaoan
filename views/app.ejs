@@ -4459,7 +4459,18 @@ async function receiveScheduleSession(data){
   $(&quot;#btnGenerate&quot;).classList.add(&quot;primary&quot;);
   $(&quot;#btnGenerate&quot;).title=&quot;Tạo giáo án từ đúng dữ liệu buổi học đã chọn ở Sổ đầu bài.&quot;;
   if(pld.savedLesson) {
-    $(&quot;#paper&quot;).innerHTML = pld.savedLesson;
+    const paper = document.getElementById(&quot;paper&quot;);
+    paper.innerHTML = pld.savedLesson;
+    // Re-attach input event to all time inputs
+    paper.querySelectorAll(&quot;.time-input&quot;).forEach(inp =&gt; {
+      inp.oninput = checkTime;
+    });
+    // Doi ten nut tao lai giao an
+    $(&quot;#btnGenerate&quot;).textContent = &quot;Tạo lại giáo án&quot;;
+    $(&quot;#btnGenerate&quot;).title = &quot;Tạo lại giáo án từ đầu (ghi đè nội dung đang lưu)&quot;;
+  } else {
+    $(&quot;#btnGenerate&quot;).textContent = &quot;Tạo giáo án&quot;;
+    $(&quot;#btnGenerate&quot;).title = &quot;Tạo giáo án từ đúng dữ liệu buổi học đã chọn ở Sổ đầu bài.&quot;;
   }
 
   $(&quot;#btnAIWhole&quot;).disabled=false;
@@ -4505,7 +4516,15 @@ async function init(){
   $(&quot;#btnGenerate&quot;).disabled=true;
   $(&quot;#btnAIWhole&quot;).disabled=true;
 $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&gt;{if(e.target.id===&quot;modal&quot;)closeModal()};
-  $(&quot;#btnSaveLesson&quot;).onclick = () => { const clone = getCleanPaperClone(); if(!clone) return alert(&quot;Chưa có nội dung giáo án để lưu.&quot;); window.parent.postMessage({ type: &quot;SAVE_LESSON_PLAN&quot;, payload: { tt: window.currentScheduleTT, data: clone.innerHTML } }, &quot;*&quot;); };
+  $(&quot;#btnSaveLesson&quot;).onclick = () => {
+    const paper = document.getElementById(&quot;paper&quot;);
+    if(!paper || !paper.querySelector(&quot;table&quot;)) return alert(&quot;Chưa có nội dung giáo án để lưu.&quot;);
+    // Lưu toàn bộ trạng thái đang soạn (bao gồm các ô sửa, nút công cụ, bảng phân bổ)
+    window.parent.postMessage({
+      type: &quot;SAVE_LESSON_PLAN&quot;,
+      payload: { tt: window.currentScheduleTT, data: paper.innerHTML }
+    }, &quot;*&quot;);
+  };
   $(&quot;#btnExportWord&quot;).onclick=exportWord;
   $(&quot;#btnExportPdf&quot;).onclick=exportPdf;
   $(&quot;#btnToggleFullProgram&quot;).onclick=toggleFullProgram;
@@ -4664,7 +4683,7 @@ window.addEventListener("message", async e => {
     // Check if lesson exists in DB
     try {
         if(projectId) {
-            const res = await fetch(API_URL + '/projects/' + projectId + '/lessons/' + p.scheduleTT, { headers: getHeaders() });
+            const res = await fetch(API_URL + '/lessons/' + projectId + '/lessons/' + p.scheduleTT, { headers: getHeaders() });
             const saved = await res.json();
             if(saved && saved.lesson_data) {
                 p.savedLesson = saved.lesson_data;
@@ -4679,7 +4698,7 @@ window.addEventListener("message", async e => {
 
   if(e.data?.type === "SAVE_LESSON_PLAN" && projectId) {
       try {
-          const res = await fetch(API_URL + '/projects/' + projectId + '/lessons/' + e.data.payload.tt, {
+          const res = await fetch(API_URL + '/lessons/' + projectId + '/lessons/' + e.data.payload.tt, {
               method: 'POST',
               headers: getHeaders(),
               body: JSON.stringify({ lesson_data: e.data.payload.data })
