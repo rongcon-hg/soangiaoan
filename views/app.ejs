@@ -3088,6 +3088,10 @@ function buildPaper(){
   const rows=activityRows(type,items,lessonTotal);
 
   const names={theory:&quot;GIÁO ÁN LÝ THUYẾT&quot;,practice:&quot;GIÁO ÁN THỰC HÀNH&quot;,integrated:&quot;GIÁO ÁN TÍCH HỢP&quot;};
+  const scheduleDate=String($(&quot;#gaNumber&quot;).dataset.date||&quot;&quot;).trim();
+  const scheduleClass=String($(&quot;#gaNumber&quot;).dataset.className||&quot;&quot;).trim();
+  const dateDisplay = scheduleDate ? `Thực hiện ngày ${escapeHtml(scheduleDate)}` : `Thực hiện từ ngày ................. đến ngày .................`;
+  const classDisplay = scheduleClass ? `Lớp: ${escapeHtml(scheduleClass)}` : `Lớp: ........................................`;
   const prevValue=String($(&quot;#prevLesson&quot;).value||&quot;&quot;).trim();
   let lead;
   if($(&quot;#subject&quot;).disabled){
@@ -3139,12 +3143,13 @@ function buildPaper(){
     &lt;table class=&quot;meta-template&quot;&gt;
       &lt;tr&gt;
         &lt;td class=&quot;left-meta&quot;&gt;
-          GIÁO ÁN SỐ: &lt;span contenteditable=&quot;true&quot;&gt;${escapeHtml($(&quot;#gaNumber&quot;).value||&quot;............................&quot;)}&lt;/span&gt;
+          GIÁO ÁN SỐ: &lt;span contenteditable=&quot;true&quot;&gt;${escapeHtml($(&quot;#gaNumber&quot;).value||&quot;............................&quot;)}&lt;/span&gt;&lt;br&gt;
+          &lt;span contenteditable=&quot;true&quot;&gt;${classDisplay}&lt;/span&gt;
         &lt;/td&gt;
         &lt;td class=&quot;right-meta&quot;&gt;
           &lt;b&gt;Thời gian thực hiện:&lt;/b&gt; ${total} phút (${String(Number($(&quot;#periods&quot;).value)).padStart(2,&quot;0&quot;)} tiết)&lt;br&gt;
           ${lead}&lt;br&gt;
-          Thực hiện từ ngày ................. đến ngày .................
+          &lt;span contenteditable=&quot;true&quot;&gt;${dateDisplay}&lt;/span&gt;
         &lt;/td&gt;
       &lt;/tr&gt;
     &lt;/table&gt;
@@ -4388,6 +4393,8 @@ async function receiveScheduleSession(data){
   $(&quot;#prevLesson&quot;).value=String(pld.previousLesson||&quot;&quot;).trim();
   $(&quot;#prevLesson&quot;).dataset.title=String(pld.previousLessonTitle||&quot;&quot;).trim();
   $(&quot;#prevLesson&quot;).dataset.items=JSON.stringify(pld.previousLessonItems||[]);
+  $(&quot;#gaNumber&quot;).dataset.date=String(pld.date||&quot;&quot;).trim();
+  $(&quot;#gaNumber&quot;).dataset.className=String(pld.className||&quot;&quot;).trim();
   $(&quot;#gaNumber&quot;).value=&quot;&quot;;
   $(&quot;#btnGenerate&quot;).disabled=false;
   $(&quot;#btnGenerate&quot;).classList.add(&quot;primary&quot;);
