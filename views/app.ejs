@@ -3862,175 +3862,151 @@ function exportWord(){
 async function exportPdf(){
   if(!$(&quot;#paper table&quot;)){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
 
-  if(typeof html2pdf===&quot;undefined&quot;){
-    alert(&quot;Chưa tải được thư viện xuất PDF. Vui lòng kiểm tra kết nối Internet rồi thử lại.&quot;);
-    return;
-  }
-
   const clone=getCleanPaperClone();
   if(!clone){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
 
-  clone.querySelectorAll(&quot;.no-print,.ai-tools,button,input,select&quot;).forEach(el=&gt;{
-    if(el.classList?.contains(&quot;time-input&quot;)){
-      const span=document.createElement(&quot;span&quot;);
-      span.textContent=el.value;
-      el.replaceWith(span);
-    }else if(el.tagName===&quot;INPUT&quot; || el.tagName===&quot;SELECT&quot;){
-      const span=document.createElement(&quot;span&quot;);
-      span.textContent=el.value||el.options?.[el.selectedIndex]?.text||&quot;&quot;;
-      el.replaceWith(span);
-    }else{
-      el.remove();
-    }
-  });
-
-  const holder=document.createElement(&quot;div&quot;);
-  holder.style.width=&quot;175mm&quot;;
-  holder.style.background=&quot;#fff&quot;;
-  holder.style.fontFamily='&quot;Times New Roman&quot;, serif';
-  holder.style.fontSize=&quot;12pt&quot;;
-  holder.style.color=&quot;#111&quot;;
-  holder.style.padding=&quot;0&quot;;
-  holder.style.boxSizing=&quot;border-box&quot;;
-  holder.style.overflow=&quot;visible&quot;;
-  holder.appendChild(clone);
-
-  const paper=holder.querySelector(&quot;.paper&quot;) || clone;
-  paper.style.width=&quot;175mm&quot;;
-  paper.style.maxWidth=&quot;175mm&quot;;
-  paper.style.minHeight=&quot;auto&quot;;
-  paper.style.margin=&quot;0&quot;;
-  paper.style.padding=&quot;0&quot;;
-  paper.style.border=&quot;0&quot;;
-  paper.style.boxShadow=&quot;none&quot;;
-
-  const pdfStyle=document.createElement(&quot;style&quot;);
-  pdfStyle.textContent=`
-    *{
-      box-sizing:border-box!important;
-      -webkit-print-color-adjust:exact!important;
-      print-color-adjust:exact!important;
-      text-rendering:geometricPrecision!important;
-    }
-    .paper{
-      width:175mm!important;
-      max-width:175mm!important;
-      min-width:175mm!important;
-      min-height:0!important;
-      padding:0!important;
-      margin:0!important;
-      border:0!important;
-      box-shadow:none!important;
-      overflow:visible!important;
-      background:#fff!important;
-      color:#000!important;
-      font-family:&quot;Times New Roman&quot;,serif!important;
-      font-size:12pt!important;
-    }
-    table{
-      border-collapse:collapse!important;
-      border-spacing:0!important;
-      page-break-inside:auto!important;
-    }
-    table.ga{
-      width:175mm!important;
-      max-width:175mm!important;
-      table-layout:fixed!important;
-      border:1.2px solid #000!important;
-      background:#fff!important;
-    }
-    table.ga thead{
-      display:table-header-group!important;
-    }
-    table.ga tr{
-      page-break-inside:avoid!important;
-      break-inside:avoid!important;
-    }
-    table.ga th,table.ga td{
-      border:1.2px solid #000!important;
-      padding:5px!important;
-      vertical-align:top!important;
-      box-sizing:border-box!important;
-      overflow:visible!important;
-      overflow-wrap:break-word!important;
-      word-break:normal!important;
-      white-space:normal!important;
-      color:#000!important;
-      background:#fff!important;
-      font-family:&quot;Times New Roman&quot;,serif!important;
-      font-size:12pt!important;
-      line-height:1.22!important;
-    }
-    table.ga th{
-      font-weight:700!important;
-      text-align:center!important;
-    }
-    table.ga th:nth-child(1),table.ga td:nth-child(1){width:5%!important;min-width:5%!important;max-width:5%!important}
-    table.ga th:nth-child(2),table.ga td:nth-child(2){width:41%!important;min-width:41%!important;max-width:41%!important}
-    table.ga th:nth-child(3),table.ga td:nth-child(3){width:22%!important;min-width:22%!important;max-width:22%!important}
-    table.ga th:nth-child(4),table.ga td:nth-child(4){width:22%!important;min-width:22%!important;max-width:22%!important}
-    table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%!important;min-width:10%!important;max-width:10%!important}
-    .top-template,.meta-template{
-      width:100%!important;
-      table-layout:fixed!important;
-      border-collapse:collapse!important;
-    }
-    .top-template td,.meta-template td{
-      border:1px solid #777!important;
-      color:#000!important;
-      background:#fff!important;
-      overflow:visible!important;
-      white-space:normal!important;
-    }
-  `;
-  holder.prepend(pdfStyle);
-
-  const filename=`Giao_an_${currentProgram()?.code||&quot;mon_hoc&quot;}_${new Date().toISOString().slice(0,10)}.pdf`;
-
-  const opt={
-    margin:[20,15,20,20],
-    filename,
-    image:{type:&quot;png&quot;,quality:1},
-    html2canvas:{
-      scale:3,
-      useCORS:true,
-      allowTaint:false,
-      backgroundColor:&quot;#ffffff&quot;,
-      logging:false,
-      scrollX:0,
-      scrollY:0,
-      windowWidth:Math.ceil(175/25.4*96),
-      letterRendering:true
-    },
-    jsPDF:{
-      unit:&quot;mm&quot;,
-      format:&quot;a4&quot;,
-      orientation:&quot;portrait&quot;,
-      compress:true
-    },
-    pagebreak:{
-      mode:[&quot;css&quot;,&quot;legacy&quot;],
-      avoid:[&quot;tr&quot;,&quot;thead&quot;,&quot;.top-template&quot;,&quot;.meta-template&quot;,&quot;.lesson-heading&quot;,&quot;.section-title&quot;]
-    }
-  };
-
-  try{
-    if(document.fonts &amp;&amp; document.fonts.ready){
-      await document.fonts.ready;
-    }
-    await new Promise(r=&gt;requestAnimationFrame(()=&gt;requestAnimationFrame(r)));
-
-    $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
-    $(&quot;#aiStatus&quot;).textContent=&quot;Đang tạo PDF A4, không kèm ngày giờ, tên trang, đường dẫn hay số trang của trình duyệt...&quot;;
-    await html2pdf().set(opt).from(holder).save();
-    $(&quot;#aiStatus&quot;).className=&quot;status ok&quot;;
-    $(&quot;#aiStatus&quot;).textContent=&quot;Đã xuất PDF A4 sạch, không có header/footer của trình duyệt.&quot;;
-  }catch(e){
-    console.error(e);
-    $(&quot;#aiStatus&quot;).className=&quot;status bad&quot;;
-    $(&quot;#aiStatus&quot;).textContent=&quot;Không xuất được PDF: &quot;+(e?.message||e);
-    alert(&quot;Không xuất được PDF: &quot;+(e?.message||e));
+  // Tạo cửa sổ in riêng biệt để trình duyệt xuất PDF A4 toàn vẹn 100% không bị co méo
+  const win = window.open(&quot;&quot;, &quot;_blank&quot;, &quot;width=900,height=800&quot;);
+  if(!win){
+    alert(&quot;Trình duyệt đã chặn cửa sổ pop-up. Vui lòng cho phép pop-up để xuất PDF.&quot;);
+    return;
   }
+
+  const printCss = `
+    @page {
+      size: A4 portrait;
+      margin: 20mm 15mm 20mm 20mm;
+    }
+    * {
+      box-sizing: border-box !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    html, body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      background: #fff;
+      font-family: &quot;Times New Roman&quot;, Times, serif !important;
+      font-size: 12pt !important;
+      color: #000 !important;
+    }
+    .paper {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      background: #fff !important;
+    }
+    table {
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      margin-bottom: 0;
+    }
+    .top-template {
+      width: 100% !important;
+      margin-bottom: 0;
+    }
+    .top-template td {
+      border: 1px dashed #999 !important;
+      padding: 6px 8px !important;
+      vertical-align: top !important;
+    }
+    .logo-cell { width: 28% !important; height: 76px !important; }
+    .appendix-cell { text-align: center !important; height: 76px !important; line-height: 1.2 !important; }
+    .appendix-title { font-weight: bold !important; font-size: 14pt !important; }
+    .appendix-note { font-style: italic !important; font-size: 11pt !important; }
+    
+    .meta-template {
+      width: 100% !important;
+      margin: 0 auto !important;
+      border-collapse: collapse !important;
+    }
+    .meta-template td {
+      border: 1px dashed #999 !important;
+      padding: 6px 8px !important;
+      vertical-align: top !important;
+    }
+    .meta-template .left-meta { width: 40% !important; font-weight: bold !important; }
+    .meta-template .right-meta { width: 60% !important; line-height: 1.3 !important; }
+    
+    .lesson-heading { margin-top: 14px !important; font-size: 12pt !important; line-height: 1.25 !important; }
+    .lesson-main-title { font-weight: bold !important; }
+    .lesson-group-title { font-weight: bold !important; margin-top: 4px !important; }
+    .exact-outline-item { margin-left: 20px !important; font-weight: bold !important; line-height: 1.25 !important; }
+    
+    .section-title { font-weight: bold !important; margin: 10px 0 5px !important; font-size: 12pt !important; }
+    .editable { line-height: 1.35 !important; text-align: justify !important; }
+    
+    table.ga {
+      width: 100% !important;
+      table-layout: fixed !important;
+      border-collapse: collapse !important;
+      margin-top: 10px !important;
+      border: 1.2px solid #000 !important;
+    }
+    table.ga thead { display: table-header-group !important; }
+    table.ga tr { page-break-inside: avoid !important; break-inside: avoid !important; }
+    table.ga th, table.ga td {
+      border: 1.2px solid #000 !important;
+      padding: 5px 6px !important;
+      vertical-align: top !important;
+      font-size: 12pt !important;
+      line-height: 1.25 !important;
+      color: #000 !important;
+      word-break: normal !important;
+      overflow-wrap: break-word !important;
+    }
+    table.ga th { font-weight: bold !important; text-align: center !important; }
+    table.ga th:nth-child(1), table.ga td:nth-child(1) { width: 5% !important; text-align: center !important; }
+    table.ga th:nth-child(2), table.ga td:nth-child(2) { width: 41% !important; }
+    table.ga th:nth-child(3), table.ga td:nth-child(3) { width: 22% !important; }
+    table.ga th:nth-child(4), table.ga td:nth-child(4) { width: 22% !important; }
+    table.ga th:nth-child(5), table.ga td:nth-child(5) { width: 10% !important; text-align: center !important; }
+    
+    table.footer-sign-table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      margin-top: 24px !important;
+      page-break-inside: avoid !important;
+      border: none !important;
+    }
+    table.footer-sign-table td {
+      border: none !important;
+      text-align: center !important;
+      vertical-align: top !important;
+      padding: 4px 0 !important;
+      line-height: 1.4 !important;
+    }
+    .no-print, .ai-tools { display: none !important; }
+  `;
+
+  const docHtml = `&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;meta charset=&quot;utf-8&quot;&gt;
+  &lt;title&gt;Giao_an_${currentProgram()?.code||&quot;mon_hoc&quot;}&lt;/title&gt;
+  &lt;style&gt;${printCss}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  ${clone.outerHTML}
+  &lt;scr&quot; + &quot;ipt&gt;
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 250);
+    };
+  &lt;/scr&quot; + &quot;ipt&gt;
+&lt;/body&gt;
+&lt;/html&gt;`;
+
+  win.document.open();
+  win.document.write(docHtml);
+  win.document.close();
 }
 
 let receivedFullProgram=null;
