@@ -3865,8 +3865,7 @@ async function exportPdf(){
   const clone=getCleanPaperClone();
   if(!clone){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
 
-  // Tạo cửa sổ in riêng biệt để trình duyệt xuất PDF A4 toàn vẹn 100% không bị co méo
-  const win = window.open(&quot;&quot;, &quot;_blank&quot;, &quot;width=900,height=800&quot;);
+  const win = window.open(&quot;&quot;, &quot;_blank&quot;, &quot;width=950,height=850&quot;);
   if(!win){
     alert(&quot;Trình duyệt đã chặn cửa sổ pop-up. Vui lòng cho phép pop-up để xuất PDF.&quot;);
     return;
@@ -3891,6 +3890,32 @@ async function exportPdf(){
       font-size: 12pt !important;
       color: #000 !important;
     }
+    .print-bar {
+      position: sticky;
+      top: 0;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 9999;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      font-family: system-ui, -apple-system, sans-serif !important;
+      font-size: 14px;
+    }
+    .print-btn {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .print-btn:hover { background: #1d4ed8; }
     .paper {
       width: 100% !important;
       max-width: 100% !important;
@@ -3983,30 +4008,24 @@ async function exportPdf(){
       line-height: 1.4 !important;
     }
     .no-print, .ai-tools { display: none !important; }
+    @media print {
+      .print-bar { display: none !important; }
+      body { padding: 0 !important; }
+    }
   `;
 
-  const docHtml = `&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-  &lt;meta charset=&quot;utf-8&quot;&gt;
-  &lt;title&gt;Giao_an_${currentProgram()?.code||&quot;mon_hoc&quot;}&lt;/title&gt;
-  &lt;style&gt;${printCss}&lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-  ${clone.outerHTML}
-  &lt;scr&quot; + &quot;ipt&gt;
-    window.onload = function() {
-      setTimeout(function() {
-        window.print();
-      }, 250);
-    };
-  &lt;/scr&quot; + &quot;ipt&gt;
-&lt;/body&gt;
-&lt;/html&gt;`;
+  const topToolbar = `<div class=&quot;print-bar&quot;&gt;
+    &lt;span&gt;📄 &lt;b&gt;Xem trước bản in Giáo án A4&lt;/b&gt; — Bấm nút bên phải hoặc phím Ctrl+P / Cmd+P để Lưu file PDF&lt;/span&gt;
+    &lt;button class=&quot;print-btn&quot; onclick=&quot;window.print()&quot;&gt;🖨 In / Lưu file PDF&lt;/button&gt;
+  &lt;/div&gt;`;
 
   win.document.open();
-  win.document.write(docHtml);
+  win.document.write(&quot;&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;meta charset='utf-8'&gt;&lt;title&gt;Giao_an_&quot; + (currentProgram()?.code||&quot;mon_hoc&quot;) + &quot;&lt;/title&gt;&lt;style&gt;&quot; + printCss + &quot;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&quot; + topToolbar + clone.outerHTML + &quot;&lt;/body&gt;&lt;/html&gt;&quot;);
   win.document.close();
+
+  setTimeout(() =&gt; {
+    try { win.print(); } catch(err) {}
+  }, 350);
 }
 
 let receivedFullProgram=null;
