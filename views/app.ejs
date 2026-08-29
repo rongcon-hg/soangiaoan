@@ -3219,12 +3219,12 @@ function buildPaper(){
     ${type===&quot;theory&quot;?`&lt;div class=&quot;section-title&quot;&gt;Nguồn tài liệu tham khảo&lt;/div&gt;
     &lt;div class=&quot;editable&quot; contenteditable=&quot;true&quot;&gt;Chương trình môn học; mẫu giáo án tương ứng; tài liệu chuyên môn do người dùng cung cấp. Khi bổ sung kiến thức ngoài chương trình phải ưu tiên nguồn chính thức/uy tín.&lt;/div&gt;`:&quot;&quot;}
 
-    &lt;table class=&quot;footer-sign-table&quot; style=&quot;width:100%; border-collapse:collapse; margin-top:28px; border:none;&quot;&gt;
+    &lt;table class=&quot;footer-sign-table&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;width:100%; border-collapse:collapse; margin-top:28px; border:none;&quot;&gt;
       &lt;tr&gt;
-        &lt;td style=&quot;width:50%; text-align:center; vertical-align:top; border:none; padding:0;&quot;&gt;
+        &lt;td width=&quot;50%&quot; style=&quot;width:50%; text-align:center; vertical-align:top; border:none; padding:4px 0;&quot;&gt;
           &lt;b&gt;TRƯỞNG KHOA&lt;/b&gt;
         &lt;/td&gt;
-        &lt;td style=&quot;width:50%; text-align:center; vertical-align:top; border:none; padding:0; line-height:1.4;&quot;&gt;
+        &lt;td width=&quot;50%&quot; style=&quot;width:50%; text-align:center; vertical-align:top; border:none; padding:4px 0; line-height:1.4;&quot;&gt;
           &lt;span contenteditable=&quot;true&quot;&gt;${signDateText}&lt;/span&gt;&lt;br&gt;
           &lt;b&gt;GIẢNG VIÊN&lt;/b&gt;
         &lt;/td&gt;
@@ -3815,7 +3815,8 @@ function exportWord(){
     table.ga th:nth-child(3),table.ga td:nth-child(3){width:22%}
     table.ga th:nth-child(4),table.ga td:nth-child(4){width:22%}
     table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%}
-    .footer-sign{display:grid;grid-template-columns:1fr 1fr;text-align:center;margin-top:28px}
+    table.footer-sign-table{width:100%!important;border-collapse:collapse!important;margin-top:28px!important;border:none!important;mso-border-alt:none!important}
+    table.footer-sign-table td{width:50%!important;border:none!important;mso-border-alt:none!important;text-align:center!important;vertical-align:top!important;padding:5px 0!important;line-height:1.4!important}
   `;
 
   const doc=`&lt;!doctype html&gt;
