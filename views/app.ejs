@@ -3808,13 +3808,23 @@ function exportWord(){
   const clone=getCleanPaperClone();
   if(!clone){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
 
+  // Loại bỏ hoàn toàn thuộc tính border ở top-template và meta-template
+  clone.querySelectorAll(&quot;.top-template, .meta-template&quot;).forEach(tbl =&gt; {
+    tbl.setAttribute(&quot;border&quot;, &quot;0&quot;);
+    tbl.style.border = &quot;none&quot;;
+    tbl.style.msoBorderAlt = &quot;none&quot;;
+    tbl.querySelectorAll(&quot;td, th&quot;).forEach(cell =&gt; {
+      cell.style.border = &quot;none&quot;;
+      cell.style.msoBorderAlt = &quot;none&quot;;
+    });
+  });
+
   const css=`
     @page{size:A4 portrait;margin:20mm 15mm 20mm 20mm}
     body{font-family:&quot;Times New Roman&quot;,serif;font-size:12pt;color:#111;margin:0}
     table{border-collapse:collapse;width:100%;table-layout:fixed}
-    .top-template td,.meta-template td{border:none!important;padding:4px 6px;vertical-align:top}
-    th,td{border:1px solid #222;padding:5px;vertical-align:top;line-height:1.2}
-    .top-template td,.meta-template td{border:1px dashed #999}
+    .top-template, .meta-template{border:none!important;mso-border-alt:none!important}
+    .top-template td, .meta-template td{border:none!important;mso-border-alt:none!important;padding:4px 6px;vertical-align:top}
     .top-template{width:100%;border-collapse:collapse;margin-bottom:0}
     .logo-cell{width:28%;height:76px}
     .appendix-cell{text-align:center;height:76px;line-height:1.2}
@@ -3828,7 +3838,7 @@ function exportWord(){
     .lesson-outline{margin:4px 0 0 46px;padding-left:22px;font-weight:bold}
     .lesson-outline li{padding-left:4px;margin:2px 0}.exact-outline{margin:4px 0 0 46px;font-weight:bold}.exact-outline-item{margin:2px 0}
     .section-title{font-weight:bold;margin:10px 0 5px;font-size:12pt}
-    table.ga{width:100%;table-layout:fixed}
+    table.ga{width:100%;table-layout:fixed;border:1.2px solid #111}
     table.ga th,table.ga td{border:1.2px solid #111;padding:5px;vertical-align:top;font-size:12pt;line-height:1.22;color:#000;background:#fff}
     table.ga th:nth-child(1),table.ga td:nth-child(1){width:5%}
     table.ga th:nth-child(2),table.ga td:nth-child(2){width:41%}
@@ -3846,15 +3856,24 @@ function exportWord(){
   &lt;head&gt;
     &lt;meta charset=&quot;utf-8&quot;&gt;
     &lt;title&gt;Giáo án&lt;/title&gt;
+    &lt;!--[if gte mso 9]&gt;
+    &lt;xml&gt;
+      &lt;w:WordDocument&gt;
+        &lt;w:View&gt;Print&lt;/w:View&gt;
+        &lt;w:Zoom&gt;100&lt;/w:Zoom&gt;
+        &lt;w:DoNotOptimizeForBrowser/&gt;
+      &lt;/w:WordDocument&gt;
+    &lt;/xml&gt;
+    &lt;![endif]--&gt;
     &lt;style&gt;${css}&lt;/style&gt;
   &lt;/head&gt;
   &lt;body&gt;${clone.innerHTML}&lt;/body&gt;
   &lt;/html&gt;`;
 
-  const blob=new Blob([&quot;\ufeff&quot;,doc],{type:&quot;application/msword;charset=utf-8&quot;});
+  const blob=new Blob([&quot;\ufeff&quot;,doc],{type:&quot;application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8&quot;});
   const a=document.createElement(&quot;a&quot;);
   a.href=URL.createObjectURL(blob);
-  a.download=`Giao_an_${currentProgram()?.code||&quot;mon_hoc&quot;}_${new Date().toISOString().slice(0,10)}.doc`;
+  a.download=`Giao_an_${currentProgram()?.code||&quot;mon_hoc&quot;}_${new Date().toISOString().slice(0,10)}.docx`;
   document.body.appendChild(a);
   a.click();
   setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},300);
