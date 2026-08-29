@@ -678,12 +678,26 @@ function getExactCellLines(cell){
  return out;
 }
 
+function romanToInt(s) {
+  if (!s) return 0;
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  const map = {I:1, V:5, X:10, L:50, C:100, D:500, M:1000};
+  let num = 0, prev = 0;
+  const str = String(s).toUpperCase().trim();
+  for (let i = str.length - 1; i >= 0; i--) {
+    const curr = map[str[i]] || 0;
+    if (curr < prev) num -= curr;
+    else num += curr;
+    prev = curr;
+  }
+  return num || parseInt(s, 10) || 0;
+}
 function parseCourseInfo(text){
  const clean=text.replace(/\r/g,&quot; &quot;).replace(/[ \t]+/g,&quot; &quot;);
  let m;
- m=clean.match(/Tên môn học\s*:\s*([^\n]+)/i); if(m)course.name=m[1].trim();
+ m=clean.match(/Tên môn học\s*:\s*([^\n\r]+)/i); if(m)course.name=m[1].trim();
  m=clean.match(/Mã(?: số)? môn học\s*:\s*([A-Za-z0-9 _-]+)/i); if(m)course.code=m[1].trim();
- m=clean.match(/Thời gian(?: thực hiện)? môn học\s*:\s*(\d+)\s*giờ/i); if(m)course.total=Number(m[1]);
+ m=clean.match(/Thời gian(?:\s*thực\s*hiện)?(?:\s*môn\s*học)?\s*:\s*(\d+)\s*giờ/i); if(m)course.total=Number(m[1]);
  m=clean.match(/Lý thuyết\s*:\s*(\d+)\s*giờ/i); if(m)course.lt=Number(m[1]);
  m=clean.match(/Thực hành[^:]*:\s*(\d+)\s*giờ/i); if(m)course.th=Number(m[1]);
  m=clean.match(/(?:Thi\s*\/?\s*)?Kiểm tra\s*:\s*0?(\d+)\s*giờ/i); if(m)course.kt=Number(m[1]);
@@ -709,9 +723,9 @@ function parseDetailItems(text){
  }
 
  for(const line of lines){
-   const lm=line.match(/^(Bài|Chương)\s*(\d+)\s*[:\-]\s*(.*)$/i);
+   const lm=line.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.*)$/i);
    if(lm){
-     currentNo=Number(lm[2]);
+     currentNo=romanToInt(lm[1]);
      const titleRaw=line.replace(/\s*Thời gian\s*[:\-].*$/i,&quot;&quot;).trim();
      if(!map[currentNo]) map[currentNo]={title:titleRaw,items:[]};
      else if(!map[currentNo].title) map[currentNo].title=titleRaw;
@@ -790,9 +804,9 @@ function parseProgramTable(htmlText, detailMap){
    for(let li=0; li&lt;lines.length; li++){
      const raw=lines[li];
 
-     const lm=raw.match(/^(Bài|Chương)\s*(\d+)\s*[:\-]\s*(.+)$/i);
+     const lm=raw.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.+)$/i);
      if(lm){
-       currentLessonNo=Number(lm[2]);
+       currentLessonNo=romanToInt(lm[1]);
        if(!tableItemsByLesson[currentLessonNo]) tableItemsByLesson[currentLessonNo]=[];
        continue;
      }
@@ -817,9 +831,9 @@ function parseProgramTable(htmlText, detailMap){
    const lines=getExactCellLines(cells[1]);
    const name=lines[0] || (cells[1].textContent||&quot;&quot;).trim();
 
-   const lm=name.match(/^(Bài|Chương)\s*(\d+)\s*[:\-]\s*(.+)$/i);
+   const lm=name.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.+)$/i);
    if(lm){
-     const no=Number(lm[2]);
+     const no=romanToInt(lm[1]);
      if(seenLessons.has(no)) continue;
      seenLessons.add(no);
 
