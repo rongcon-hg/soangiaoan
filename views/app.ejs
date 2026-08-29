@@ -156,6 +156,8 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1150px;table-layout:fi
 .sheet .stt{width:45px;text-align:center}.sheet .date{width:105px;text-align:center}.sheet .small{width:65px;text-align:center}
 .sheet .content{width:auto;vertical-align:top;white-space:normal;line-height:1.28}
 .sheet .absent{width:95px;text-align:center}.sheet .sign{width:120px;text-align:center}
+.period-input{width:42px;height:28px;text-align:center;font-family:"Times New Roman",serif;font-size:13px;font-weight:700;border:1px solid #cbd5e1;border-radius:5px;padding:2px;background:#f8fafc;transition:border-color 0.2s, background 0.2s;}
+.period-input:focus{outline:none;border-color:#16469d;background:#fff;box-shadow:0 0 0 2px rgba(22,70,157,0.15);}
 .lesson-title{font-weight:bold;margin:0 0 2px}.major{font-weight:bold;margin:2px 0}.sub{margin:1px 0 1px 18px}
 .kpi{border:1px solid #dde5ef;border-radius:9px;padding:10px}.kpi b{display:block;font-size:18px;margin-top:4px}.kpi .breakdown{font-size:13px;line-height:1.55;margin-top:7px;color:#334155}.pending{color:#b45309;font-weight:700}
 
@@ -438,7 +440,12 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;/div&gt;
 
 &lt;div class=&quot;card&quot;&gt;
-&lt;div class=&quot;section-title&quot;&gt;4. Sổ đầu bài&lt;/div&gt;
+&lt;div style=&quot;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;&quot;&gt;
+&lt;div class=&quot;section-title&quot; style=&quot;margin:0;&quot;&gt;4. Sổ đầu bài&lt;/div&gt;
+&lt;div style=&quot;display:flex;gap:8px;&quot;&gt;
+  &lt;button type=&quot;button&quot; onclick=&quot;updateScheduleProgression()&quot; style=&quot;background:#16469d;color:#fff;padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:5px;border-radius:6px;&quot; title=&quot;Tự động tính lại nội dung và tiến độ các buổi sau khi chỉnh số tiết&quot;&gt;🔄 CẬP NHẬT LẠI TIẾN ĐỘ&lt;/button&gt;
+&lt;/div&gt;
+&lt;/div&gt;
 &lt;div class=&quot;sheet-wrap&quot;&gt;
 &lt;table class=&quot;sheet&quot; id=&quot;mainTable&quot;&gt;
 &lt;thead&gt;
@@ -1466,16 +1473,117 @@ function displaySessionItems(sessionIndex){
 }
 
 
+function onPeriodChange(si, type, value) {
+  const val = Math.max(0, parseInt(value, 10) || 0);
+  if (!currentSessions[si]) return;
+  if (!currentSessions[si].overrideCounts) {
+    const c = {LT:0, TH:0, KT:0};
+    (currentSessions[si].units || []).forEach(x =&gt; { if(c[x.type] !== undefined) c[x.type]++; });
+    currentSessions[si].overrideCounts = c;
+  }
+  currentSessions[si].overrideCounts[type] = val;
+  if(typeof saveStateToBackend === 'function') saveStateToBackend();
+}
+
+function updateScheduleProgression() {
+  if(!programSequence.length){
+    alert(&quot;Chưa có dữ liệu Chương trình môn học.&quot;);
+    return;
+  }
+  recalcAssessments();
+  const units = buildProgramUnits();
+  if(!units.length){
+    alert(&quot;Chưa có số tiết hợp lệ từ chương trình môn học.&quot;);
+    return;
+  }
+
+  const slots = [...document.querySelectorAll(&quot;.slot&quot;)].map(s=&gt;({
+    day:Number(s.querySelector(&quot;.weekday&quot;).value),
+    periods:Number(s.querySelector(&quot;.periods&quot;).value)||0
+  })).filter(x=&gt;x.periods&gt;0);
+
+  if(!slots.length){
+    alert(&quot;Vui lòng khai báo ít nhất 1 buổi học trong tuần.&quot;);
+    return;
+  }
+
+  const startValue = document.getElementById(&quot;startDate&quot;).value;
+  if(!startValue){
+    alert(&quot;Vui lòng chọn ngày bắt đầu.&quot;);
+    return;
+  }
+
+  // Preserve overridden period counts from table inputs
+  const sessionOverrides = [];
+  currentSessions.forEach((s, idx) =&gt; {
+    const ltInput = document.getElementById('p_lt_' + idx);
+    const thInput = document.getElementById('p_th_' + idx);
+    const ktInput = document.getElementById('p_kt_' + idx);
+    if (ltInput && thInput && ktInput) {
+      sessionOverrides[idx] = {
+        LT: Math.max(0, parseInt(ltInput.value, 10) || 0),
+        TH: Math.max(0, parseInt(thInput.value, 10) || 0),
+        KT: Math.max(0, parseInt(ktInput.value, 10) || 0)
+      };
+    } else if (s.overrideCounts) {
+      sessionOverrides[idx] = { ...s.overrideCounts };
+    }
+  });
+
+  const estimatedWeeks = Math.ceil(units.length / Math.max(1, slots.reduce((s,x)=&gt;s+x.periods,0)));
+  const needed = estimatedWeeks * slots.length + slots.length + 30;
+  const start = new Date(startValue + &quot;T00:00:00&quot;);
+  const dates = nextScheduledDates(start, slots, needed);
+
+  const newSessions = [];
+  let cursor = 0, di = 0;
+
+  while (cursor &lt; units.length && di &lt; dates.length) {
+    let cap;
+    if (sessionOverrides[di] !== undefined) {
+      const totalOverridden = (sessionOverrides[di].LT || 0) + (sessionOverrides[di].TH || 0) + (sessionOverrides[di].KT || 0);
+      cap = totalOverridden &gt; 0 ? totalOverridden : dates[di].periods;
+    } else {
+      cap = dates[di].periods;
+    }
+
+    const sessionUnits = units.slice(cursor, Math.min(cursor + cap, units.length));
+    newSessions.push({
+      date: dates[di].date,
+      units: sessionUnits,
+      overrideCounts: sessionOverrides[di] ? { ...sessionOverrides[di] } : null
+    });
+    cursor += cap;
+    di++;
+  }
+
+  currentSessions = newSessions;
+  renderScheduleTable();
+  if(typeof saveStateToBackend === 'function') saveStateToBackend();
+  if(typeof Swal !== 'undefined') {
+    Swal.fire({
+      text: &quot;Đã cập nhật lại nội dung và tiến độ toàn bộ Sổ đầu bài thành công!&quot;,
+      icon: &quot;success&quot;,
+      confirmButtonColor: &quot;#16469d&quot;
+    });
+  } else {
+    alert(&quot;Đã cập nhật lại nội dung và tiến độ toàn bộ Sổ đầu bài thành công!&quot;);
+  }
+}
+
 function renderScheduleTable() {
  const tb=document.getElementById(&quot;tbody&quot;);
  tb.innerHTML=&quot;&quot;;
 
  currentSessions.forEach((s,si)=&gt;{
-   const c={LT:0,TH:0,KT:0};
-   if(s.units) s.units.forEach(x=&gt;c[x.type]++);
+   let c = {LT:0, TH:0, KT:0};
+   if (s.overrideCounts) {
+     c = { ...s.overrideCounts };
+   } else if (s.units) {
+     s.units.forEach(x =&gt; { if(c[x.type] !== undefined) c[x.type]++; });
+   }
 
    let content=&quot;&quot;;
-
    const previousSession = si&gt;0 ? currentSessions[si-1] : null;
 
    const prevItemsByLesson = new Map();
@@ -1520,9 +1628,9 @@ function renderScheduleTable() {
    const tr=document.createElement(&quot;tr&quot;);
    tr.innerHTML=`&lt;td class=&quot;stt&quot;&gt;${si+1}&lt;/td&gt;
    &lt;td class=&quot;date&quot;&gt;${fmt(dt)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(dt)}&lt;/span&gt;&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.LT||0}&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.TH||0}&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.KT||0}&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_lt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.LT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'LT', this.value)&quot;&gt;&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_th_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.TH||0}&quot; onchange=&quot;onPeriodChange(${si}, 'TH', this.value)&quot;&gt;&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_kt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.KT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'KT', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;content&quot;&gt;${content}
    &lt;div style=&quot;margin-top:8px&quot;&gt;
      &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#7c3aed&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
@@ -1615,8 +1723,11 @@ function sendSessionToPlanner(index){
    }
  }
 
- const counts={LT:0,TH:0,KT:0};
- s.units.forEach(u=&gt;counts[u.type]=(counts[u.type]||0)+1);
+ const counts = s.overrideCounts ? { ...s.overrideCounts } : {LT:0, TH:0, KT:0};
+ if (!s.overrideCounts && s.units) {
+   s.units.forEach(u=&gt;counts[u.type]=(counts[u.type]||0)+1);
+ }
+ const totalCalculatedPeriods = (counts.LT||0) + (counts.TH||0) + (counts.KT||0);
 
  const lessons=[...new Set(s.units.map(u=&gt;u.lesson).filter(Boolean))];
 
@@ -1693,7 +1804,7 @@ function sendSessionToPlanner(index){
    courseCode:course.code||&quot;&quot;,
    date:fmt(new Date(s.date)),
    weekday:weekdayName(new Date(s.date)),
-   periods:s.units.length,
+   periods: (totalCalculatedPeriods > 0 ? totalCalculatedPeriods : s.units.length),
    lt:counts.LT||0,
    th:counts.TH||0,
    kt:counts.KT||0,
@@ -1722,7 +1833,15 @@ function sendSessionToPlanner(index){
  parent.postMessage({type:&quot;OPEN_LESSON_PLAN_FROM_SCHEDULE&quot;,payload},&quot;*&quot;);
 }
 function exportExcel(){
- const table=document.getElementById(&quot;mainTable&quot;).outerHTML;
+ const originalTable = document.getElementById(&quot;mainTable&quot;);
+ const clone = originalTable.cloneNode(true);
+ clone.querySelectorAll(&quot;input.period-input&quot;).forEach(inp =&gt; {
+   const span = document.createElement(&quot;span&quot;);
+   span.textContent = inp.value;
+   inp.replaceWith(span);
+ });
+ clone.querySelectorAll(&quot;button&quot;).forEach(btn =&gt; btn.remove());
+ const table = clone.outerHTML;
  const css=`&lt;style&gt;table{border-collapse:collapse;width:100%;font-family:&quot;Times New Roman&quot;;font-size:12pt}th,td{border:1px solid #000;padding:5px;vertical-align:middle}th{text-align:center;font-weight:bold}.stt,.date,.small,.absent,.sign{text-align:center}.content{vertical-align:top}.lesson-title,.major{font-weight:bold}.sub{margin-left:18px}
 .exclusions{margin-top:12px}
 .exclusion-row{display:grid;grid-template-columns:160px 1fr 90px;gap:8px;align-items:end;margin-bottom:8px}
