@@ -3758,6 +3758,30 @@ function getCleanPaperClone(){
     inp.replaceWith(span);
   });
   clone.querySelectorAll(&quot;[contenteditable]&quot;).forEach(x=&gt;x.removeAttribute(&quot;contenteditable&quot;));
+  
+  // Clean markdown asterisks (**bold** -> <b>bold</b>) across all text nodes
+  function cleanNodeMarkdown(node){
+    if(node.nodeType === 3){ // Text node
+      if(node.nodeValue &amp;&amp; node.nodeValue.includes(&quot;*&quot;)){
+        let text = node.nodeValue;
+        if(/\*\*[^*]+?\*\*/.test(text)){
+          const span = document.createElement(&quot;span&quot;);
+          // Convert **text** to <b>text</b>, keeping special characters safe
+          span.innerHTML = text
+            .replace(/&amp;/g, &quot;&amp;amp;&quot;)
+            .replace(/&lt;/g, &quot;&amp;lt;&quot;)
+            .replace(/&gt;/g, &quot;&amp;gt;&quot;)
+            .replace(/\*\*([^*]+?)\*\*/g, &quot;&lt;b&gt;$1&lt;/b&gt;&quot;)
+            .replace(/(^|[^\*])\*([^\*\n\r]+?)\*([^\*]|$)/g, &quot;$1&lt;i&gt;$2&lt;/i&gt;$3&quot;);
+          node.parentNode.replaceChild(span, node);
+        }
+      }
+    } else if(node.nodeType === 1 &amp;&amp; node.childNodes){
+      Array.from(node.childNodes).forEach(child =&gt; cleanNodeMarkdown(child));
+    }
+  }
+  cleanNodeMarkdown(clone);
+
   return clone;
 }
 
