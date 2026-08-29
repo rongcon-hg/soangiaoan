@@ -130,6 +130,8 @@ window.customConfirm = async function(msg) {
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;
 &lt;title&gt;Lập Sổ đầu bài từ Chương trình môn học - By Hunha Hữu Nhân&lt;/title&gt;
 &lt;script src=&quot;https://unpkg.com/mammoth@1.8.0/mammoth.browser.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = &quot;https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js&quot;;&lt;/script&gt;
 &lt;style&gt;
 body{font-family:&quot;Times New Roman&quot;,Times,serif;margin:0;background:#f3f6fa;color:#172033}
 header{background:#16469d;color:#fff;padding:17px 22px}
@@ -354,7 +356,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;filebox&quot;&gt;
 &lt;label&gt;Chọn file chương trình môn học&lt;/label&gt;
 &lt;div style=&quot;display:flex; gap:10px; align-items:center; margin-top:8px;&quot;&gt;
-    &lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
+    &lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
     &lt;button id=&quot;btnUploadDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; white-space:nowrap; border-radius:7px; cursor:pointer;&quot; onclick=&quot;uploadToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
 &lt;/div&gt;
 &lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
@@ -373,9 +375,9 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;card&quot;&gt;
 &lt;div class=&quot;section-title&quot;&gt;2. Tải lên Giáo trình môn học&lt;/div&gt;
 &lt;div class=&quot;filebox&quot;&gt;
-&lt;label&gt;Chọn file giáo trình (Word .docx, Text .txt, .md)&lt;/label&gt;
+&lt;label&gt;Chọn file giáo trình (Word .docx, PDF .pdf, Text .txt, .md)&lt;/label&gt;
 &lt;div style=&quot;display:flex; gap:10px; align-items:center; margin-top:8px;&quot;&gt;
-    &lt;input id=&quot;textbookFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readTextbookFile(this.files[0])&quot;&gt;
+    &lt;input id=&quot;textbookFile&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readTextbookFile(this.files[0])&quot;&gt;
     &lt;button id=&quot;btnUploadTextbookDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; white-space:nowrap; border-radius:7px; cursor:pointer;&quot; onclick=&quot;uploadTextbookToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
 &lt;/div&gt;
 &lt;div class=&quot;file-status&quot; id=&quot;textbookFileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa tải giáo trình môn học. Khi có giáo trình, Bước 2 có thể tự động trích xuất nội dung bài học tương ứng.&lt;/div&gt;
@@ -1079,17 +1081,48 @@ async function uploadTextbookToDrive() {
     }
 }
 
+async function extractTextFromPdf(file) {
+  if (typeof pdfjsLib === &quot;undefined&quot;) {
+    throw new Error(&quot;Chưa tải được thư viện đọc PDF. Vui lòng kiểm tra kết nối mạng.&quot;);
+  }
+  const arrayBuffer = await file.arrayBuffer();
+  const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+  const pdfDoc = await loadingTask.promise;
+  let fullText = &quot;&quot;;
+  for (let pageNum = 1; pageNum &lt;= pdfDoc.numPages; pageNum++) {
+    const page = await pdfDoc.getPage(pageNum);
+    const textContent = await page.getTextContent();
+    const pageItems = textContent.items || [];
+    let lastY = null;
+    let pageStr = &quot;&quot;;
+    for (const item of pageItems) {
+      if (lastY !== null &amp;&amp; Math.abs(item.transform[5] - lastY) &gt; 5) {
+        pageStr += &quot;\n&quot;;
+      } else if (pageStr.length &gt; 0 &amp;&amp; !pageStr.endsWith(&quot; &quot;) &amp;&amp; !pageStr.endsWith(&quot;\n&quot;)) {
+        pageStr += &quot; &quot;;
+      }
+      pageStr += item.str;
+      lastY = item.transform[5];
+    }
+    fullText += pageStr + &quot;\n\n&quot;;
+  }
+  return fullText.trim();
+}
+
 async function readTextbookFile(file) {
     if(!file) return;
     const status = document.getElementById(&quot;textbookFileStatus&quot;);
     status.textContent = &quot;Đang đọc giáo trình: &quot; + file.name + &quot; ...&quot;;
     try {
         let text = &quot;&quot;;
-        if(file.name.toLowerCase().endsWith(&quot;.docx&quot;)) {
+        const ext = file.name.split(&quot;.&quot;).pop().toLowerCase();
+        if(ext === &quot;docx&quot;) {
             if(typeof mammoth === &quot;undefined&quot;) throw new Error(&quot;Không tải được thư viện đọc Word DOCX.&quot;);
             const buf = await file.arrayBuffer();
             const rawResult = await mammoth.extractRawText({ arrayBuffer: buf });
             text = rawResult.value;
+        } else if(ext === &quot;pdf&quot;) {
+            text = await extractTextFromPdf(file);
         } else {
             text = await file.text();
         }
@@ -1203,17 +1236,17 @@ async function readProgramFile(file){
    document.getElementById('btnUploadDrive').style.display = 'block';
 
    let text=&quot;&quot;, htmlText=&quot;&quot;;
-   if(file.name.toLowerCase().endsWith(&quot;.docx&quot;)){
+   const ext = file.name.split(&quot;.&quot;).pop().toLowerCase();
+   if(ext === &quot;docx&quot;){
      if(typeof mammoth===&quot;undefined&quot;) throw new Error(&quot;Không tải được bộ đọc DOCX. Hãy kiểm tra kết nối Internet.&quot;);
      const buf=await file.arrayBuffer();
-
-     // Phải tạo bản sao vì ArrayBuffer có thể bị thư viện sử dụng.
      const rawResult=await mammoth.extractRawText({arrayBuffer:buf.slice(0)});
-
      const htmlResult=await mammoth.convertToHtml({arrayBuffer:buf.slice(0)});
      text=rawResult.value;
      htmlText=htmlResult.value;
-   }else{
+   } else if(ext === &quot;pdf&quot;){
+     text = await extractTextFromPdf(file);
+   } else {
      text=await file.text();
    }
 
@@ -3849,12 +3882,9 @@ function exportWord(){
     table.footer-sign-table td{width:50%!important;border:none!important;mso-border-alt:none!important;text-align:center!important;vertical-align:top!important;padding:5px 0!important;line-height:1.4!important}
   `;
 
-  const doc=`&lt;!doctype html&gt;
-  &lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot;
-        xmlns:w=&quot;urn:schemas-microsoft-com:office:word&quot;
-        xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;
+  const doc=`&lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot; xmlns:w=&quot;urn:schemas-microsoft-com:office:word&quot; xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;
   &lt;head&gt;
-    &lt;meta charset=&quot;utf-8&quot;&gt;
+    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
     &lt;title&gt;Giáo án&lt;/title&gt;
     &lt;!--[if gte mso 9]&gt;
     &lt;xml&gt;
@@ -3870,10 +3900,10 @@ function exportWord(){
   &lt;body&gt;${clone.innerHTML}&lt;/body&gt;
   &lt;/html&gt;`;
 
-  const blob=new Blob([&quot;\ufeff&quot;,doc],{type:&quot;application/vnd.openxmlformats-officedocument.wordprocessingml.document;charset=utf-8&quot;});
+  const blob=new Blob([&quot;\ufeff&quot;,doc],{type:&quot;application/msword;charset=utf-8&quot;});
   const a=document.createElement(&quot;a&quot;);
   a.href=URL.createObjectURL(blob);
-  a.download=`Giao_an_${currentProgram()?.code||&quot;mon_hoc&quot;}_${new Date().toISOString().slice(0,10)}.docx`;
+  a.download=`Giao_an_${currentProgram()?.code||&quot;mon_hoc&quot;}_${new Date().toISOString().slice(0,10)}.doc`;
   document.body.appendChild(a);
   a.click();
   setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},300);
