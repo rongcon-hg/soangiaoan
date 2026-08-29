@@ -6,6 +6,33 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }</style>
+<script>
+window._originalAlert = window.alert;
+window.alert = function(msg) {
+    if(typeof Swal !== 'undefined') {
+        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
+    } else {
+        window._originalAlert(msg);
+    }
+};
+window.customConfirm = async function(msg) {
+    if(typeof Swal === 'undefined') return window.confirm(msg);
+    const result = await Swal.fire({
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16469d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+    return result.isConfirmed;
+};
+</script>
+
 </head>
 <body>
     <div id="alert-box"></div>
@@ -152,7 +179,7 @@
         }
 
         async function deleteUser(id) {
-            if(!confirm('Xóa người dùng này?')) return;
+            if(!(await customConfirm('Xóa người dùng này?'))) return;
             try {
                 const res = await fetch(API_URL + '/users/' + id, { method: 'DELETE', headers: getHeaders() });
                 if(!res.ok) throw new Error('Không thể xóa');

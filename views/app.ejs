@@ -99,6 +99,33 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
   <iframe id="scheduleFrame" srcdoc="&lt;!doctype html&gt;
 &lt;html lang=&quot;vi&quot;&gt;
 &lt;head&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/sweetalert2@11&quot;&gt;&lt;/script&gt;
+&lt;style&gt;.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }&lt;/style&gt;
+&lt;script&gt;
+window._originalAlert = window.alert;
+window.alert = function(msg) {
+    if(typeof Swal !== 'undefined') {
+        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
+    } else {
+        window._originalAlert(msg);
+    }
+};
+window.customConfirm = async function(msg) {
+    if(typeof Swal === 'undefined') return window.confirm(msg);
+    const result = await Swal.fire({
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16469d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+    return result.isConfirmed;
+};
+&lt;/script&gt;
+
 &lt;meta charset=&quot;utf-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;
 &lt;title&gt;Lập Sổ đầu bài từ Chương trình môn học - By Hunha Hữu Nhân&lt;/title&gt;
@@ -1707,7 +1734,34 @@ function exportExcel(){
 @media(max-width:700px){.exclusion-row,.exclusion-item{grid-template-columns:1fr}}
 
 &lt;/style&gt;`;
- const xls=`&lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot; xmlns:x=&quot;urn:schemas-microsoft-com:office:excel&quot; xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;${css}&lt;/head&gt;&lt;body&gt;${table}&lt;/body&gt;&lt;/html&gt;`;
+ const xls=`&lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot; xmlns:x=&quot;urn:schemas-microsoft-com:office:excel&quot; xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;&lt;head&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/sweetalert2@11&quot;&gt;&lt;/script&gt;
+&lt;style&gt;.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }&lt;/style&gt;
+&lt;script&gt;
+window._originalAlert = window.alert;
+window.alert = function(msg) {
+    if(typeof Swal !== 'undefined') {
+        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
+    } else {
+        window._originalAlert(msg);
+    }
+};
+window.customConfirm = async function(msg) {
+    if(typeof Swal === 'undefined') return window.confirm(msg);
+    const result = await Swal.fire({
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16469d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+    return result.isConfirmed;
+};
+&lt;/script&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;${css}&lt;/head&gt;&lt;body&gt;${table}&lt;/body&gt;&lt;/html&gt;`;
  const blob=new Blob([&quot;\ufeff&quot;,xls],{type:&quot;application/vnd.ms-excel;charset=utf-8&quot;});
  const a=document.createElement(&quot;a&quot;);a.href=URL.createObjectURL(blob);a.download=&quot;So_dau_bai_&quot;+(course.code||&quot;mon_hoc&quot;)+&quot;.xls&quot;;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
@@ -1733,6 +1787,33 @@ document.getElementById(&quot;tbody&quot;).innerHTML=&quot;&quot;;
   <iframe id="plannerFrame" srcdoc="&lt;!doctype html&gt;
 &lt;html lang=&quot;vi&quot;&gt;
 &lt;head&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/sweetalert2@11&quot;&gt;&lt;/script&gt;
+&lt;style&gt;.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }&lt;/style&gt;
+&lt;script&gt;
+window._originalAlert = window.alert;
+window.alert = function(msg) {
+    if(typeof Swal !== 'undefined') {
+        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
+    } else {
+        window._originalAlert(msg);
+    }
+};
+window.customConfirm = async function(msg) {
+    if(typeof Swal === 'undefined') return window.confirm(msg);
+    const result = await Swal.fire({
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16469d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+    return result.isConfirmed;
+};
+&lt;/script&gt;
+
   &lt;meta charset=&quot;utf-8&quot; /&gt;
   &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot; /&gt;
   &lt;title&gt;Soạn Giáo Án - Bách khoa Nam Sài Gòn&lt;/title&gt;
@@ -2248,7 +2329,7 @@ function renderProgramList(){
   &lt;/div&gt;`).join(&quot;&quot;)
 }
 window.removeProgram=async id=&gt;{
-  if(!confirm(&quot;Xóa chương trình này khỏi dữ liệu trình duyệt?&quot;))return;
+  if(!(await customConfirm(&quot;Xóa chương trình này khỏi dữ liệu trình duyệt?&quot;)))return;
   await deleteProgram(id);programs=await getAll();renderSubjects()
 }
 window.viewProgram=id=&gt;{
@@ -3315,7 +3396,7 @@ async function importJSON(text){
     if(!p0.code||!p0.name||!Array.isArray(p0.lessons)) throw new Error(&quot;JSON chưa đúng cấu trúc chương trình.&quot;);
     const exist=programs.find(p=&gt;p.code===p0.code &amp;&amp; (p.version||&quot;&quot;)===(p0.version||&quot;&quot;));
     if(exist){
-      const choice=confirm(`Đã có ${p0.code}${p0.version?&quot; phiên bản &quot;+p0.version:&quot;&quot;}. Bấm OK để cập nhật; Cancel để lưu bản mới.`);
+      const choice=await customConfirm(`Đã có ${p0.code}${p0.version?&quot; phiên bản &quot;+p0.version:&quot;&quot;}. Bấm OK để cập nhật; Cancel để lưu bản mới.`);
       if(choice){p0.id=exist.id;await putProgram(p0)}
       else{delete p0.id; p0.version=p0.version||new Date().getFullYear()+&quot;-&quot;+Date.now(); await addProgram(p0)}
     }else await addProgram(p0);
@@ -3442,6 +3523,33 @@ function exportWord(){
         xmlns:w=&quot;urn:schemas-microsoft-com:office:word&quot;
         xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;
   &lt;head&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/npm/sweetalert2@11&quot;&gt;&lt;/script&gt;
+&lt;style&gt;.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }&lt;/style&gt;
+&lt;script&gt;
+window._originalAlert = window.alert;
+window.alert = function(msg) {
+    if(typeof Swal !== 'undefined') {
+        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
+    } else {
+        window._originalAlert(msg);
+    }
+};
+window.customConfirm = async function(msg) {
+    if(typeof Swal === 'undefined') return window.confirm(msg);
+    const result = await Swal.fire({
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16469d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+    return result.isConfirmed;
+};
+&lt;/script&gt;
+
     &lt;meta charset=&quot;utf-8&quot;&gt;
     &lt;title&gt;Giáo án&lt;/title&gt;
     &lt;style&gt;${css}&lt;/style&gt;

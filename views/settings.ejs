@@ -37,6 +37,33 @@
             font-size: 0.95rem;
         }
     </style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }</style>
+<script>
+window._originalAlert = window.alert;
+window.alert = function(msg) {
+    if(typeof Swal !== 'undefined') {
+        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
+    } else {
+        window._originalAlert(msg);
+    }
+};
+window.customConfirm = async function(msg) {
+    if(typeof Swal === 'undefined') return window.confirm(msg);
+    const result = await Swal.fire({
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16469d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+    return result.isConfirmed;
+};
+</script>
+
 </head>
 <body>
     <div id="alert-box"></div>
