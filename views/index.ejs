@@ -78,6 +78,48 @@ window.customConfirm = async function(msg) {
             </div>
         </div>
 
+        <!-- Modal Chỉnh sửa Môn học -->
+        <div id="edit-project-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; padding:15px;">
+            <div style="background:#fff; border-radius:12px; max-width:550px; width:100%; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--border); padding-bottom:12px;">
+                    <h3 style="margin:0; font-size:1.15rem; color:var(--primary);"><i class="fas fa-edit"></i> Chỉnh sửa thông tin Môn học</h3>
+                    <button type="button" onclick="closeEditModal()" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:#64748b;">&times;</button>
+                </div>
+                <input type="hidden" id="edit-project-id">
+                <div class="form-group">
+                    <label>Tên Môn học</label>
+                    <input type="text" id="edit-project-name" class="form-control">
+                </div>
+                <div class="grid grid-cols-2">
+                    <div class="form-group">
+                        <label>Mã môn học</label>
+                        <input type="text" id="edit-project-code" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Tổng số giờ</label>
+                        <input type="number" id="edit-project-hours" class="form-control">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2">
+                    <div class="form-group">
+                        <label>Hệ đào tạo</label>
+                        <select id="edit-project-system" class="form-control" style="background:#fff;">
+                            <option value="Trung cấp">Trung cấp</option>
+                            <option value="Cao đẳng">Cao đẳng</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Lớp học</label>
+                        <input type="text" id="edit-project-class" class="form-control" placeholder="VD: CD-CNTT22A">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                    <button class="btn btn-secondary" onclick="closeEditModal()">Hủy</button>
+                    <button class="btn btn-primary" onclick="saveEditProject()"><i class="fas fa-check"></i> Cập nhật</button>
+                </div>
+            </div>
+        </div>
+
         <div id="projects-grid" class="grid grid-cols-2">
             <!-- Render projects here -->
         </div>
@@ -87,6 +129,8 @@ window.customConfirm = async function(msg) {
     <script src="/js/layout.js"></script>
     <script>
         injectLayout('projects', 'Quản lý Môn học');
+        let currentProjectsList = [];
+
         checkAuth().then(user => {
             if(user) {
                 loadProjects();
@@ -97,6 +141,7 @@ window.customConfirm = async function(msg) {
             try {
                 const res = await fetch(API_URL + '/projects', { headers: getHeaders() });
                 const projects = await res.json();
+                currentProjectsList = projects;
                 
                 const grid = document.getElementById('projects-grid');
                 if(projects.length === 0) {
@@ -114,8 +159,9 @@ window.customConfirm = async function(msg) {
                             Mã: <b>${escapeHtml(p.course_code || '---')}</b> &bull; Lớp: <b>${escapeHtml(p.class_name || '---')}</b> &bull; Tổng giờ: <b>${p.total_hours || 0}</b>
                         </div>
                         <div style="display:flex; gap:10px; margin-top:16px;">
-                            <button class="btn btn-primary" onclick="openApp(${p.id})"><i class="fas fa-edit"></i> Soạn Giáo Án</button>
-                            <button class="btn btn-danger" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-primary" onclick="openApp(${p.id})"><i class="fas fa-file-signature"></i> Soạn Giáo Án</button>
+                            <button class="btn btn-secondary" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;" title="Chỉnh sửa thông tin môn học" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger" title="Xóa môn học" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `).join('');
@@ -128,6 +174,56 @@ window.customConfirm = async function(msg) {
 
         function openNewProjectForm() { document.getElementById('new-project-form').style.display = 'block'; }
         function closeNewProjectForm() { document.getElementById('new-project-form').style.display = 'none'; }
+
+        function openEditModal(id) {
+            const p = currentProjectsList.find(x => x.id === id);
+            if(!p) return;
+            document.getElementById('edit-project-id').value = p.id;
+            document.getElementById('edit-project-name').value = p.name || '';
+            document.getElementById('edit-project-code').value = p.course_code || '';
+            document.getElementById('edit-project-hours').value = p.total_hours || 0;
+            document.getElementById('edit-project-system').value = p.system_type || 'Trung cấp';
+            document.getElementById('edit-project-class').value = p.class_name || '';
+            
+            const modal = document.getElementById('edit-project-modal');
+            modal.style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-project-modal').style.display = 'none';
+        }
+
+        async function saveEditProject() {
+            const id = document.getElementById('edit-project-id').value;
+            const name = document.getElementById('edit-project-name').value.trim();
+            const course_code = document.getElementById('edit-project-code').value.trim();
+            const total_hours = document.getElementById('edit-project-hours').value;
+            const system_type = document.getElementById('edit-project-system').value;
+            const class_name = document.getElementById('edit-project-class').value.trim();
+
+            if(!name) return showAlert('Vui lòng nhập tên môn học');
+
+            try {
+                const res = await fetch(API_URL + '/projects/' + id, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        name,
+                        course_code,
+                        total_hours: Number(total_hours),
+                        system_type,
+                        class_name
+                    })
+                });
+                if(!res.ok) throw new Error('Không thể cập nhật môn học');
+                
+                closeEditModal();
+                loadProjects();
+                showAlert('Cập nhật môn học thành công!', 'success');
+            } catch(err) {
+                showAlert(err.message);
+            }
+        }
 
         async function createProject() {
             const name = document.getElementById('project-name').value;
