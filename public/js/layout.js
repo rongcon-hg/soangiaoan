@@ -41,7 +41,7 @@ function injectLayout(pageId, pageTitle) {
             <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
             </div>
             <div>
-                <div class="user-greeting"><span class="hello-text">Xin chào,</span> <b id="topbar-username" style="color:var(--primary)">...</b></div>
+                <div class="user-greeting"><span class="hello-text">Xin chào,</span> <b id="topbar-username" style="color:var(--primary)">...</b> <a href="#" onclick="logout()" style="margin-left: 8px; color: var(--danger); font-size: 1.1em; text-decoration: none;" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a></div>
             </div>
         </div>
     `;

@@ -4,10 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quản lý Sổ đầu bài & Soạn giáo án</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <style>
-body{margin:0;background:#eef3f9;font-family:"Be Vietnam Pro", sans-serif;color:#172033}
-.shell{/*max-width:1540px;margin:0 auto;padding:16px*/}
+body{margin:0;background:#eef3f9;font-family:"Times New Roman",Times,serif;color:#172033}
+.shell{max-width:1540px;margin:0 auto;padding:16px}
 .hero{background:#16469d;color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:16px;box-shadow:0 8px 24px rgba(22,70,157,.18)}
 .hero h1{margin:0 0 6px;font-size:26px}
 .hero p{margin:0;opacity:.95}
@@ -28,7 +27,7 @@ iframe{width:100%;border:0;display:block;background:#fff}
 @media(max-width:900px){#scheduleFrame{height:2700px}#plannerFrame{height:2900px}}
 
 html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,h5,h6{
-  font-family:"Be Vietnam Pro", sans-serif;
+  font-family:"Times New Roman",Times,serif;
 }
 
 
@@ -57,33 +56,16 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
   border: 1px solid #fde68a !important;
 }
 
-
-    .download-btn-mobile { margin-left: auto; }
-    @media(max-width: 1250px) { .btn-text { display: none !important; } button.secondary { padding: 8px 10px !important; } }
-    @media(max-width: 768px) {
-        .download-btn-mobile { margin-left: 0; width: 100%; justify-content: center; margin-top: 10px; }
-        .steps { flex-direction: column; align-items: stretch !important; gap: 8px; }
-        .step-pill { text-align: center; }
-    }
-
-    @media(max-width: 768px) {
-        .btn, .gray, .export, .ai-btn, button:not(.mobile-toggle):not(.back-to-top):not(.close) { width: 100% !important; justify-content: center; margin-bottom: 5px; }
-        .toolbar { flex-direction: column; }
-        .ai-tools { flex-direction: column; }
-        .ai-btn { width: 100%; text-align: center; justify-content: center; }
-        .grid .kpi { margin-bottom: 10px; }
-    }
 </style>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link rel="stylesheet" href="/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="shell">
 <div class="hero">
   <h1>QUẢN LÝ SỔ ĐẦU BÀI & SOẠN GIÁO ÁN</h1>
   
-  <div class="steps" style="align-items:center;"><div class="step-pill">BƯỚC 1 · Lập Sổ đầu bài</div><div class="step-pill">BƯỚC 2 · Soạn giáo án theo từng buổi</div><a href="/templates/chuong_trinh_mon_hoc_mau.docx" download="chuong_trinh_mon_hoc_mau.docx" class="download-btn-mobile" style="background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; border-radius: 99px; text-decoration: none; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='var(--bg)'"><i class="fas fa-download" style="color:var(--primary)"></i> Tải file mẫu Chương trình</a></div>
+  <div class="steps"><div class="step-pill">BƯỚC 1 · Lập Sổ đầu bài</div><div class="step-pill">BƯỚC 2 · Soạn giáo án theo từng buổi</div></div>
 </div>
 
 <section class="section" id="step1">
@@ -107,7 +89,7 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 body{font-family:&quot;Times New Roman&quot;,Times,serif;margin:0;background:#f3f6fa;color:#172033}
 header{background:#16469d;color:#fff;padding:17px 22px}
 header h1{margin:0 0 5px;font-size:22px}
-.wrap{/* max-width:1400px; */margin:18px auto;padding:0 14px}
+.wrap{max-width:1400px;margin:18px auto;padding:0 14px}
 .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:15px;box-shadow:0 3px 14px rgba(0,0,0,.07)}
 .section-title{font-size:18px;font-weight:800;color:#123d82;margin:0 0 12px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
@@ -324,12 +306,8 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;section-title&quot;&gt;1. Tải Chương trình môn học&lt;/div&gt;
 &lt;div class=&quot;filebox&quot;&gt;
 &lt;label&gt;Chọn file chương trình môn học&lt;/label&gt;
-&lt;div style=&quot;display:flex; gap:10px; align-items:center; margin-top:8px;&quot;&gt;
-    &lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
-    &lt;button id=&quot;btnUploadDrive&quot; type=&quot;button&quot; class=&quot;secondary&quot; onclick=&quot;uploadToDrive()&quot; style=&quot;display:none; padding:6px 12px; font-size:13px; white-space:nowrap; border-radius:6px; cursor:pointer;&quot;&gt;Tải lên Drive&lt;/button&gt;
-&lt;/div&gt;
-&lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
-&lt;div id=&quot;driveStatusBox&quot;&gt;&lt;/div&gt;
+&lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
+&lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
 &lt;/div&gt;
 &lt;div class=&quot;grid&quot; style=&quot;margin-top:12px&quot;&gt;
 &lt;div class=&quot;kpi&quot;&gt;Tên môn học&lt;b id=&quot;courseName&quot;&gt;Chưa tải chương trình môn học&lt;/b&gt;&lt;/div&gt;
@@ -358,7 +336,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;schedule-inline&quot;&gt;
   &lt;div class=&quot;field-box field-date&quot;&gt;
     &lt;label&gt;Ngày bắt đầu&lt;/label&gt;
-    &lt;input id=&quot;startDate&quot; type=&quot;date&quot; value=&quot;2026-07-07&quot; onchange=&quot;if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
+    &lt;input id=&quot;startDate&quot; type=&quot;date&quot; value=&quot;2026-07-07&quot;&gt;
   &lt;/div&gt;
   &lt;div class=&quot;field-box field-count&quot;&gt;
     &lt;label&gt;Số buổi học / tuần&lt;/label&gt;
@@ -441,7 +419,7 @@ let currentSessions = [];
 function saveStateToBackend() {
     const scheduleSettings = {
         startDate: document.getElementById(&quot;startDate&quot;).value,
-        slotCount: document.getElementById(&quot;weeklyCount&quot;).value,
+        slotCount: document.getElementById(&quot;slotCount&quot;).value,
         slots: []
     };
     for(let i = 0; i < Number(scheduleSettings.slotCount||0); i++) {
@@ -482,7 +460,7 @@ window.addEventListener(&quot;message&quot;, e => {
         if (payload.scheduleSettings) {
             if(payload.scheduleSettings.startDate) document.getElementById(&quot;startDate&quot;).value = payload.scheduleSettings.startDate;
             if(payload.scheduleSettings.slotCount) {
-                document.getElementById(&quot;weeklyCount&quot;).value = payload.scheduleSettings.slotCount;
+                document.getElementById(&quot;slotCount&quot;).value = payload.scheduleSettings.slotCount;
                 renderWeeklySlots(); // render inputs
                 // Now fill the values
                 payload.scheduleSettings.slots.forEach((s, idx) => {
@@ -499,14 +477,14 @@ window.addEventListener(&quot;message&quot;, e => {
         renderExclusions();
         
         if (currentSessions && currentSessions.length > 0) {
-            renderScheduleTable();
+            displaySessionItems(currentSessions); saveStateToBackend();
         } else {
             updateWeeklyCheck();
         }
         
         const status = document.getElementById(&quot;fileStatus&quot;);
         if(course.driveLink) {
-            status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b><br>📁 <a href='${course.driveLink}' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Mở file Chương trình môn học trên Google Drive</a>`;
+            status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b><br>📁 <a href="${course.driveLink}" target="_blank" style="color:#16469d;font-weight:bold;text-decoration:underline;">Mở file Chương trình môn học trên Google Drive</a>`;
         } else {
             status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b>`;
         }
@@ -796,26 +774,7 @@ function parseProgramTable(htmlText, detailMap){
      continue;
    }
 
-   if(/^(Bài tập|Bài tập tổng hợp)/i.test(name)){
-      const rawLt=cellNumber(cells[3]);
-      const rawTh=cellNumber(cells[4]);
-      const rawTotal=cellNumber(cells[2]);
-      const totalToConvert = rawTotal || (rawLt + rawTh);
-      sequence.push({
-        kind:&quot;lesson&quot;,
-        no: 9999 + sequence.length,
-        title: name.trim(),
-        ltHours: 0,
-        thHours: totalToConvert,
-        ltPeriods: 0,
-        thPeriods: Math.ceil(totalToConvert*60/45),
-        items: [],
-        itemCount: 0
-      });
-      continue;
-    }
-    
-    if(/^(Kiểm tra|Thi)/i.test(name)){
+   if(/^(Kiểm tra|Thi)/i.test(name)){
      if(/^Thi\s+kết\s+thúc\s+môn/i.test(name)) continue;
 
      const ktLt=cellNumber(cells[5]);
@@ -895,110 +854,40 @@ function renderConversionPreview(){
  &lt;/table&gt;`;
 }
 
-
-async function uploadToDrive() {
-    const fileInput = document.getElementById('programFile');
-    const file = fileInput.files[0];
-    if (!file) return;
-
-
-   let token = null;
-   try { token = localStorage.getItem('token') || (window.parent && window.parent.localStorage ? window.parent.localStorage.getItem('token') : null); } catch(e) {}
-   
-   if(token) {
-       let driveStatusDiv = document.getElementById('driveStatusBox');
-       if (!driveStatusDiv) {
-           driveStatusDiv = document.createElement('div');
-           driveStatusDiv.id = 'driveStatusBox';
-           driveStatusDiv.style.marginTop = '10px';
-           
-       }
-       driveStatusDiv.innerHTML = &quot;<span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>&quot;;
-       
-       const chunkSize = 3 * 1024 * 1024; // 3MB per chunk to bypass 4.5MB limit
-       
-       (async () => {
-           try {
-               const startRes = await fetch('/api/drive/start-upload', {
-                   method: 'POST',
-                   headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                   body: JSON.stringify({ fileName: file.name, mimeType: file.name.toLowerCase().endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : (file.type || 'application/octet-stream') })
-               });
-               if (!startRes.ok) {
-                   let errText = await startRes.text();
-                   try { errText = JSON.parse(errText).message || errText; } catch(e) {}
-                   throw new Error(errText);
-               }
-               const { uploadUrl } = await startRes.json();
-               
-               let fileId = null;
-               for (let start = 0; start < file.size; start += chunkSize) {
-                   const end = Math.min(start + chunkSize, file.size);
-                   const chunk = file.slice(start, end);
-                   const chunkRes = await fetch('/api/drive/upload-chunk', {
-                       method: 'PUT',
-                       headers: {
-                           'Authorization': 'Bearer ' + token,
-                           'X-Upload-Url': uploadUrl,
-                           'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + file.size,
-                           'Content-Type': 'application/octet-stream'
-                       },
-                       body: chunk
-                   });
-                   
-                   if (chunkRes.status === 308) {
-                       continue;
-                   } else if (chunkRes.ok) {
-                       const data = await chunkRes.json();
-                       fileId = data.fileId;
-                       break;
-                   } else {
-                       let errText = await chunkRes.text();
-                       try { errText = JSON.parse(errText).error || errText; } catch(e) {}
-                       throw new Error(errText);
-                   }
-               }
-               if (!fileId) throw new Error('Upload incomplete');
-               
-               const finishRes = await fetch('/api/drive/finish-upload', {
-                   method: 'POST',
-                   headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                   body: JSON.stringify({ fileId })
-               });
-               if (!finishRes.ok) {
-                   let errText = await finishRes.text();
-                   try { errText = JSON.parse(errText).error || errText; } catch(e) {}
-                   throw new Error(errText);
-               }
-               const { url } = await finishRes.json();
-               
-               driveStatusDiv.innerHTML = &quot;<span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='&quot; + url + &quot;' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Xem trên Google Drive</a></span>&quot;;
-               course.driveLink = url;
-               if(typeof saveStateToBackend === 'function') saveStateToBackend();
-           } catch(err) {
-               console.error(err);
-               driveStatusDiv.innerHTML = &quot;<span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive:</b> &quot; + (err.message || err.toString()) + &quot;</span>&quot;;
-           }
-       })();
-   }
-}
-
 async function readProgramFile(file){
  if(!file)return;
  const status=document.getElementById(&quot;fileStatus&quot;);
  status.textContent=&quot;Đang đọc: &quot;+file.name+&quot; ...&quot;;
 
  try{
-   // Upload moved to manual button
-   document.getElementById('btnUploadDrive').style.display = 'block';
-
    let text=&quot;&quot;, htmlText=&quot;&quot;;
    if(file.name.toLowerCase().endsWith(&quot;.docx&quot;)){
      if(typeof mammoth===&quot;undefined&quot;) throw new Error(&quot;Không tải được bộ đọc DOCX. Hãy kiểm tra kết nối Internet.&quot;);
      const buf=await file.arrayBuffer();
 
      // Phải tạo bản sao vì ArrayBuffer có thể bị thư viện sử dụng.
+     
      const rawResult=await mammoth.extractRawText({arrayBuffer:buf.slice(0)});
+     
+     // Upload background
+     if(window.parent.localStorage.getItem('token')) {
+         const oldHtml = status.innerHTML;
+         status.innerHTML = oldHtml + &quot;<br><span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>&quot;;
+         const formData = new FormData();
+         formData.append(&quot;file&quot;, file);
+         fetch('/api/drive/upload', {
+             method: 'POST',
+             headers: { 'Authorization': 'Bearer ' + window.parent.localStorage.getItem('token') },
+             body: formData
+         }).then(res => res.json()).then(data => {
+             status.innerHTML = oldHtml + &quot;<br><span style='color:#166534;'>✅ <b>Đã upload thành công:</b> <a href='&quot; + data.url + &quot;' target='_blank'>Xem trên Google Drive</a></span>&quot;;
+             course.driveLink = data.url;
+             if(typeof saveStateToBackend === 'function') saveStateToBackend();
+         }).catch(err => {
+             console.error(err);
+             status.innerHTML = oldHtml + &quot;<br><span style='color:#b45309;'>❌ <b>Lỗi khi đẩy file lên Google Drive.</b></span>&quot;;
+         });
+     }
 
      const htmlResult=await mammoth.convertToHtml({arrayBuffer:buf.slice(0)});
      text=rawResult.value;
@@ -1074,11 +963,11 @@ function renderWeeklySlots(){
    const div=document.createElement(&quot;div&quot;);div.className=&quot;slot&quot;;
    div.innerHTML=`&lt;label&gt;Buổi ${i+1}&lt;/label&gt;
    &lt;div class=&quot;slot-row&quot;&gt;
-     &lt;select class=&quot;weekday&quot; id=&quot;wd${i}&quot; onchange=&quot;updateWeeklyCheck(); if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
+     &lt;select class=&quot;weekday&quot; onchange=&quot;updateWeeklyCheck()&quot;&gt;
        &lt;option value=&quot;1&quot;&gt;Thứ 2&lt;/option&gt;&lt;option value=&quot;2&quot;&gt;Thứ 3&lt;/option&gt;&lt;option value=&quot;3&quot;&gt;Thứ 4&lt;/option&gt;
        &lt;option value=&quot;4&quot;&gt;Thứ 5&lt;/option&gt;&lt;option value=&quot;5&quot;&gt;Thứ 6&lt;/option&gt;&lt;option value=&quot;6&quot;&gt;Thứ 7&lt;/option&gt;&lt;option value=&quot;0&quot;&gt;Chủ nhật&lt;/option&gt;
      &lt;/select&gt;
-     &lt;input class=&quot;periods&quot; id=&quot;cp${i}&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;10&quot; value=&quot;${old[i]?.periods||5}&quot; oninput=&quot;updateWeeklyCheck(); if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
+     &lt;input class=&quot;periods&quot; type=&quot;number&quot; min=&quot;1&quot; max=&quot;10&quot; value=&quot;${old[i]?.periods||5}&quot; oninput=&quot;updateWeeklyCheck()&quot;&gt;
      &lt;span class=&quot;slot-period-label&quot;&gt;tiết&lt;/span&gt;
    &lt;/div&gt;`;
    box.appendChild(div);
@@ -1390,29 +1279,31 @@ function isExcludedDate(d){
 }
 
 function nextScheduledDates(start, slots, needed){
-  const slotsByDay = new Map();
-  slots.forEach(s =&gt; {
-    const wd = Number(s.day);
-    if (!slotsByDay.has(wd)) slotsByDay.set(wd, []);
-    slotsByDay.get(wd).push(Number(s.periods));
-  });
+ // Map cố định: thứ nào học bao nhiêu tiết thì giữ nguyên suốt khóa.
+ const weekdayPeriods=new Map();
+ slots.forEach(s=&gt;weekdayPeriods.set(Number(s.day), Number(s.periods)));
 
-  let dates=[];
-  let d=new Date(start);
-  let guard=0;
+ let dates=[];
+ let d=new Date(start);
+ let guard=0;
 
-  while(dates.length&lt;needed &amp;&amp; guard&lt;3000){
-    const wd=d.getDay();
-    if(slotsByDay.has(wd) &amp;&amp; !isExcludedDate(d)){
-      const daySlots = slotsByDay.get(wd);
-      for(const periods of daySlots) {
-        dates.push({ date:new Date(d), weekday:wd, periods:periods });
-      }
-    }
-    d.setDate(d.getDate()+1);
-    guard++;
-  }
-  return dates;
+ while(dates.length&lt;needed &amp;&amp; guard&lt;3000){
+   const wd=d.getDay();
+
+   // Chỉ xếp lịch nếu đúng một thứ đã khai báo và ngày đó không nằm trong kỳ nghỉ.
+   if(weekdayPeriods.has(wd) &amp;&amp; !isExcludedDate(d)){
+     dates.push({
+       date:new Date(d),
+       weekday:wd,
+       periods:weekdayPeriods.get(wd)
+     });
+   }
+
+   // Ngày nghỉ chỉ bị bỏ qua. Không chuyển &quot;quota tiết&quot; của ngày nghỉ sang ngày kế tiếp.
+   d.setDate(d.getDate()+1);
+   guard++;
+ }
+ return dates;
 }
 
 
@@ -1438,76 +1329,6 @@ function displaySessionItems(sessionIndex){
   }));
 }
 
-
-function renderScheduleTable() {
- const tb=document.getElementById(&quot;tbody&quot;);
- tb.innerHTML=&quot;&quot;;
-
- currentSessions.forEach((s,si)=&gt;{
-   const c={LT:0,TH:0,KT:0};
-   if(s.units) s.units.forEach(x=&gt;c[x.type]++);
-
-   let content=&quot;&quot;;
-
-   const previousSession = si&gt;0 ? currentSessions[si-1] : null;
-
-   const prevItemsByLesson = new Map();
-   if(previousSession){
-     (previousSession.units||[]).forEach(u=&gt;{
-       if(!prevItemsByLesson.has(u.lesson)) prevItemsByLesson.set(u.lesson,new Set());
-       (u.items||[]).forEach(it=&gt;{
-         const txt=Array.isArray(it)?String(it[1]||&quot;&quot;).trim():String(it||&quot;&quot;).trim();
-         if(txt) prevItemsByLesson.get(u.lesson).add(txt);
-       });
-     });
-   }
-
-   const orderedLessons=[];
-   (s.units||[]).forEach(u=&gt;{
-     if(u.lesson && !orderedLessons.includes(u.lesson)) orderedLessons.push(u.lesson);
-   });
-
-   orderedLessons.forEach(lessonName=&gt;{
-     content+=`&lt;div class=&quot;lesson-title&quot;&gt;${esc(lessonName)}&lt;/div&gt;`;
-
-     const shownThisLesson=new Set();
-
-     (s.units||[]).filter(u=&gt;u.lesson===lessonName).forEach(u=&gt;{
-       (u.items||[]).forEach(it=&gt;{
-         const txt=Array.isArray(it)?String(it[1]||&quot;&quot;).trim():String(it||&quot;&quot;).trim();
-         const cls=Array.isArray(it)?(it[0]||&quot;major&quot;):&quot;major&quot;;
-         if(!txt) return;
-
-         if(shownThisLesson.has(txt)) return;
-         shownThisLesson.add(txt);
-
-         const continued = prevItemsByLesson.get(lessonName)?.has(txt) || false;
-         const displayTxt = continued ? `${txt} (tiếp theo)` : txt;
-
-         content+=`&lt;div class=&quot;${cls}&quot;&gt;${esc(displayTxt)}&lt;/div&gt;`;
-       });
-     });
-   });
-
-   const dt = new Date(s.date);
-   const tr=document.createElement(&quot;tr&quot;);
-   tr.innerHTML=`&lt;td class=&quot;stt&quot;&gt;${si+1}&lt;/td&gt;
-   &lt;td class=&quot;date&quot;&gt;${fmt(dt)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(dt)}&lt;/span&gt;&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.LT||0}&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.TH||0}&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.KT||0}&lt;/td&gt;
-   &lt;td class=&quot;content&quot;&gt;${content}
-   &lt;div style=&quot;margin-top:8px&quot;&gt;
-     &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#7c3aed&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
-   &lt;/div&gt;
-   &lt;/td&gt;
-   &lt;td class=&quot;absent&quot;&gt;&lt;/td&gt;
-   &lt;td class=&quot;sign&quot;&gt;&lt;/td&gt;`;
-   tb.appendChild(tr);
- });
-}
-
-
 function buildSchedule(){
  if(!programSequence.length){
    alert(&quot;Chưa có dữ liệu Chương trình môn học để chia lịch.&quot;);
@@ -1531,7 +1352,11 @@ function buildSchedule(){
    return;
  }
 
- 
+ const unique=new Set(slots.map(x=&gt;x.day));
+ if(unique.size!==slots.length){
+   alert(&quot;Các buổi trong tuần không được chọn trùng cùng một thứ.&quot;);
+   return;
+ }
 
  const weeklyPeriods=slots.reduce((s,x)=&gt;s+x.periods,0);
  const estimatedWeeks=Math.ceil(units.length/Math.max(1,weeklyPeriods));
@@ -1545,6 +1370,15 @@ function buildSchedule(){
  const start=new Date(startValue+&quot;T00:00:00&quot;);
  const dates=nextScheduledDates(start,slots,needed);
 
+ // Kiểm tra an toàn: số tiết của mỗi ngày phải đúng cấu hình của chính thứ đó.
+ const weekdayConfig=new Map(slots.map(s=&gt;[Number(s.day),Number(s.periods)]));
+ for(const x of dates){
+   const expected=weekdayConfig.get(x.date.getDay());
+   if(expected!==x.periods){
+     alert(&quot;Lỗi cấu hình lịch: số tiết của ngày &quot;+fmt(x.date)+&quot; không khớp với thứ trong tuần.&quot;);
+     return;
+   }
+ }
 
  const sessions=[];
  let cursor=0,di=0;
@@ -1559,8 +1393,75 @@ function buildSchedule(){
  }
 
  currentSessions=sessions;
- renderScheduleTable();
- if(typeof saveStateToBackend === 'function') saveStateToBackend();
+ const tb=document.getElementById(&quot;tbody&quot;);
+ tb.innerHTML=&quot;&quot;;
+
+ sessions.forEach((s,si)=&gt;{
+   const c={LT:0,TH:0,KT:0};
+   s.units.forEach(x=&gt;c[x.type]++);
+
+   let content=&quot;&quot;;
+
+   // Nhóm đúng theo thứ tự xuất hiện:
+   // TÊN BÀI -&gt; các đề mục của chính bài đó -&gt; rồi mới sang BÀI kế tiếp.
+   const previousSession = si&gt;0 ? currentSessions[si-1] : null;
+
+   // Các đề mục đã xuất hiện ở buổi trước, lưu theo từng tên bài.
+   const prevItemsByLesson = new Map();
+   if(previousSession){
+     (previousSession.units||[]).forEach(u=&gt;{
+       if(!prevItemsByLesson.has(u.lesson)) prevItemsByLesson.set(u.lesson,new Set());
+       (u.items||[]).forEach(it=&gt;{
+         const txt=Array.isArray(it)?String(it[1]||&quot;&quot;).trim():String(it||&quot;&quot;).trim();
+         if(txt) prevItemsByLesson.get(u.lesson).add(txt);
+       });
+     });
+   }
+
+   const orderedLessons=[];
+   (s.units||[]).forEach(u=&gt;{
+     if(u.lesson &amp;&amp; !orderedLessons.includes(u.lesson)) orderedLessons.push(u.lesson);
+   });
+
+   orderedLessons.forEach(lessonName=&gt;{
+     content+=`&lt;div class=&quot;lesson-title&quot;&gt;${esc(lessonName)}&lt;/div&gt;`;
+
+     const shownThisLesson=new Set();
+
+     (s.units||[]).filter(u=&gt;u.lesson===lessonName).forEach(u=&gt;{
+       (u.items||[]).forEach(it=&gt;{
+         const txt=Array.isArray(it)?String(it[1]||&quot;&quot;).trim():String(it||&quot;&quot;).trim();
+         const cls=Array.isArray(it)?(it[0]||&quot;major&quot;):&quot;major&quot;;
+         if(!txt) return;
+
+         // Trong cùng một buổi, cùng một đề mục của cùng một bài chỉ hiện 1 lần.
+         if(shownThisLesson.has(txt)) return;
+         shownThisLesson.add(txt);
+
+         // Chỉ ghi &quot;(tiếp theo)&quot; nếu đúng đề mục của đúng bài đã xuất hiện ở buổi trước.
+         const continued = prevItemsByLesson.get(lessonName)?.has(txt) || false;
+         const displayTxt = continued ? `${txt} (tiếp theo)` : txt;
+
+         content+=`&lt;div class=&quot;${cls}&quot;&gt;${esc(displayTxt)}&lt;/div&gt;`;
+       });
+     });
+   });
+
+   const tr=document.createElement(&quot;tr&quot;);
+   tr.innerHTML=`&lt;td class=&quot;stt&quot;&gt;${si+1}&lt;/td&gt;
+   &lt;td class=&quot;date&quot;&gt;${fmt(s.date)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(s.date)}&lt;/span&gt;&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;${c.LT||0}&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;${c.TH||0}&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;${c.KT||0}&lt;/td&gt;
+   &lt;td class=&quot;content&quot;&gt;${content}
+   &lt;div style=&quot;margin-top:8px&quot;&gt;
+     &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#7c3aed&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
+   &lt;/div&gt;
+   &lt;/td&gt;
+   &lt;td class=&quot;absent&quot;&gt;&lt;/td&gt;
+   &lt;td class=&quot;sign&quot;&gt;&lt;/td&gt;`;
+   tb.appendChild(tr);
+ });
 }
 
 
@@ -1727,7 +1628,7 @@ document.getElementById(&quot;tbody&quot;).innerHTML=&quot;&quot;;
       <h2>BƯỚC 2. SOẠN GIÁO ÁN TỪ SỔ ĐẦU BÀI</h2>
       <p>Bước 2 để trống hoàn toàn cho đến khi Bước 1 tải chương trình, chia lịch và chọn một buổi học. Khi đó Môn học – Mã môn, Bài/Chương, Loại giáo án, Số tiết và Tổng thời gian được truyền/tính trực tiếp từ đúng buổi trong Sổ đầu bài và bị khóa, không cho chọn lại.</p>
     </div>
-    <div class="actions"><button class="secondary" onclick="switchTab(1)" title="Quay lại" style="display:inline-flex;align-items:center;gap:6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> <span class="btn-text">Quay lại</span></button></div>
+    <div class="actions"><button class="secondary" onclick="switchTab(1)">← Quay lại Sổ đầu bài</button></div>
   </div>
   <div id="transferStatus"></div>
   <iframe id="plannerFrame" srcdoc="&lt;!doctype html&gt;
@@ -1777,7 +1678,7 @@ document.getElementById(&quot;tbody&quot;).innerHTML=&quot;&quot;;
   .paper tfoot{display:table-footer-group}
 }
     button,input,select,textarea{font:inherit}
-    .app{/* max-width:1500px; */margin:auto;padding:18px}
+    .app{max-width:1500px;margin:auto;padding:18px}
     .topbar{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:16px}
     .brand h1{margin:0;font-size:30px;color:var(--primary)}
     .brand p{margin:5px 0 0;color:var(--muted)}
@@ -1852,7 +1753,7 @@ table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%}
 .lesson-group-title{font-weight:bold;margin-top:3px}
 .lesson-group .exact-outline-item{margin-left:20px;font-weight:bold;line-height:1.25}
     .hidden{display:none!important}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-start;justify-content:center;padding:60px 20px 20px;z-index:99}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:99}
     .modal-box{background:#fff;width:min(920px,96vw);max-height:90vh;overflow:auto;border-radius:14px;border:1px solid var(--line)}
     .modal-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;border-bottom:1px solid var(--line)}
     .modal-body{padding:16px}
@@ -1861,8 +1762,6 @@ table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%}
     .checkitem input{width:auto;margin-top:4px}
     .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--primary);font-size:12px}
     .note{background:#fffceb;border:1px solid #f2df91;padding:10px;border-radius:9px;font-size:13px}
-    button { display: inline-flex; align-items: center; gap: 6px; justify-content: center; } button svg { flex-shrink: 0; }
-    @media(max-width:1250px) { .btn-text { display: none !important; } .btn { padding: 9px !important; } }
     @media(max-width:1000px){.grid{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.preview-wrap{overflow:auto}}
     @media print{
       body{background:#fff}.topbar,.left,.no-print{display:none!important}.grid{display:block}.card{border:0;box-shadow:none}.preview-wrap{padding:0}
@@ -1884,12 +1783,11 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
       &lt;p&gt;Chế độ bám sát Skill Soạn Giáo Án • Đúng mẫu • Đúng chương trình • Đúng thời gian • Nội dung chi tiết&lt;/p&gt;
     &lt;/div&gt;
     &lt;div class=&quot;toolbar&quot;&gt;
-      &lt;button class=&quot;btn primary&quot; id=&quot;btnSaveLesson&quot; title=&quot;Lưu giáo án&quot; style=&quot;background:#059669;display:none&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;17 21 17 13 7 13 7 21&quot;&gt;&lt;/polyline&gt;&lt;polyline points=&quot;7 3 7 8 15 8&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Lưu giáo án&lt;/span&gt;&lt;/button&gt;
-      &lt;button class=&quot;btn&quot; id=&quot;btnBackup&quot; title=&quot;Sao lưu dữ liệu&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;7 10 12 15 17 10&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;12&quot; y1=&quot;15&quot; x2=&quot;12&quot; y2=&quot;3&quot;&gt;&lt;/line&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Sao lưu dữ liệu&lt;/span&gt;&lt;/button&gt;
-      &lt;button class=&quot;btn&quot; id=&quot;btnRestore&quot; title=&quot;Khôi phục&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;17 8 12 3 7 8&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;12&quot; y1=&quot;3&quot; x2=&quot;12&quot; y2=&quot;15&quot;&gt;&lt;/line&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Khôi phục&lt;/span&gt;&lt;/button&gt;
-      &lt;button class=&quot;btn&quot; onclick=&quot;window.print()&quot; title=&quot;In qua trình duyệt; nếu thấy header/footer hãy tắt Headers and footers trong hộp thoại in&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;polyline points=&quot;6 9 6 2 18 2 18 9&quot;&gt;&lt;/polyline&gt;&lt;path d=&quot;M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2&quot;&gt;&lt;/path&gt;&lt;rect x=&quot;6&quot; y=&quot;14&quot; width=&quot;12&quot; height=&quot;8&quot;&gt;&lt;/rect&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;In&lt;/span&gt;&lt;/button&gt;
-      &lt;button class=&quot;btn primary&quot; id=&quot;btnExportWord&quot; title=&quot;Xuất Word&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;8 10 10 16 12 10 14 16 16 10&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Xuất Word&lt;/span&gt;&lt;/button&gt;
-      &lt;button class=&quot;btn primary&quot; id=&quot;btnExportPdf&quot; title=&quot;Xuất PDF A4 sạch, không có header/footer của trình duyệt&quot;&gt;&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z&quot;&gt;&lt;/path&gt;&lt;polyline points=&quot;14 2 14 8 20 8&quot;&gt;&lt;/polyline&gt;&lt;line x1=&quot;16&quot; y1=&quot;13&quot; x2=&quot;8&quot; y2=&quot;13&quot;&gt;&lt;/line&gt;&lt;line x1=&quot;16&quot; y1=&quot;17&quot; x2=&quot;8&quot; y2=&quot;17&quot;&gt;&lt;/line&gt;&lt;polyline points=&quot;10 9 9 9 8 9&quot;&gt;&lt;/polyline&gt;&lt;/svg&gt; &lt;span class=&quot;btn-text&quot;&gt;Xuất PDF&lt;/span&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; id=&quot;btnBackup&quot;&gt;Sao lưu dữ liệu&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; id=&quot;btnRestore&quot;&gt;Khôi phục&lt;/button&gt;
+      &lt;button class=&quot;btn&quot; onclick=&quot;window.print()&quot; title=&quot;In qua trình duyệt; nếu thấy header/footer hãy tắt Headers and footers trong hộp thoại in&quot;&gt;In&lt;/button&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;btnExportWord&quot;&gt;Xuất Word&lt;/button&gt;
+      &lt;button class=&quot;btn primary&quot; id=&quot;btnExportPdf&quot; title=&quot;Xuất PDF A4 sạch, không có header/footer của trình duyệt&quot;&gt;Xuất PDF&lt;/button&gt;
     &lt;/div&gt;
   &lt;/div&gt;
 
@@ -2208,7 +2106,7 @@ function renderLessons(){
 }
 function currentLesson(){const p=currentProgram();return p?.lessons?.[Number($(&quot;#lesson&quot;).value)]}
 function renderSections(){
-  const l=currentLesson();$(&quot;#section&quot;).innerHTML=(l?.sections||[]).map((s,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;\${s.title || &quot;Nội dung từ Sổ đầu bài&quot;}&lt;/option&gt;`).join(&quot;&quot;);
+  const l=currentLesson();$(&quot;#section&quot;).innerHTML=(l?.sections||[]).map((s,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;${s.title}&lt;/option&gt;`).join(&quot;&quot;);
   renderSubitems()
 }
 function currentSection(){return currentLesson()?.sections?.[Number($(&quot;#section&quot;).value)]}
@@ -3156,10 +3054,6 @@ QUY TẮC ĐẦU RA:
 `;
 }
 window.runRowAI=async function(btn,action){
-  const originalHtml=btn.innerHTML;
-  btn.innerHTML=&quot;⏳ Đang xử lý...&quot;;
-  btn.disabled=true;
-
   const cell=btn.closest(&quot;.ai-content-cell&quot;);
   if(!cell)return;
   const oldText=cell.querySelector(&quot;.ai-text&quot;)?.innerText.trim()||&quot;&quot;;
@@ -3177,8 +3071,6 @@ window.runRowAI=async function(btn,action){
     alert(&quot;Không gọi được Gemini: &quot;+e.message);
   }finally{
     btn.closest(&quot;.ai-tools&quot;).classList.remove(&quot;ai-loading&quot;);
-    btn.innerHTML=originalHtml;
-    btn.disabled=false;
   }
 }
 function showAICompare(cell,oldText,newText){
@@ -3205,9 +3097,6 @@ function showAICompare(cell,oldText,newText){
 }
 async function runWholeAI(){
   if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước.&quot;);
-  const btn=document.getElementById(&quot;btnAIWhole&quot;);
-  const originalHtml=btn?btn.innerHTML:&quot;&quot;;
-  if(btn){btn.innerHTML=&quot;⏳ Đang xử lý toàn bộ...&quot;;btn.disabled=true;}
   try{
     if(document.fonts &amp;&amp; document.fonts.ready){
       await document.fonts.ready;
@@ -3270,7 +3159,6 @@ Yêu cầu:
     $(&quot;#aiStatus&quot;).textContent=&quot;Lỗi Gemini: &quot;+e.message;
     alert(e.message);
   }
-  if(btn){btn.innerHTML=originalHtml;btn.disabled=false;}
 }
 
 function runTimeCheck(){
@@ -3329,7 +3217,7 @@ function basicParseText(text, filename){
   const hours=Number((clean.match(/(?:Thời gian thực hiện môn học|Thời gian môn học)\s*:?\s*(\d+)\s*giờ/i)||[])[1])||0;
   const lines=clean.split(&quot;\n&quot;).map(x=&gt;x.trim()).filter(Boolean);
   const lessonIdx=[];
-  lines.forEach((x,i)=&gt;{if(/^(Bài|Chương)\s*\d+\s*(:|\.)/i.test(x) || /^(Bài tập|Bài tập tổng hợp|Kiểm tra|Thi(?: kết thúc)?)/i.test(x))lessonIdx.push(i)});
+  lines.forEach((x,i)=&gt;{if(/^(Bài|Chương)\s*\d+\s*:/i.test(x))lessonIdx.push(i)});
   const lessons=[];
   for(let k=0;k&lt;lessonIdx.length;k++){
     const start=lessonIdx[k],end=lessonIdx[k+1]??lines.length,title=lines[start];
@@ -3745,8 +3633,6 @@ async function receiveScheduleSession(data){
       ${pld.previousLesson ? escapeHtml(pld.previousLesson).replace(/\n/g,&quot;&lt;br&gt;&quot;) : &quot;(không có – TT 1)&quot;}&lt;/span&gt;`;
   }
 
-  window.currentScheduleTT = pld.scheduleTT;
-  $(&quot;#btnSaveLesson&quot;).style.display = &quot;inline-block&quot;;
   const ltCount=Number(pld.lt)||0;
   const thCount=Number(pld.th)||0;
   const ktCount=Number(pld.kt)||0;
@@ -3875,10 +3761,6 @@ async function receiveScheduleSession(data){
   $(&quot;#btnGenerate&quot;).disabled=false;
   $(&quot;#btnGenerate&quot;).classList.add(&quot;primary&quot;);
   $(&quot;#btnGenerate&quot;).title=&quot;Tạo giáo án từ đúng dữ liệu buổi học đã chọn ở Sổ đầu bài.&quot;;
-  if(pld.savedLesson) {
-    $(&quot;#paper&quot;).innerHTML = pld.savedLesson;
-  }
-
   $(&quot;#btnAIWhole&quot;).disabled=false;
   checkTime();
 
@@ -3922,7 +3804,7 @@ async function init(){
   $(&quot;#btnGenerate&quot;).disabled=true;
   $(&quot;#btnAIWhole&quot;).disabled=true;
 $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&gt;{if(e.target.id===&quot;modal&quot;)closeModal()};
-  $(&quot;#btnSaveLesson&quot;).onclick = () => { const clone = getCleanPaperClone(); if(!clone) return alert(&quot;Chưa có nội dung giáo án để lưu.&quot;); window.parent.postMessage({ type: &quot;SAVE_LESSON_PLAN&quot;, payload: { tt: window.currentScheduleTT, data: clone.innerHTML } }, &quot;*&quot;); }; $(&quot;#btnBackup&quot;).onclick=backup;$(&quot;#btnRestore&quot;).onclick=()=&gt;$(&quot;#restoreFile&quot;).click();
+  $(&quot;#btnBackup&quot;).onclick=backup;$(&quot;#btnRestore&quot;).onclick=()=&gt;$(&quot;#restoreFile&quot;).click();
   $(&quot;#restoreFile&quot;).onchange=async e=&gt;{const f=e.target.files[0];if(!f)return;const list=JSON.parse(await f.text());if(!Array.isArray(list))return alert(&quot;File backup không hợp lệ.&quot;);for(const p of list){delete p.id;await addProgram(p)}programs=await getAll();renderSubjects();alert(&quot;Đã khôi phục dữ liệu.&quot;);e.target.value=&quot;&quot;};
   $(&quot;#btnExportWord&quot;).onclick=exportWord;
   $(&quot;#btnExportPdf&quot;).onclick=exportPdf;
@@ -3994,8 +3876,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkAuth().then(async u => { 
         if(!u) return;
-        window.GEMINI_KEY = u.gemini_api_key || u.admin_gemini_api_key; 
-        window.GEMINI_MODEL = u.gemini_model || "gemini-1.5-pro"; 
+        window.GEMINI_KEY = u.gemini_key; 
+        window.GEMINI_MODEL = u.gemini_model; 
 
         // Update plannerFrame AI settings
         const pf = document.getElementById("plannerFrame");
@@ -4048,44 +3930,12 @@ window.addEventListener("message", async e => {
   }
 
   if(e.data?.type==="OPEN_LESSON_PLAN_FROM_SCHEDULE"){
-    if(typeof switchTab === "function") switchTab(2);
-
-    
-
     const p=e.data.payload||{};
     const st=document.getElementById("transferStatus");
     st.style.display="block";
-    st.innerHTML=`Đã chọn <b>${p.courseName||""} – ${p.courseCode||""}</b> · ${p.weekday||""} ${p.date||""} · ${p.periods||0} tiết.`;
-    
-    // Check if lesson exists in DB
-    try {
-        if(projectId) {
-            const res = await fetch(API_URL + '/projects/' + projectId + '/lessons/' + p.scheduleTT, { headers: getHeaders() });
-            const saved = await res.json();
-            if(saved && saved.lesson_data) {
-                p.savedLesson = saved.lesson_data;
-                st.innerHTML += " <b>(Đã tải giáo án cũ)</b>";
-            }
-        }
-    } catch(err) { console.error(err); }
-
+    st.innerHTML=`Đã chọn <b>${p.courseName||""} – ${p.courseCode||""}</b> · ${p.weekday||""} ${p.date||""} · ${p.periods||0} tiết. Bước 2 sẽ khóa đúng Môn học – Mã môn này.`;
     document.getElementById("plannerFrame").contentWindow.postMessage({type:"LOAD_SCHEDULE_SESSION",payload:p},"*");
-    
-  }
-
-  if(e.data?.type === "SAVE_LESSON_PLAN" && projectId) {
-      try {
-          const res = await fetch(API_URL + '/projects/' + projectId + '/lessons/' + e.data.payload.tt, {
-              method: 'POST',
-              headers: getHeaders(),
-              body: JSON.stringify({ lesson_data: e.data.payload.data })
-          });
-          if(res.ok) alert("Đã lưu giáo án thành công vào CSDL!");
-          else alert("Lỗi khi lưu giáo án.");
-      } catch(err) {
-          console.error(err);
-          alert("Lỗi mạng khi lưu giáo án.");
-      }
+    if(typeof switchTab === 'function') switchTab(2);
   }
 });
 </script>

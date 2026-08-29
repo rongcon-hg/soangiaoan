@@ -94,6 +94,6 @@ const initDb = async () => {
     }
 };
 
-initDb();
+// initDb(); // Disabled for Vercel optimization. Run manually via API if needed.
 
 module.exports = pool;

@@ -1,8 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
 :root {
-    --primary: #2563eb;
-    --primary-dark: #1d4ed8;
+    --primary: #16469d;
+    --primary-dark: #0e3073;
     --secondary: #64748b;
-    --bg: #f1f5f9;
+    --bg: #f5f8fc;
     --white: #ffffff;
     --text: #1e293b;
     --text-light: #64748b;
@@ -16,7 +17,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Be Vietnam Pro', 'Segoe UI', Tahoma, sans-serif;
 }
 
 body {
