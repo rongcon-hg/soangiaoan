@@ -498,7 +498,7 @@ window.addEventListener(&quot;message&quot;, e => {
         renderExclusions();
         
         if (currentSessions && currentSessions.length > 0) {
-            displaySessionItems(currentSessions); saveStateToBackend();
+            renderScheduleTable();
         } else {
             updateWeeklyCheck();
         }
@@ -1437,6 +1437,76 @@ function displaySessionItems(sessionIndex){
   }));
 }
 
+
+function renderScheduleTable() {
+ const tb=document.getElementById(&quot;tbody&quot;);
+ tb.innerHTML=&quot;&quot;;
+
+ currentSessions.forEach((s,si)=&gt;{
+   const c={LT:0,TH:0,KT:0};
+   if(s.units) s.units.forEach(x=&gt;c[x.type]++);
+
+   let content=&quot;&quot;;
+
+   const previousSession = si&gt;0 ? currentSessions[si-1] : null;
+
+   const prevItemsByLesson = new Map();
+   if(previousSession){
+     (previousSession.units||[]).forEach(u=&gt;{
+       if(!prevItemsByLesson.has(u.lesson)) prevItemsByLesson.set(u.lesson,new Set());
+       (u.items||[]).forEach(it=&gt;{
+         const txt=Array.isArray(it)?String(it[1]||&quot;&quot;).trim():String(it||&quot;&quot;).trim();
+         if(txt) prevItemsByLesson.get(u.lesson).add(txt);
+       });
+     });
+   }
+
+   const orderedLessons=[];
+   (s.units||[]).forEach(u=&gt;{
+     if(u.lesson && !orderedLessons.includes(u.lesson)) orderedLessons.push(u.lesson);
+   });
+
+   orderedLessons.forEach(lessonName=&gt;{
+     content+=`&lt;div class=&quot;lesson-title&quot;&gt;${esc(lessonName)}&lt;/div&gt;`;
+
+     const shownThisLesson=new Set();
+
+     (s.units||[]).filter(u=&gt;u.lesson===lessonName).forEach(u=&gt;{
+       (u.items||[]).forEach(it=&gt;{
+         const txt=Array.isArray(it)?String(it[1]||&quot;&quot;).trim():String(it||&quot;&quot;).trim();
+         const cls=Array.isArray(it)?(it[0]||&quot;major&quot;):&quot;major&quot;;
+         if(!txt) return;
+
+         if(shownThisLesson.has(txt)) return;
+         shownThisLesson.add(txt);
+
+         const continued = prevItemsByLesson.get(lessonName)?.has(txt) || false;
+         const displayTxt = continued ? `${txt} (tiếp theo)` : txt;
+
+         content+=`&lt;div class=&quot;${cls}&quot;&gt;${esc(displayTxt)}&lt;/div&gt;`;
+       });
+     });
+   });
+
+   const dt = new Date(s.date);
+   const tr=document.createElement(&quot;tr&quot;);
+   tr.innerHTML=`&lt;td class=&quot;stt&quot;&gt;${si+1}&lt;/td&gt;
+   &lt;td class=&quot;date&quot;&gt;${fmt(dt)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(dt)}&lt;/span&gt;&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;${c.LT||0}&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;${c.TH||0}&lt;/td&gt;
+   &lt;td class=&quot;small&quot;&gt;${c.KT||0}&lt;/td&gt;
+   &lt;td class=&quot;content&quot;&gt;${content}
+   &lt;div style=&quot;margin-top:8px&quot;&gt;
+     &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#7c3aed&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
+   &lt;/div&gt;
+   &lt;/td&gt;
+   &lt;td class=&quot;absent&quot;&gt;&lt;/td&gt;
+   &lt;td class=&quot;sign&quot;&gt;&lt;/td&gt;`;
+   tb.appendChild(tr);
+ });
+}
+
+
 function buildSchedule(){
  if(!programSequence.length){
    alert(&quot;Chưa có dữ liệu Chương trình môn học để chia lịch.&quot;);
@@ -1488,75 +1558,7 @@ function buildSchedule(){
  }
 
  currentSessions=sessions;
- const tb=document.getElementById(&quot;tbody&quot;);
- tb.innerHTML=&quot;&quot;;
-
- sessions.forEach((s,si)=&gt;{
-   const c={LT:0,TH:0,KT:0};
-   s.units.forEach(x=&gt;c[x.type]++);
-
-   let content=&quot;&quot;;
-
-   // Nhóm đúng theo thứ tự xuất hiện:
-   // TÊN BÀI -&gt; các đề mục của chính bài đó -&gt; rồi mới sang BÀI kế tiếp.
-   const previousSession = si&gt;0 ? currentSessions[si-1] : null;
-
-   // Các đề mục đã xuất hiện ở buổi trước, lưu theo từng tên bài.
-   const prevItemsByLesson = new Map();
-   if(previousSession){
-     (previousSession.units||[]).forEach(u=&gt;{
-       if(!prevItemsByLesson.has(u.lesson)) prevItemsByLesson.set(u.lesson,new Set());
-       (u.items||[]).forEach(it=&gt;{
-         const txt=Array.isArray(it)?String(it[1]||&quot;&quot;).trim():String(it||&quot;&quot;).trim();
-         if(txt) prevItemsByLesson.get(u.lesson).add(txt);
-       });
-     });
-   }
-
-   const orderedLessons=[];
-   (s.units||[]).forEach(u=&gt;{
-     if(u.lesson &amp;&amp; !orderedLessons.includes(u.lesson)) orderedLessons.push(u.lesson);
-   });
-
-   orderedLessons.forEach(lessonName=&gt;{
-     content+=`&lt;div class=&quot;lesson-title&quot;&gt;${esc(lessonName)}&lt;/div&gt;`;
-
-     const shownThisLesson=new Set();
-
-     (s.units||[]).filter(u=&gt;u.lesson===lessonName).forEach(u=&gt;{
-       (u.items||[]).forEach(it=&gt;{
-         const txt=Array.isArray(it)?String(it[1]||&quot;&quot;).trim():String(it||&quot;&quot;).trim();
-         const cls=Array.isArray(it)?(it[0]||&quot;major&quot;):&quot;major&quot;;
-         if(!txt) return;
-
-         // Trong cùng một buổi, cùng một đề mục của cùng một bài chỉ hiện 1 lần.
-         if(shownThisLesson.has(txt)) return;
-         shownThisLesson.add(txt);
-
-         // Chỉ ghi &quot;(tiếp theo)&quot; nếu đúng đề mục của đúng bài đã xuất hiện ở buổi trước.
-         const continued = prevItemsByLesson.get(lessonName)?.has(txt) || false;
-         const displayTxt = continued ? `${txt} (tiếp theo)` : txt;
-
-         content+=`&lt;div class=&quot;${cls}&quot;&gt;${esc(displayTxt)}&lt;/div&gt;`;
-       });
-     });
-   });
-
-   const tr=document.createElement(&quot;tr&quot;);
-   tr.innerHTML=`&lt;td class=&quot;stt&quot;&gt;${si+1}&lt;/td&gt;
-   &lt;td class=&quot;date&quot;&gt;${fmt(s.date)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(s.date)}&lt;/span&gt;&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.LT||0}&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.TH||0}&lt;/td&gt;
-   &lt;td class=&quot;small&quot;&gt;${c.KT||0}&lt;/td&gt;
-   &lt;td class=&quot;content&quot;&gt;${content}
-   &lt;div style=&quot;margin-top:8px&quot;&gt;
-     &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#7c3aed&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
-   &lt;/div&gt;
-   &lt;/td&gt;
-   &lt;td class=&quot;absent&quot;&gt;&lt;/td&gt;
-   &lt;td class=&quot;sign&quot;&gt;&lt;/td&gt;`;
-   tb.appendChild(tr);
- });
+ renderScheduleTable();
  if(typeof saveStateToBackend === 'function') saveStateToBackend();
 }
 
