@@ -4672,8 +4672,6 @@ window.addEventListener("message", async e => {
   if(e.data?.type==="OPEN_LESSON_PLAN_FROM_SCHEDULE"){
     if(typeof switchTab === "function") switchTab(2);
 
-    
-
     const p=e.data.payload||{};
     const st=document.getElementById("transferStatus");
     st.style.display="block";
@@ -4684,16 +4682,20 @@ window.addEventListener("message", async e => {
     try {
         if(projectId) {
             const res = await fetch(API_URL + '/lessons/' + projectId + '/lessons/' + p.scheduleTT, { headers: getHeaders() });
-            const saved = await res.json();
-            if(saved && saved.lesson_data) {
-                p.savedLesson = saved.lesson_data;
-                st.innerHTML += " <b>(Đã tải giáo án cũ)</b>";
+            if(res.ok) {
+                const saved = await res.json();
+                if(saved && saved.lesson_data) {
+                    p.savedLesson = saved.lesson_data;
+                    st.innerHTML += " <b>(Đã tải giáo án cũ từ CSDL)</b>";
+                }
             }
         }
-    } catch(err) { console.error(err); }
+    } catch(err) { console.error("Lỗi khi tải giáo án cũ:", err); }
 
-    document.getElementById("plannerFrame").contentWindow.postMessage({type:"LOAD_SCHEDULE_SESSION",payload:p},"*");
-    
+    const pf = document.getElementById("plannerFrame");
+    if(pf && pf.contentWindow) {
+        pf.contentWindow.postMessage({type:"LOAD_SCHEDULE_SESSION",payload:p},"*");
+    }
   }
 
   if(e.data?.type === "SAVE_LESSON_PLAN" && projectId) {

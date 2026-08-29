@@ -60,7 +60,7 @@ exports.getLessonByTT = async (req, res) => {
 
         if (!row) return res.json(null);
         
-        try { row.lesson_data = JSON.parse(row.lesson_data); } catch(e) { }
+        // Không JSON.parse nếu lesson_data là chuỗi HTML thuần
         res.json(row);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -84,7 +84,8 @@ exports.saveLesson = async (req, res) => {
     const scheduleTT = req.params.tt;
     const { lesson_data } = req.body;
     
-    const lessonStr = JSON.stringify(lesson_data);
+    // Lưu trực tiếp string HTML hoặc stringify nếu là object
+    const lessonStr = typeof lesson_data === string ? lesson_data : JSON.stringify(lesson_data);
     
     try {
         const checkQuery = `SELECT id FROM lessons WHERE project_id = $1 AND schedule_tt = $2`;
