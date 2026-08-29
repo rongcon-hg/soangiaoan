@@ -4039,55 +4039,83 @@ function toggleFullProgram(){
 
 let currentTextbookData = null;
 
-function normalizeSearchKeyword(str) {
-  return String(str || '')
+function cleanTitleForSearch(s) {
+  return String(s || '')
+    .replace(/\s*[–—-].*$/i, '')
+    .replace(/\(tiếp\s*theo\)/gi, '')
+    .replace(/^(\d+(?:\.\d+)*)\.?\s*/, '')
     .toLowerCase()
-    .replace(/^[0-9]+[.\s-]+/g, '')
-    .replace(/[–—:-]+/g, ' ')
+    .normalize('NFC')
+    .replace(/[^a-z0-9à-ỹ\s]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 function extractTextbookSnippet(fullText, title, sectionText) {
   if (!fullText) return null;
-  const cleanTitle = normalizeSearchKeyword(title);
-  const cleanSection = normalizeSearchKeyword(sectionText);
-  const lowerFull = fullText.toLowerCase();
 
-  let foundIdx = -1;
-  let matchQuery = '';
-
-  if (cleanSection && cleanSection.length > 3) {
-    foundIdx = lowerFull.indexOf(cleanSection);
-    matchQuery = cleanSection;
-  }
-  if (foundIdx === -1 && cleanTitle && cleanTitle.length > 3) {
-    foundIdx = lowerFull.indexOf(cleanTitle);
-    matchQuery = cleanTitle;
+  const rawLines = fullText.split(/\r?\n/);
+  let bodyStartIndex = 0;
+  
+  // Skip TOC if present
+  for (let i = 0; i < Math.min(rawLines.length, 500); i++) {
+    const l = rawLines[i].trim();
+    if (l.match(/^(?:CHƯƠNG|Chương)\s+[I\d]+/i) && i > 40) {
+      bodyStartIndex = i;
+      break;
+    }
   }
 
-  if (foundIdx === -1) {
-    const words = cleanTitle.split(' ').filter(w => w.length > 3);
-    for (const w of words) {
-      const idx = lowerFull.indexOf(w);
-      if (idx !== -1) {
-        foundIdx = idx;
-        matchQuery = w;
-        break;
+  const bodyLines = rawLines.slice(bodyStartIndex);
+  const targetText = cleanTitleForSearch(title);
+  if (!targetText || targetText.length < 2) return null;
+
+  let bestIdx = -1;
+  let bestScore = 0;
+
+  for (let i = 0; i < bodyLines.length; i++) {
+    const rawLine = bodyLines[i].trim();
+    if (!rawLine || rawLine.length > 120) continue;
+    // Skip TOC page number lines
+    if (rawLine.match(/\s+\d{1,3}$/) && i < 200) continue;
+
+    const lineNorm = cleanTitleForSearch(rawLine);
+    if (!lineNorm) continue;
+
+    let score = 0;
+    if (lineNorm === targetText) {
+      score = 100;
+    } else if (lineNorm.includes(targetText)) {
+      score = 70 + Math.min(20, Math.floor((targetText.length / lineNorm.length) * 20));
+    } else if (targetText.includes(lineNorm) && lineNorm.length >= 4) {
+      score = 50 + Math.min(20, Math.floor((lineNorm.length / targetText.length) * 20));
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx = i;
+    }
+  }
+
+  if (bestIdx !== -1 && bestScore >= 50) {
+    const passage = [];
+    let wordCount = 0;
+    for (let j = bestIdx + 1; j < bodyLines.length; j++) {
+      const l = bodyLines[j].trim();
+      if (!l) continue;
+      // Stop condition: next section heading
+      if (l.match(/^\d+\.\d+(\.\d+)*\.?\s+[A-ZÀ-Ỹ]/) || l.match(/^(?:CHƯƠNG|Chương|BÀI|Bài)\s+[IVXLCDM\d]+/i)) {
+        if (passage.length > 0) break;
       }
+      passage.push(l);
+      wordCount += l.split(/\s+/).length;
+      if (wordCount >= 180) break;
+    }
+    if (passage.length > 0) {
+      return passage.join('\n\n');
     }
   }
 
-  if (foundIdx !== -1) {
-    const start = Math.max(0, foundIdx);
-    const end = Math.min(fullText.length, start + 1200);
-    let snippet = fullText.substring(start, end).trim();
-    const lastPeriod = snippet.lastIndexOf('.');
-    if (lastPeriod > 300) {
-      snippet = snippet.substring(0, lastPeriod + 1);
-    }
-    return snippet;
-  }
   return null;
 }
 
