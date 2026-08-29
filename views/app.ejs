@@ -353,7 +353,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;label&gt;Chọn file chương trình môn học&lt;/label&gt;
 &lt;div style=&quot;display:flex; gap:10px; align-items:center; margin-top:8px;&quot;&gt;
     &lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
-    &lt;button id=&quot;btnUploadDrive&quot; type=&quot;button&quot; class=&quot;secondary&quot; onclick=&quot;uploadToDrive()&quot; style=&quot;display:none; padding:6px 12px; font-size:13px; white-space:nowrap; border-radius:6px; cursor:pointer;&quot;&gt;Tải lên Drive&lt;/button&gt;
+    &lt;button id=&quot;btnUploadDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; white-space:nowrap; border-radius:7px; cursor:pointer;&quot; onclick=&quot;uploadToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
 &lt;/div&gt;
 &lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
 &lt;div id=&quot;driveStatusBox&quot;&gt;&lt;/div&gt;
@@ -1734,34 +1734,7 @@ function exportExcel(){
 @media(max-width:700px){.exclusion-row,.exclusion-item{grid-template-columns:1fr}}
 
 &lt;/style&gt;`;
- const xls=`&lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot; xmlns:x=&quot;urn:schemas-microsoft-com:office:excel&quot; xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;&lt;head&gt;
-
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/sweetalert2@11&quot;&gt;&lt;/script&gt;
-&lt;style&gt;.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }&lt;/style&gt;
-&lt;script&gt;
-window._originalAlert = window.alert;
-window.alert = function(msg) {
-    if(typeof Swal !== 'undefined') {
-        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
-    } else {
-        window._originalAlert(msg);
-    }
-};
-window.customConfirm = async function(msg) {
-    if(typeof Swal === 'undefined') return window.confirm(msg);
-    const result = await Swal.fire({
-        text: msg,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#16469d',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Đồng ý',
-        cancelButtonText: 'Hủy'
-    });
-    return result.isConfirmed;
-};
-&lt;/script&gt;
-&lt;meta charset=&quot;utf-8&quot;&gt;${css}&lt;/head&gt;&lt;body&gt;${table}&lt;/body&gt;&lt;/html&gt;`;
+ const xls=`&lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot; xmlns:x=&quot;urn:schemas-microsoft-com:office:excel&quot; xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;${css}&lt;/head&gt;&lt;body&gt;${table}&lt;/body&gt;&lt;/html&gt;`;
  const blob=new Blob([&quot;\ufeff&quot;,xls],{type:&quot;application/vnd.ms-excel;charset=utf-8&quot;});
  const a=document.createElement(&quot;a&quot;);a.href=URL.createObjectURL(blob);a.download=&quot;So_dau_bai_&quot;+(course.code||&quot;mon_hoc&quot;)+&quot;.xls&quot;;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
@@ -3523,33 +3496,6 @@ function exportWord(){
         xmlns:w=&quot;urn:schemas-microsoft-com:office:word&quot;
         xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;
   &lt;head&gt;
-
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/sweetalert2@11&quot;&gt;&lt;/script&gt;
-&lt;style&gt;.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }&lt;/style&gt;
-&lt;script&gt;
-window._originalAlert = window.alert;
-window.alert = function(msg) {
-    if(typeof Swal !== 'undefined') {
-        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
-    } else {
-        window._originalAlert(msg);
-    }
-};
-window.customConfirm = async function(msg) {
-    if(typeof Swal === 'undefined') return window.confirm(msg);
-    const result = await Swal.fire({
-        text: msg,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#16469d',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Đồng ý',
-        cancelButtonText: 'Hủy'
-    });
-    return result.isConfirmed;
-};
-&lt;/script&gt;
-
     &lt;meta charset=&quot;utf-8&quot;&gt;
     &lt;title&gt;Giáo án&lt;/title&gt;
     &lt;style&gt;${css}&lt;/style&gt;
