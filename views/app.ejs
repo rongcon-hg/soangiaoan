@@ -3870,19 +3870,7 @@ async function exportPdf(){
   const clone=getCleanPaperClone();
   if(!clone){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
 
-  // Tạo container tạm thời nằm trong DOM viewable nhưng ẩn z-index hoặc trong view
-  const container = document.createElement(&quot;div&quot;);
-  container.style.position = &quot;absolute&quot;;
-  container.style.top = &quot;0&quot;;
-  container.style.left = &quot;0&quot;;
-  container.style.zIndex = &quot;-1000&quot;;
-  container.style.width = &quot;750px&quot;;
-  container.style.background = &quot;#ffffff&quot;;
-  container.style.padding = &quot;10px&quot;;
-  container.style.margin = &quot;0&quot;;
-  container.style.boxSizing = &quot;border-box&quot;;
-  container.style.fontFamily = &quot;'Times New Roman', Times, serif&quot;;
-
+  // Chèn style in trực tiếp vào trong clone
   const pdfStyle = document.createElement(&quot;style&quot;);
   pdfStyle.textContent = `
     * {
@@ -3890,14 +3878,7 @@ async function exportPdf(){
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
-    .pdf-render-wrap {
-      width: 750px !important;
-      background: #ffffff !important;
-      font-family: &quot;Times New Roman&quot;, Times, serif !important;
-      font-size: 12pt !important;
-      color: #000000 !important;
-    }
-    .pdf-render-wrap .paper {
+    .paper {
       width: 100% !important;
       max-width: 100% !important;
       min-height: auto !important;
@@ -3906,44 +3887,47 @@ async function exportPdf(){
       border: 0 !important;
       box-shadow: none !important;
       background: #ffffff !important;
+      font-family: &quot;Times New Roman&quot;, Times, serif !important;
+      font-size: 12pt !important;
+      color: #000000 !important;
     }
-    .pdf-render-wrap table {
+    table {
       width: 100% !important;
       table-layout: fixed !important;
       border-collapse: collapse !important;
     }
-    .pdf-render-wrap .top-template td, .pdf-render-wrap .meta-template td {
+    .top-template td, .meta-template td {
       border: 1px dashed #777 !important;
       padding: 6px 8px !important;
       vertical-align: top !important;
     }
-    .pdf-render-wrap .logo-cell { width: 28% !important; }
-    .pdf-render-wrap .appendix-cell { text-align: center !important; line-height: 1.25 !important; }
-    .pdf-render-wrap .appendix-title { font-weight: bold !important; font-size: 13pt !important; }
-    .pdf-render-wrap .appendix-note { font-style: italic !important; font-size: 11pt !important; }
-    .pdf-render-wrap .meta-template .left-meta { width: 40% !important; font-weight: bold !important; }
-    .pdf-render-wrap .meta-template .right-meta { width: 60% !important; line-height: 1.3 !important; }
+    .logo-cell { width: 28% !important; }
+    .appendix-cell { text-align: center !important; line-height: 1.25 !important; }
+    .appendix-title { font-weight: bold !important; font-size: 13pt !important; }
+    .appendix-note { font-style: italic !important; font-size: 11pt !important; }
+    .meta-template .left-meta { width: 40% !important; font-weight: bold !important; }
+    .meta-template .right-meta { width: 60% !important; line-height: 1.3 !important; }
     
-    .pdf-render-wrap .lesson-heading { margin-top: 14px !important; font-size: 12pt !important; line-height: 1.25 !important; }
-    .pdf-render-wrap .lesson-main-title { font-weight: bold !important; }
-    .pdf-render-wrap .lesson-group-title { font-weight: bold !important; margin-top: 4px !important; }
-    .pdf-render-wrap .exact-outline-item { margin-left: 20px !important; font-weight: bold !important; line-height: 1.25 !important; }
+    .lesson-heading { margin-top: 14px !important; font-size: 12pt !important; line-height: 1.25 !important; }
+    .lesson-main-title { font-weight: bold !important; }
+    .lesson-group-title { font-weight: bold !important; margin-top: 4px !important; }
+    .exact-outline-item { margin-left: 20px !important; font-weight: bold !important; line-height: 1.25 !important; }
     
-    .pdf-render-wrap .section-title { font-weight: bold !important; margin: 12px 0 6px !important; font-size: 12pt !important; }
-    .pdf-render-wrap .editable { line-height: 1.35 !important; text-align: justify !important; }
+    .section-title { font-weight: bold !important; margin: 12px 0 6px !important; font-size: 12pt !important; }
+    .editable { line-height: 1.35 !important; text-align: justify !important; }
     
-    .pdf-render-wrap table.ga {
+    table.ga {
       width: 100% !important;
       table-layout: fixed !important;
       border-collapse: collapse !important;
       margin-top: 10px !important;
       border: 1.2px solid #000 !important;
     }
-    .pdf-render-wrap table.ga tr {
+    table.ga tr {
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
-    .pdf-render-wrap table.ga th, .pdf-render-wrap table.ga td {
+    table.ga th, table.ga td {
       border: 1.2px solid #000 !important;
       padding: 6px 7px !important;
       vertical-align: top !important;
@@ -3953,34 +3937,30 @@ async function exportPdf(){
       word-break: normal !important;
       overflow-wrap: break-word !important;
     }
-    .pdf-render-wrap table.ga th { font-weight: bold !important; text-align: center !important; }
-    .pdf-render-wrap table.ga th:nth-child(1), .pdf-render-wrap table.ga td:nth-child(1) { width: 5% !important; text-align: center !important; }
-    .pdf-render-wrap table.ga th:nth-child(2), .pdf-render-wrap table.ga td:nth-child(2) { width: 41% !important; }
-    .pdf-render-wrap table.ga th:nth-child(3), .pdf-render-wrap table.ga td:nth-child(3) { width: 22% !important; }
-    .pdf-render-wrap table.ga th:nth-child(4), .pdf-render-wrap table.ga td:nth-child(4) { width: 22% !important; }
-    .pdf-render-wrap table.ga th:nth-child(5), .pdf-render-wrap table.ga td:nth-child(5) { width: 10% !important; text-align: center !important; }
+    table.ga th { font-weight: bold !important; text-align: center !important; }
+    table.ga th:nth-child(1), table.ga td:nth-child(1) { width: 5% !important; text-align: center !important; }
+    table.ga th:nth-child(2), table.ga td:nth-child(2) { width: 41% !important; }
+    table.ga th:nth-child(3), table.ga td:nth-child(3) { width: 22% !important; }
+    table.ga th:nth-child(4), table.ga td:nth-child(4) { width: 22% !important; }
+    table.ga th:nth-child(5), table.ga td:nth-child(5) { width: 10% !important; text-align: center !important; }
     
-    .pdf-render-wrap table.footer-sign-table {
+    table.footer-sign-table {
       width: 100% !important;
       border-collapse: collapse !important;
       margin-top: 28px !important;
       page-break-inside: avoid !important;
       border: none !important;
     }
-    .pdf-render-wrap table.footer-sign-table td {
+    table.footer-sign-table td {
       border: none !important;
       text-align: center !important;
       vertical-align: top !important;
       padding: 4px 0 !important;
       line-height: 1.4 !important;
     }
-    .pdf-render-wrap .no-print, .pdf-render-wrap .ai-tools { display: none !important; }
+    .no-print, .ai-tools { display: none !important; }
   `;
-
-  container.className = &quot;pdf-render-wrap&quot;;
-  container.appendChild(pdfStyle);
-  container.appendChild(clone);
-  document.body.appendChild(container);
+  clone.prepend(pdfStyle);
 
   const filename = `Giao_an_${currentProgram()?.code||&quot;mon_hoc&quot;}_${new Date().toISOString().slice(0,10)}.pdf`;
 
@@ -3991,8 +3971,7 @@ async function exportPdf(){
     html2canvas: {
       scale: 2,
       useCORS: true,
-      scrollX: 0,
-      scrollY: 0
+      logging: false
     },
     jsPDF: {
       unit: &quot;mm&quot;,
@@ -4013,13 +3992,11 @@ async function exportPdf(){
     if(document.fonts &amp;&amp; document.fonts.ready) {
       await document.fonts.ready;
     }
-    await new Promise(r =&gt; setTimeout(r, 150));
-    await html2pdf().set(opt).from(container).save();
+    await html2pdf().set(opt).from(clone).save();
   } catch(e) {
     console.error(e);
     alert(&quot;Lỗi khi xuất file PDF: &quot; + (e?.message || e));
   } finally {
-    container.remove();
     if(btn) { btn.innerHTML = origText; btn.disabled = false; }
   }
 }
