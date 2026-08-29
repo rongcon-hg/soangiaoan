@@ -529,7 +529,7 @@ window.addEventListener(&quot;message&quot;, e => {
             const tbStatus = document.getElementById(&quot;textbookFileStatus&quot;);
             if (tbStatus) {
                 if (textbookData.text) {
-                    tbStatus.innerHTML = `&lt;b&gt;Đã có giáo trình:&lt;/b&gt; ${escapeHtml(textbookData.fileName || 'Giáo trình môn học')} (${(textbookData.text.length / 1000).toFixed(1)}k ký tự).` +
+                    tbStatus.innerHTML = `&lt;b&gt;Đã có giáo trình:&lt;/b&gt; ${esc(textbookData.fileName || 'Giáo trình môn học')} (${(textbookData.text.length / 1000).toFixed(1)}k ký tự).` +
                         (textbookData.driveLink ? `&lt;br&gt;📁 &lt;a href='${textbookData.driveLink}' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'&gt;Mở trên Google Drive&lt;/a&gt;` : '');
                 } else {
                     tbStatus.textContent = &quot;Chưa tải giáo trình môn học.&quot;;
@@ -566,10 +566,12 @@ window.addEventListener(&quot;message&quot;, e => {
         }
         
         const status = document.getElementById(&quot;fileStatus&quot;);
-        if(course.driveLink) {
-            status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b><br>📁 <a href='${course.driveLink}' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'>Mở file Chương trình môn học trên Google Drive</a>`;
-        } else {
-            status.innerHTML = `<b>Đã tải dữ liệu dự án từ máy chủ.</b>`;
+        if (status) {
+            if (course && course.driveLink) {
+                status.innerHTML = `&lt;b&gt;Đã tải dữ liệu dự án từ máy chủ.&lt;/b&gt;&lt;br&gt;📁 &lt;a href='${course.driveLink}' target='_blank' style='color:#16469d;font-weight:bold;text-decoration:underline;'&gt;Mở file Chương trình môn học trên Google Drive&lt;/a&gt;`;
+            } else {
+                status.innerHTML = `&lt;b&gt;Đã tải dữ liệu dự án từ máy chủ.&lt;/b&gt;`;
+            }
         }
     }
 });
