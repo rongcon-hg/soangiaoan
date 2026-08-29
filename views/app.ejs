@@ -1482,6 +1482,7 @@ function onPeriodChange(si, type, value) {
     currentSessions[si].overrideCounts = c;
   }
   currentSessions[si].overrideCounts[type] = val;
+  currentSessions[si].isManual = true;
   if(typeof saveStateToBackend === 'function') saveStateToBackend();
 }
 
@@ -1513,25 +1514,25 @@ function updateScheduleProgression() {
     return;
   }
 
-  // Preserve overridden period counts from table inputs
+  // Preserve explicitly modified period counts from table inputs
   const sessionOverrides = [];
   currentSessions.forEach((s, idx) =&gt; {
     const ltInput = document.getElementById('p_lt_' + idx);
     const thInput = document.getElementById('p_th_' + idx);
     const ktInput = document.getElementById('p_kt_' + idx);
-    if (ltInput && thInput && ktInput) {
+    if (s.isManual && ltInput && thInput && ktInput) {
       sessionOverrides[idx] = {
         LT: Math.max(0, parseInt(ltInput.value, 10) || 0),
         TH: Math.max(0, parseInt(thInput.value, 10) || 0),
         KT: Math.max(0, parseInt(ktInput.value, 10) || 0)
       };
-    } else if (s.overrideCounts) {
+    } else if (s.isManual && s.overrideCounts) {
       sessionOverrides[idx] = { ...s.overrideCounts };
     }
   });
 
   const estimatedWeeks = Math.ceil(units.length / Math.max(1, slots.reduce((s,x)=&gt;s+x.periods,0)));
-  const needed = estimatedWeeks * slots.length + slots.length + 30;
+  const needed = estimatedWeeks * slots.length + slots.length + 50;
   const start = new Date(startValue + &quot;T00:00:00&quot;);
   const dates = nextScheduledDates(start, slots, needed);
 
@@ -1540,9 +1541,12 @@ function updateScheduleProgression() {
 
   while (cursor &lt; units.length && di &lt; dates.length) {
     let cap;
+    let overridesForThis = null;
+
     if (sessionOverrides[di] !== undefined) {
       const totalOverridden = (sessionOverrides[di].LT || 0) + (sessionOverrides[di].TH || 0) + (sessionOverrides[di].KT || 0);
       cap = totalOverridden &gt; 0 ? totalOverridden : dates[di].periods;
+      overridesForThis = { ...sessionOverrides[di] };
     } else {
       cap = dates[di].periods;
     }
@@ -1551,7 +1555,8 @@ function updateScheduleProgression() {
     newSessions.push({
       date: dates[di].date,
       units: sessionUnits,
-      overrideCounts: sessionOverrides[di] ? { ...sessionOverrides[di] } : null
+      overrideCounts: overridesForThis,
+      isManual: !!overridesForThis
     });
     cursor += cap;
     di++;
