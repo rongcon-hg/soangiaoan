@@ -63,8 +63,6 @@ function injectLayout(pageId, pageTitle) {
                 <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
             </div>
             <div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                <div id="topbar-expiry-badge" style="display:none; cursor:pointer;" onclick="openRenewalModal()" title="Bấm vào đây để gửi yêu cầu gia hạn sử dụng"></div>
                 <div class="user-greeting">
                     <span class="hello-text">Xin chào,</span> 
                     <a href="/profile" style="text-decoration:none; color:inherit;" title="Xem thông tin cá nhân">
@@ -72,7 +70,6 @@ function injectLayout(pageId, pageTitle) {
                     </a> 
                     <a href="#" onclick="logout()" style="margin-left: 8px; color: var(--danger); font-size: 1.1em; text-decoration: none;" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
-            </div>
             </div>
         </div>
     `;
@@ -103,8 +100,8 @@ function injectLayout(pageId, pageTitle) {
             <button type="button" onclick="closeRenewalModal()" style="background:transparent; border:none; color:#fff; font-size:1.4rem; cursor:pointer; opacity:0.8; line-height:1;" title="Đóng">&times;</button>
         </div>
         <div style="padding:22px; max-height:80vh; overflow-y:auto;">
-            <div style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 14px; border-radius:6px; margin-bottom:18px; color:#991b1b; font-size:0.88rem; line-height:1.5;">
-                <i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn dùng thử. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!
+            <div id="renewal-modal-notice" style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 14px; border-radius:6px; margin-bottom:18px; color:#991b1b; font-size:0.88rem; line-height:1.5;">
+                <i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn sử dụng. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!
             </div>
             <form id="renewal-request-form" onsubmit="submitRenewalForm(event)">
                 <div class="form-group" style="margin-bottom:14px;">
@@ -127,7 +124,7 @@ function injectLayout(pageId, pageTitle) {
                 </div>
                 <div class="form-group" style="margin-bottom:18px;">
                     <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Lời nhắn gửi Quản trị viên</label>
-                    <textarea id="renewal-reason" class="form-control" rows="3" placeholder="Ví dụ: Em cần soạn thêm giáo án cho học kỳ này, kính nhờ Thầy/Cô gia hạn giúp em ạ..."></textarea>
+                    <textarea id="renewal-reason" class="form-control" rows="3" placeholder="Vui lòng nói lý do chúng tôi Thầy/Cô muốn liên hệ với chúng tôi để gia hạn sử dụng phần mềm."></textarea>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:10px;">
                     <button type="button" class="btn btn-secondary" onclick="closeRenewalModal()">Đóng</button>
@@ -242,6 +239,34 @@ function openRenewalModal() {
         document.getElementById('renewal-email').value = currentUser.email || '';
         document.getElementById('renewal-phone').value = currentUser.phone || '';
         document.getElementById('renewal-dept').value = currentUser.department || '';
+
+        // Tùy chỉnh nội dung thông báo theo thời gian còn lại
+        const noticeBox = document.getElementById('renewal-modal-notice');
+        if (noticeBox) {
+            if (currentUser.expires_at) {
+                const expDate = new Date(currentUser.expires_at);
+                const now = new Date();
+                const diffTime = expDate.getTime() - now.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays > 0) {
+                    noticeBox.style.background = '#eff6ff';
+                    noticeBox.style.borderLeftColor = '#2563eb';
+                    noticeBox.style.color = '#1e40af';
+                    noticeBox.innerHTML = `<i class="fas fa-info-circle"></i> Tài khoản của bạn còn <b>${diffDays} ngày</b> sẽ hết thời hạn sử dụng. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!`;
+                } else {
+                    noticeBox.style.background = '#fef2f2';
+                    noticeBox.style.borderLeftColor = '#ef4444';
+                    noticeBox.style.color = '#991b1b';
+                    noticeBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn sử dụng. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!`;
+                }
+            } else {
+                noticeBox.style.background = '#fef2f2';
+                noticeBox.style.borderLeftColor = '#ef4444';
+                noticeBox.style.color = '#991b1b';
+                noticeBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn sử dụng. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!`;
+            }
+        }
     }
     modal.style.display = 'flex';
 }
@@ -302,7 +327,6 @@ async function submitRenewalForm(e) {
 function updateExpiryUI(user) {
     if (!user) return;
     const sbBadge = document.getElementById('sidebar-expiry-badge');
-    const tbBadge = document.getElementById('topbar-expiry-badge');
 
     if (user.role === 'Admin') {
         const html = `<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; display:inline-flex; align-items:center; gap:4px;"><i class="fas fa-infinity"></i> Vô thời hạn</span>`;
@@ -317,20 +341,15 @@ function updateExpiryUI(user) {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         let sbBadgeHtml = '';
-        let tbBadgeHtml = '';
 
         if (diffDays <= 0) {
             sbBadgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:999px; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-times-circle"></i> Đã hết hạn <span style="text-decoration:underline; margin-left:2px;">[Gia hạn]</span></span>`;
-            tbBadgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="fas fa-times-circle"></i> <span class="badge-label-long">Hết hạn [Gia hạn]</span><span class="badge-label-short">Hết hạn</span></span>`;
         } else if (diffDays <= 7) {
             sbBadgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:999px; background:#fef3c7; color:#b45309; border:1px solid #fde68a; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-hourglass-half"></i> Còn ${diffDays} ngày <span style="text-decoration:underline; margin-left:2px;">[Gia hạn]</span></span>`;
-            tbBadgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:#fef3c7; color:#b45309; border:1px solid #fde68a; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="fas fa-hourglass-half"></i> <span class="badge-label-long">Còn ${diffDays} ngày [Gia hạn]</span><span class="badge-label-short">Còn ${diffDays}n</span></span>`;
         } else {
             sbBadgeHtml = `<span style="font-size:0.75rem; font-weight:600; padding:3px 8px; border-radius:999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-clock"></i> Còn ${diffDays} ngày <span style="opacity:0.8; margin-left:2px;">[Gia hạn]</span></span>`;
-            tbBadgeHtml = `<span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="fas fa-clock"></i> <span class="badge-label-long">Còn ${diffDays} ngày [Gia hạn]</span><span class="badge-label-short">Còn ${diffDays}n</span></span>`;
         }
 
         if (sbBadge) { sbBadge.innerHTML = sbBadgeHtml; sbBadge.style.display = 'block'; }
-        if (tbBadge) { tbBadge.innerHTML = tbBadgeHtml; tbBadge.style.display = 'inline-flex'; }
     }
 }
