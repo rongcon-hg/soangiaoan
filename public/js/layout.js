@@ -315,18 +315,22 @@ function updateExpiryUI(user) {
         const now = new Date();
         const diffTime = expDate.getTime() - now.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const expFormatted = `${String(expDate.getDate()).padStart(2, '0')}/${String(expDate.getMonth() + 1).padStart(2, '0')}/${expDate.getFullYear()}`;
 
-        let badgeHtml = '';
+        let sbBadgeHtml = '';
+        let tbBadgeHtml = '';
+
         if (diffDays <= 0) {
-            badgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:999px; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-times-circle"></i> Đã hết hạn <span style="text-decoration:underline; margin-left:2px;">[Gia hạn]</span></span>`;
+            sbBadgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:999px; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-times-circle"></i> Đã hết hạn <span style="text-decoration:underline; margin-left:2px;">[Gia hạn]</span></span>`;
+            tbBadgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="fas fa-times-circle"></i> <span class="badge-label-long">Hết hạn [Gia hạn]</span><span class="badge-label-short">Hết hạn</span></span>`;
         } else if (diffDays <= 7) {
-            badgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:999px; background:#fef3c7; color:#b45309; border:1px solid #fde68a; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-hourglass-half"></i> Còn ${diffDays} ngày <span style="text-decoration:underline; margin-left:2px;">[Gia hạn]</span></span>`;
+            sbBadgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:999px; background:#fef3c7; color:#b45309; border:1px solid #fde68a; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-hourglass-half"></i> Còn ${diffDays} ngày <span style="text-decoration:underline; margin-left:2px;">[Gia hạn]</span></span>`;
+            tbBadgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:#fef3c7; color:#b45309; border:1px solid #fde68a; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="fas fa-hourglass-half"></i> <span class="badge-label-long">Còn ${diffDays} ngày [Gia hạn]</span><span class="badge-label-short">Còn ${diffDays}n</span></span>`;
         } else {
-            badgeHtml = `<span style="font-size:0.75rem; font-weight:600; padding:3px 8px; border-radius:999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-clock"></i> Còn ${diffDays} ngày <span style="opacity:0.8; margin-left:2px;">[Gia hạn]</span></span>`;
+            sbBadgeHtml = `<span style="font-size:0.75rem; font-weight:600; padding:3px 8px; border-radius:999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-clock"></i> Còn ${diffDays} ngày <span style="opacity:0.8; margin-left:2px;">[Gia hạn]</span></span>`;
+            tbBadgeHtml = `<span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;"><i class="fas fa-clock"></i> <span class="badge-label-long">Còn ${diffDays} ngày [Gia hạn]</span><span class="badge-label-short">Còn ${diffDays}n</span></span>`;
         }
 
-        if (sbBadge) { sbBadge.innerHTML = badgeHtml; sbBadge.style.display = 'block'; }
-        if (tbBadge) { tbBadge.innerHTML = badgeHtml; tbBadge.style.display = 'inline-flex'; }
+        if (sbBadge) { sbBadge.innerHTML = sbBadgeHtml; sbBadge.style.display = 'block'; }
+        if (tbBadge) { tbBadge.innerHTML = tbBadgeHtml; tbBadge.style.display = 'inline-flex'; }
     }
 }

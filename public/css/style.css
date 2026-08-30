@@ -323,6 +323,7 @@ table {
         height: 38px !important;
     }
     .sidebar.collapsed #sidebar-user-fullname,
+    .sidebar.collapsed #sidebar-expiry-badge,
     .sidebar.collapsed .sidebar-brand-title,
     .sidebar.collapsed .nav-item-text {
         display: none !important;
@@ -383,5 +384,46 @@ table {
     .user-greeting .hello-text {
         font-size: 11px;
         color: var(--text-light);
+    }
+}
+
+
+/* Topbar Expiry Badge Responsive */
+#topbar-expiry-badge {
+    transition: transform 0.2s;
+    user-select: none;
+}
+#topbar-expiry-badge:hover {
+    transform: scale(1.04);
+}
+@media (max-width: 768px) {
+    .topbar {
+        padding: 8px 10px !important;
+        height: 56px;
+    }
+    .page-title {
+        font-size: 12.5px !important;
+        max-width: 90px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    #topbar-expiry-badge {
+        font-size: 0.72rem !important;
+        margin-right: 2px !important;
+    }
+    #topbar-expiry-badge .badge-label-long {
+        display: none !important;
+    }
+    #topbar-expiry-badge .badge-label-short {
+        display: inline !important;
+    }
+}
+@media (min-width: 769px) {
+    #topbar-expiry-badge .badge-label-short {
+        display: none !important;
+    }
+    #topbar-expiry-badge .badge-label-long {
+        display: inline !important;
     }
 }
