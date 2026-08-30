@@ -68,15 +68,25 @@ window.customConfirm = async function(msg) {
             opacity: 0.4;
             cursor: not-allowed;
         }
-        .filter-tag {
-            background: #e2e8f0;
-            color: #334155;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            display: inline-flex;
+        .class-option-item {
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            color: var(--text);
+            display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: space-between;
+            transition: background 0.15s;
+        }
+        .class-option-item:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+        .class-option-item.selected {
+            background: #eff6ff;
+            color: var(--primary);
+            font-weight: 700;
         }
     </style>
 
@@ -165,7 +175,7 @@ window.customConfirm = async function(msg) {
         <div class="filter-toolbar" style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:20px; display:flex; flex-direction:column; gap:12px;">
             <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
                 <!-- Ô tìm kiếm thông minh -->
-                <div style="flex:1; min-width:260px; position:relative;">
+                <div style="flex:1; min-width:240px; position:relative;">
                     <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8;"></i>
                     <input type="text" id="search-input" class="form-control" style="padding-left:36px; padding-right:32px; height:42px; background:#fff;" placeholder="Tìm kiếm theo tên môn, mã môn, lớp học..." oninput="handleSearchInput()">
                     <button type="button" id="btn-clear-search" onclick="clearSearch()" style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:14px;" title="Xóa tìm kiếm">
@@ -174,7 +184,7 @@ window.customConfirm = async function(msg) {
                 </div>
 
                 <!-- Bộ lọc Hệ đào tạo -->
-                <div style="min-width:160px;">
+                <div style="min-width:150px;">
                     <select id="filter-system" class="form-control" style="height:42px; background:#fff;" onchange="applyFilters()">
                         <option value="">-- Tất cả hệ đào tạo --</option>
                         <option value="Trung cấp">Trung cấp</option>
@@ -182,15 +192,33 @@ window.customConfirm = async function(msg) {
                     </select>
                 </div>
 
-                <!-- Bộ lọc Lớp học -->
-                <div style="min-width:160px;">
-                    <select id="filter-class" class="form-control" style="height:42px; background:#fff;" onchange="applyFilters()">
-                        <option value="">-- Tất cả lớp --</option>
-                    </select>
+                <!-- Bộ lọc Lớp học Thông minh (Searchable Combobox) -->
+                <div class="custom-select-wrapper" id="class-filter-wrapper" style="position:relative; min-width:180px;">
+                    <div id="class-select-trigger" onclick="toggleClassDropdown(event)" style="height:42px; background:#fff; border:1px solid var(--border); border-radius:6px; padding:0 30px 0 12px; display:flex; align-items:center; cursor:pointer; font-size:0.95rem; user-select:none; transition:border 0.2s;">
+                        <span id="class-select-label" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text);">-- Tất cả lớp --</span>
+                        <i class="fas fa-chevron-down" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:0.75rem; color:#94a3b8; pointer-events:none;"></i>
+                    </div>
+
+                    <!-- Dropdown Panel -->
+                    <div id="class-dropdown-menu" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; min-width:220px; background:#fff; border:1px solid var(--border); border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.12); z-index:1000; padding:8px;">
+                        <!-- Input tìm kiếm lớp -->
+                        <div style="position:relative; margin-bottom:6px;">
+                            <i class="fas fa-search" style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:0.8rem; color:#94a3b8;"></i>
+                            <input type="text" id="class-search-input" class="form-control" style="height:34px; padding-left:26px; padding-right:24px; font-size:0.85rem;" placeholder="Tìm nhanh tên lớp..." oninput="handleClassSearch(this.value)" onclick="event.stopPropagation()">
+                            <button type="button" id="btn-clear-class-search" onclick="clearClassSearch(event)" style="display:none; position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:12px;" title="Xóa">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </div>
+
+                        <!-- Danh sách tùy chọn các lớp -->
+                        <div id="class-options-list" style="overflow-y:auto; max-height:180px; display:flex; flex-direction:column; gap:2px;">
+                            <!-- Items -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Bộ lọc Sắp xếp -->
-                <div style="min-width:170px;">
+                <div style="min-width:160px;">
                     <select id="filter-sort" class="form-control" style="height:42px; background:#fff;" onchange="applyFilters()">
                         <option value="newest">Mới nhất</option>
                         <option value="oldest">Cũ nhất</option>
@@ -239,6 +267,8 @@ window.customConfirm = async function(msg) {
         let filteredProjectsList = [];
         let currentPage = 1;
         let searchDebounceTimer = null;
+        let selectedClassValue = '';
+        let availableClassList = [];
 
         checkAuth().then(user => {
             if(user) {
@@ -270,21 +300,107 @@ window.customConfirm = async function(msg) {
             }
         }
 
-        function populateClassFilterOptions() {
-            const classSelect = document.getElementById('filter-class');
-            if(!classSelect) return;
-            
-            const currentVal = classSelect.value;
-            const classes = [...new Set(allProjectsList.map(p => (p.class_name || '').trim()).filter(Boolean))].sort();
-            
-            let html = '<option value="">-- Tất cả lớp --</option>';
-            classes.forEach(c => {
-                html += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
-            });
-            classSelect.innerHTML = html;
-            if(classes.includes(currentVal)) {
-                classSelect.value = currentVal;
+        function toggleClassDropdown(e) {
+            if(e) e.stopPropagation();
+            const menu = document.getElementById('class-dropdown-menu');
+            if(!menu) return;
+            const isOpen = menu.style.display === 'block';
+            if (isOpen) {
+                closeClassDropdown();
+            } else {
+                openClassDropdown();
             }
+        }
+
+        function openClassDropdown() {
+            const menu = document.getElementById('class-dropdown-menu');
+            if(!menu) return;
+            menu.style.display = 'block';
+            const input = document.getElementById('class-search-input');
+            input.value = '';
+            document.getElementById('btn-clear-class-search').style.display = 'none';
+            renderClassOptions('');
+            setTimeout(() => input.focus(), 50);
+        }
+
+        function closeClassDropdown() {
+            const menu = document.getElementById('class-dropdown-menu');
+            if(menu) menu.style.display = 'none';
+        }
+
+        // Đóng dropdown khi bấm ra ngoài
+        document.addEventListener('click', (e) => {
+            const wrapper = document.getElementById('class-filter-wrapper');
+            if(wrapper && !wrapper.contains(e.target)) {
+                closeClassDropdown();
+            }
+        });
+
+        function populateClassFilterOptions() {
+            availableClassList = [...new Set(allProjectsList.map(p => (p.class_name || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'vi'));
+            renderClassOptions('');
+        }
+
+        function renderClassOptions(filterTerm) {
+            const container = document.getElementById('class-options-list');
+            if(!container) return;
+
+            const termNorm = removeVietnameseTones(filterTerm);
+            let filteredClasses = availableClassList.filter(c => {
+                if(!termNorm) return true;
+                return removeVietnameseTones(c).includes(termNorm);
+            });
+
+            let html = '';
+            
+            // Tùy chọn: Tất cả lớp
+            if(!termNorm || removeVietnameseTones('-- Tất cả lớp --').includes(termNorm) || removeVietnameseTones('tat ca').includes(termNorm)) {
+                const isSelected = selectedClassValue === '';
+                html += `
+                    <div class="class-option-item ${isSelected ? 'selected' : ''}" onclick="selectClassOption('', '-- Tất cả lớp --', event)">
+                        <span>-- Tất cả lớp --</span>
+                        ${isSelected ? '<i class="fas fa-check" style="font-size:0.75rem;"></i>' : ''}
+                    </div>
+                `;
+            }
+
+            if(filteredClasses.length === 0 && termNorm) {
+                html += `<div style="padding:10px; text-align:center; color:#94a3b8; font-size:0.85rem;">Không tìm thấy lớp phù hợp</div>`;
+            } else {
+                filteredClasses.forEach(c => {
+                    const isSelected = selectedClassValue === c;
+                    html += `
+                        <div class="class-option-item ${isSelected ? 'selected' : ''}" onclick="selectClassOption('${escapeHtml(c)}', '${escapeHtml(c)}', event)">
+                            <span>${escapeHtml(c)}</span>
+                            ${isSelected ? '<i class="fas fa-check" style="font-size:0.75rem;"></i>' : ''}
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function handleClassSearch(val) {
+            document.getElementById('btn-clear-class-search').style.display = val ? 'block' : 'none';
+            renderClassOptions(val);
+        }
+
+        function clearClassSearch(e) {
+            if(e) e.stopPropagation();
+            const input = document.getElementById('class-search-input');
+            input.value = '';
+            document.getElementById('btn-clear-class-search').style.display = 'none';
+            renderClassOptions('');
+            input.focus();
+        }
+
+        function selectClassOption(val, label, e) {
+            if(e) e.stopPropagation();
+            selectedClassValue = val;
+            document.getElementById('class-select-label').textContent = label;
+            closeClassDropdown();
+            applyFilters();
         }
 
         function handleSearchInput() {
@@ -309,7 +425,8 @@ window.customConfirm = async function(msg) {
             document.getElementById('search-input').value = '';
             document.getElementById('btn-clear-search').style.display = 'none';
             document.getElementById('filter-system').value = '';
-            document.getElementById('filter-class').value = '';
+            selectedClassValue = '';
+            document.getElementById('class-select-label').textContent = '-- Tất cả lớp --';
             document.getElementById('filter-sort').value = 'newest';
             applyFilters();
         }
@@ -318,7 +435,7 @@ window.customConfirm = async function(msg) {
             const searchRaw = document.getElementById('search-input').value.trim();
             const searchNorm = removeVietnameseTones(searchRaw);
             const systemFilter = document.getElementById('filter-system').value;
-            const classFilter = document.getElementById('filter-class').value;
+            const classFilter = selectedClassValue;
             const sortFilter = document.getElementById('filter-sort').value;
 
             // 1. Lọc theo từ khóa tìm kiếm
