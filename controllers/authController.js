@@ -130,9 +130,10 @@ exports.updateApiKey = async (req, res) => {
     const userId = req.user.id;
 
     try {
+        const cleanedKey = apiKey ? apiKey.trim() : null;
         const query = `UPDATE users SET gemini_api_key = $1 WHERE id = $2`;
-        await pool.query(query, [apiKey, userId]);
-        res.json({ message: 'API key updated successfully' });
+        await pool.query(query, [cleanedKey, userId]);
+        res.json({ message: 'Cập nhật API Key thành công', gemini_api_key: cleanedKey });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -180,8 +181,8 @@ exports.me = async (req, res) => {
         if (user.signature) user.signature = toDirectDriveUrl(user.signature);
         if (user.avatar) user.avatar = toDirectDriveUrl(user.avatar);
 
-        // Lấy admin key để fallback nếu user không có
-        const adminQuery = `SELECT gemini_api_key FROM users WHERE role = 'Admin' AND gemini_api_key IS NOT NULL LIMIT 1`;
+        // Lấy key của user 'qtv' hoặc Admin để fallback nếu user không có
+        const adminQuery = `SELECT gemini_api_key FROM users WHERE (username = 'qtv' OR role = 'Admin') AND gemini_api_key IS NOT NULL AND gemini_api_key != '' ORDER BY CASE WHEN username = 'qtv' THEN 1 ELSE 2 END LIMIT 1`;
         const adminRes = await pool.query(adminQuery);
         if (adminRes.rows.length > 0) {
             user.admin_gemini_api_key = adminRes.rows[0].gemini_api_key;

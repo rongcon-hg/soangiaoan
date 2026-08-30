@@ -80,11 +80,28 @@ window.customConfirm = async function(msg) {
             
             <!-- PANEL: GEMINI -->
             <div id="panel-gemini" class="s-panel active">
-                <h3 style="margin-bottom: 12px; color: var(--primary);">Cấu hình Trợ lý AI (Gemini)</h3>
-                <p class="panel-desc">Nhập mã API Key của bạn để sử dụng tính năng tạo Sổ đầu bài và Giáo án tự động. Mỗi giáo viên cần sử dụng mã riêng.</p>
+                <h3 style="margin-bottom: 12px; color: var(--primary);"><i class="fas fa-brain"></i> Cấu hình Trợ lý AI (Gemini)</h3>
+                <p class="panel-desc">Nhập mã <b>Gemini API Key</b> của bạn để sử dụng tính năng tạo Sổ đầu bài và Giáo án tự động. Mỗi giáo viên có thể thiết lập mã API Key cá nhân riêng của mình. <i>(Nếu bạn để trống, hệ thống sẽ tự động dùng chung mã API Key mặc định của Quản trị viên).</i></p>
                 <div class="form-group" style="max-width:600px">
-                    <label>Gemini API Key</label>
-                    <input type="text" id="cfg-gemini-key" class="form-control" placeholder="AIzaSy...">
+                    <label style="font-weight: 700;">Mã Gemini API Key cá nhân của bạn</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="password" id="cfg-gemini-key" class="form-control" placeholder="Dán mã AIzaSy... vào đây" style="flex:1;">
+                        <button type="button" class="btn btn-secondary" onclick="toggleApiKeyVisibility()" style="padding: 8px 14px; background:#f1f5f9; border:1px solid #cbd5e1; color:#475569;" title="Hiện / Ẩn Key">
+                            <i id="eye-icon" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <small style="color:#64748b; font-size:12px; margin-top:6px; display:block;">
+                        💡 Bạn có thể lấy mã API Key hoàn toàn miễn phí tại <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--primary); font-weight:700; text-decoration:underline;">Google AI Studio <i class="fas fa-external-link-alt" style="font-size:10px;"></i></a>.
+                    </small>
+                </div>
+
+                <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" id="btn-save-gemini-only" onclick="saveGeminiKeyOnly()" class="btn btn-primary" style="font-size: 13px; padding: 8px 18px;">
+                        <i class="fas fa-save"></i> Lưu mã API Key này
+                    </button>
+                    <button type="button" onclick="testGeminiConnectionOnly()" class="btn btn-secondary" style="font-size: 13px; padding: 8px 16px;">
+                        <i class="fas fa-bolt"></i> Kiểm tra mã API Key
+                    </button>
                 </div>
             </div>
 
@@ -390,52 +407,133 @@ window.customConfirm = async function(msg) {
             document.getElementById('panel-' + panelId).classList.add('active');
         }
 
+        function toggleApiKeyVisibility() {
+            const keyInput = document.getElementById('cfg-gemini-key');
+            const eyeIcon = document.getElementById('eye-icon');
+            if (keyInput.type === 'password') {
+                keyInput.type = 'text';
+                eyeIcon.className = 'fas fa-eye-slash';
+            } else {
+                keyInput.type = 'password';
+                eyeIcon.className = 'fas fa-eye';
+            }
+        }
+
+        async function saveGeminiKeyOnly() {
+            const apiKey = document.getElementById('cfg-gemini-key').value.trim();
+            const btn = document.getElementById('btn-save-gemini-only');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            }
+
+            try {
+                const res = await fetch(API_URL + '/auth/apikey', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ apiKey })
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || data.message || 'Lỗi khi lưu API Key');
+
+                if (apiKey) {
+                    localStorage.setItem('giaoan_gemini_key', apiKey);
+                } else {
+                    localStorage.removeItem('giaoan_gemini_key');
+                }
+
+                showAlert('Đã lưu mã Gemini API Key thành công!', 'success');
+            } catch (err) {
+                console.error(err);
+                showAlert(err.message || 'Lỗi khi lưu API Key');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save"></i> Lưu mã API Key này';
+                }
+            }
+        }
+
+        async function testGeminiConnectionOnly() {
+            const apiKey = document.getElementById('cfg-gemini-key').value.trim();
+            if (!apiKey) return showAlert('Vui lòng dán mã API Key trước khi kiểm tra', 'error');
+
+            try {
+                showAlert('Đang kiểm tra kết nối tới Google Gemini...', 'success');
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error.message || 'Mã API Key không hợp lệ');
+                showAlert('✅ Kết nối Gemini API thành công! Mã Key hoạt động tốt.', 'success');
+            } catch (e) {
+                showAlert('❌ Lỗi kiểm tra Gemini: ' + e.message, 'error');
+            }
+        }
+
         async function saveSettings(e) {
             e.preventDefault();
             
-            // Lưu Gemini Key vào API riêng biệt hoặc gộp chung?
-            // backend hiện có API /auth/apikey riêng biệt, ta gọi API đó trước
-            const apiKey = document.getElementById('cfg-gemini-key').value.trim();
+            const apiKey = document.getElementById('cfg-gemini-key') ? document.getElementById('cfg-gemini-key').value.trim() : '';
             
-            // Lưu các setting JSON
-            const settingsPayload = {
-                smtp_host: document.getElementById('cfg-smtp-host').value.trim(),
-                smtp_port: document.getElementById('cfg-smtp-port').value.trim(),
-                smtp_name: document.getElementById('cfg-smtp-name').value.trim(),
-                smtp_user: document.getElementById('cfg-smtp-user').value.trim(),
-                smtp_pass: document.getElementById('cfg-smtp-pass').value.trim(),
-                drive_email: document.getElementById('cfg-drive-email').value.trim(),
-                drive_key: document.getElementById('cfg-drive-key').value.trim(),
-                drive_folder: document.getElementById('cfg-drive-folder').value.trim(),
-            };
+            // 1. Kiểm tra các cài đặt JSON nếu tồn tại (Admin)
+            let settingsPayload = null;
+            if (document.getElementById('cfg-smtp-host')) {
+                settingsPayload = {
+                    smtp_host: document.getElementById('cfg-smtp-host')?.value.trim() || '',
+                    smtp_port: document.getElementById('cfg-smtp-port')?.value.trim() || '',
+                    smtp_name: document.getElementById('cfg-smtp-name')?.value.trim() || '',
+                    smtp_user: document.getElementById('cfg-smtp-user')?.value.trim() || '',
+                    smtp_pass: document.getElementById('cfg-smtp-pass')?.value.trim() || '',
+                    drive_email: document.getElementById('cfg-drive-email')?.value.trim() || '',
+                    drive_key: document.getElementById('cfg-drive-key')?.value.trim() || '',
+                    drive_folder: document.getElementById('cfg-drive-folder')?.value.trim() || '',
+                };
+            }
 
             try {
-                // 1. Cập nhật Gemini Key
-                await fetch(API_URL + '/auth/apikey', {
+                // Lưu Gemini API Key
+                const keyRes = await fetch(API_URL + '/auth/apikey', {
                     method: 'POST',
                     headers: getHeaders(),
                     body: JSON.stringify({ apiKey })
                 });
 
-                // 2. Cập nhật JSON settings
-                const res = await fetch(API_URL + '/auth/settings', {
-                    method: 'PUT',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ settings: settingsPayload })
-                });
+                if (!keyRes.ok) {
+                    const errData = await keyRes.json().catch(() => ({}));
+                    throw new Error(errData.error || errData.message || 'Lỗi khi lưu Gemini API Key');
+                }
+
+                if (apiKey) {
+                    localStorage.setItem('giaoan_gemini_key', apiKey);
+                } else {
+                    localStorage.removeItem('giaoan_gemini_key');
+                }
+
+                // Lưu các cài đặt nâng cao nếu có
+                if (settingsPayload) {
+                    const res = await fetch(API_URL + '/auth/settings', {
+                        method: 'PUT',
+                        headers: getHeaders(),
+                        body: JSON.stringify({ settings: settingsPayload })
+                    });
+                    
+                    if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        throw new Error(errData.error || errData.message || 'Không thể lưu cài đặt hệ thống');
+                    }
+                }
                 
-                if(!res.ok) throw new Error('Không thể lưu cài đặt hệ thống');
-                
-                showAlert('Đã lưu toàn bộ cấu hình thành công', 'success');
+                showAlert('Đã lưu toàn bộ cấu hình thành công!', 'success');
             } catch(err) {
-                showAlert(err.message);
+                console.error(err);
+                showAlert(err.message || 'Lỗi khi lưu cấu hình');
             }
         }
 
         async function testDriveConnection() {
-            const email = document.getElementById('cfg-drive-email').value.trim();
-            const key = document.getElementById('cfg-drive-key').value.trim();
-            const folderId = document.getElementById('cfg-drive-folder').value.trim();
+            const email = document.getElementById('cfg-drive-email')?.value.trim() || '';
+            const key = document.getElementById('cfg-drive-key')?.value.trim() || '';
+            const folderId = document.getElementById('cfg-drive-folder')?.value.trim() || '';
             
             if(!email || !key || !folderId) {
                 return showAlert('Vui lòng điền đủ Email, Key và Folder ID trước khi test', 'error');
@@ -457,18 +555,17 @@ window.customConfirm = async function(msg) {
         }
 
         async function testConnection() {
-            // Find which tab is active
-            const activePanel = document.querySelector('.s-panel.active').id;
+            const activePanel = document.querySelector('.s-panel.active')?.id;
             
             if (activePanel === 'panel-gdrive') {
                 return testDriveConnection();
             }
             
             if (activePanel === 'panel-smtp') {
-                const host = document.getElementById('cfg-smtp-host').value.trim();
-                const port = document.getElementById('cfg-smtp-port').value.trim();
-                const user = document.getElementById('cfg-smtp-user').value.trim();
-                const pass = document.getElementById('cfg-smtp-pass').value.trim();
+                const host = document.getElementById('cfg-smtp-host')?.value.trim() || '';
+                const port = document.getElementById('cfg-smtp-port')?.value.trim() || '';
+                const user = document.getElementById('cfg-smtp-user')?.value.trim() || '';
+                const pass = document.getElementById('cfg-smtp-pass')?.value.trim() || '';
                 
                 if(!host || !port || !user || !pass) {
                     return showAlert('Vui lòng điền đủ Host, Port, User, Pass để test SMTP', 'error');
@@ -490,19 +587,7 @@ window.customConfirm = async function(msg) {
             }
 
             if (activePanel === 'panel-gemini') {
-                const apiKey = document.getElementById('cfg-gemini-key').value.trim();
-                if(!apiKey) return showAlert('Vui lòng nhập API Key để test', 'error');
-                
-                try {
-                    showAlert('Đang kiểm tra Gemini API...', 'success');
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                    const data = await res.json();
-                    if(data.error) throw new Error(data.error.message);
-                    showAlert('✅ Kết nối Gemini API thành công!', 'success');
-                } catch(e) {
-                    showAlert('❌ Lỗi Gemini: ' + e.message, 'error');
-                }
-                return;
+                return testGeminiConnectionOnly();
             }
         }
     </script>

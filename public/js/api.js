@@ -38,6 +38,13 @@ async function checkAuth(redirectIfNotAuth = true) {
                 localStorage.removeItem('giaoan_user_signature');
             }
             localStorage.setItem('giaoan_user_name', currentUser.full_name || currentUser.username || '');
+            
+            const activeGeminiKey = currentUser.gemini_api_key || currentUser.admin_gemini_api_key || '';
+            if (activeGeminiKey) {
+                localStorage.setItem('giaoan_gemini_key', activeGeminiKey);
+            } else {
+                localStorage.removeItem('giaoan_gemini_key');
+            }
         }
 
         // Cập nhật thông tin UI nếu có
