@@ -61,6 +61,61 @@
         min-width: 720px;
         margin-top: 0 !important;
     }
+
+    /* Table single line & sticky action */
+    .table-responsive table {
+        width: 100%;
+        min-width: 680px;
+        border-collapse: collapse;
+    }
+    .table-responsive table th,
+    .table-responsive table td {
+        white-space: nowrap !important;
+        vertical-align: middle;
+    }
+    .sticky-action {
+        position: sticky;
+        right: 0;
+        z-index: 5;
+        box-shadow: -3px 0 8px rgba(0, 0, 0, 0.05);
+    }
+    thead th.sticky-action {
+        background: var(--bg) !important;
+        z-index: 6;
+    }
+    tbody td.sticky-action {
+        background: #ffffff !important;
+    }
+    tr:hover td.sticky-action {
+        background: #f8fafc !important;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .btn-action {
+            padding: 6px 9px;
+            font-size: 0.85rem;
+            gap: 0;
+        }
+        .btn-action-text {
+            display: none !important;
+        }
+        .card-header {
+            padding-bottom: 12px;
+        }
+        .card-title {
+            font-size: 1rem !important;
+        }
+    }
+
 </style>
 <script>
 window._originalAlert = window.alert;
@@ -90,9 +145,9 @@ window.customConfirm = async function(msg) {
 <body>
     <div id="alert-box"></div>
     <div class="card">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-users-cog" style="color:var(--primary); margin-right:8px;"></i> Quản lý Người dùng</h3>
-            <button class="btn btn-primary" onclick="openNewUserForm()"><i class="fas fa-user-plus"></i> Thêm thành viên</button>
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:nowrap;">
+            <h3 class="card-title" style="white-space:nowrap; margin:0; font-size:1.05rem; overflow:hidden; text-overflow:ellipsis;"><i class="fas fa-users-cog" style="color:var(--primary); margin-right:8px;"></i> Quản lý Người dùng</h3>
+            <button class="btn btn-primary" onclick="openNewUserForm()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-user-plus"></i> <span>Thêm thành viên</span></button>
         </div>
         
         <!-- Add/Edit User Form -->
@@ -169,7 +224,7 @@ window.customConfirm = async function(msg) {
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Email</th>
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Vai trò</th>
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Trạng thái</th>
-                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem; text-align:center;">Hành động</th>
+                        <th class="sticky-action" style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem; text-align:center; width:100px;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody id="users-table-body">
@@ -250,8 +305,8 @@ window.customConfirm = async function(msg) {
                 const emailEsc = escapeHtml(u.email || '');
                 const roleEsc = escapeHtml(u.role || 'User');
                 
-                const editBtn = `<button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem; margin-right:6px;" onclick="openEditUserForm(${u.id}, '${usernameEsc}', '${fullNameEsc}', '${emailEsc}', '${roleEsc}')"><i class="fas fa-edit"></i> Sửa</button>`;
-                const delBtn = `<button class="btn btn-danger" style="padding:6px 12px; font-size:0.85rem;" onclick="deleteUser(${u.id})" title="Xóa người dùng"><i class="fas fa-trash-alt"></i> Xóa</button>`;
+                const editBtn = `<button class="btn btn-secondary btn-action" style="margin-right:4px;" onclick="openEditUserForm(${u.id}, '${usernameEsc}', '${fullNameEsc}', '${emailEsc}', '${roleEsc}')" title="Sửa thông tin"><i class="fas fa-edit"></i> <span class="btn-action-text">Sửa</span></button>`;
+                const delBtn = `<button class="btn btn-danger btn-action" onclick="deleteUser(${u.id})" title="Xóa người dùng"><i class="fas fa-trash-alt"></i> <span class="btn-action-text">Xóa</span></button>`;
                 
                 return `
                 <tr style="border-bottom:1px solid var(--border);">
@@ -261,7 +316,7 @@ window.customConfirm = async function(msg) {
                     <td style="padding:12px; color:#475569;">${u.email || '<span style="color:#94a3b8;">-</span>'}</td>
                     <td style="padding:12px;"><span style="background:${u.role==='Admin'?'var(--primary)':'#475569'}; color:white; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600;"><i class="fas ${u.role==='Admin'?'fa-user-shield':'fa-user'}"></i> ${u.role}</span></td>
                     <td style="padding:12px;">${u.is_verified ? '<span style="color:var(--success); font-weight:600; font-size:0.88rem;"><i class="fas fa-check-circle"></i> Đã xác thực</span>' : '<span style="color:var(--text-light); font-size:0.88rem;"><i class="fas fa-clock"></i> Chờ xác thực</span>'}</td>
-                    <td style="padding:12px; text-align:center; white-space:nowrap;">
+                    <td class="sticky-action" style="padding:12px; text-align:center; white-space:nowrap;">
                         ${editBtn} ${delBtn}
                     </td>
                 </tr>
