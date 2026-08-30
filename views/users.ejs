@@ -388,10 +388,13 @@ window.customConfirm = async function(msg) {
         async function loadUsers() {
             try {
                 const res = await fetch(API_URL + '/users', { headers: getHeaders() });
-                allUsersList = await res.json();
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || data.message || 'Lỗi tải danh sách người dùng');
+                allUsersList = Array.isArray(data) ? data : [];
                 filterUsers();
             } catch(e) { 
-                showAlert('Lỗi tải danh sách người dùng'); 
+                console.error(e);
+                showAlert(e.message || 'Lỗi tải danh sách người dùng', 'error'); 
             }
         }
 

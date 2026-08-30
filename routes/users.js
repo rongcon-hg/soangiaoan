@@ -13,10 +13,20 @@ const isAdmin = (req, res, next) => {
 
 router.get('/', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const query = `SELECT id, username, role, full_name, email, is_verified, expires_at, department, phone, avatar, settings, created_at FROM users ORDER BY id DESC`;
-        const result = await pool.query(query);
-        res.json(result.rows);
+        // Đảm bảo cột expires_at luôn tồn tại
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;`).catch(() => {});
+        
+        let result;
+        try {
+            const query = `SELECT id, username, role, full_name, email, is_verified, expires_at, department, phone, avatar, settings FROM users ORDER BY id ASC`;
+            result = await pool.query(query);
+        } catch (colErr) {
+            const fallbackQuery = `SELECT id, username, role, full_name, email, is_verified FROM users ORDER BY id ASC`;
+            result = await pool.query(fallbackQuery);
+        }
+        res.json(result.rows || []);
     } catch (error) {
+        console.error('Error fetching users:', error);
         res.status(500).json({ error: error.message });
     }
 });

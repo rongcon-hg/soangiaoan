@@ -44,6 +44,7 @@ const initDb = async () => {
                 ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'User',
                 ADD COLUMN IF NOT EXISTS signature TEXT,
                 ADD COLUMN IF NOT EXISTS signature_filename TEXT,
+                ADD COLUMN IF NOT EXISTS google_id VARCHAR(255),
                 ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
             `);
             // Cập nhật tài khoản Admin là vô thời hạn và người dùng mặc định 3 tháng nếu chưa có
