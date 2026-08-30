@@ -682,6 +682,16 @@ window.addEventListener(&quot;message&quot;, e => {
         }
         if (payload.syllabus) lessons = payload.syllabus;
         if (payload.programSequence) programSequence = payload.programSequence;
+        if (payload.rawCurriculumText || (payload.courseInfo && payload.courseInfo.rawCurriculumText)) {
+            const rawCurText = payload.rawCurriculumText || payload.courseInfo.rawCurriculumText;
+            const reDetailMap = parseDetailItems(rawCurText);
+            programSequence.forEach(l => {
+                if (l.kind === 'lesson' && l.no && reDetailMap[l.no]) {
+                    l.objectives = reDetailMap[l.no].objectives || [];
+                    l.objectivesText = reDetailMap[l.no].objectivesText || "";
+                }
+            });
+        }
         if (payload.textbookData) {
             textbookData = payload.textbookData;
             const tbStatus = document.getElementById(&quot;textbookFileStatus&quot;);
@@ -2163,10 +2173,24 @@ function sendSessionToPlanner(index){
      });
    });
 
-   lessonGroups.push({
-     lesson:lessonName,
-     items:groupItems
-   });
+       const numMatch = lessonName.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i);
+    const lessonNum = numMatch ? romanToInt(numMatch[1]) : null;
+    let matchedLessonObj = null;
+    if (lessonNum !== null) {
+      matchedLessonObj = programSequence.find(x => x.kind === 'lesson' && x.no === lessonNum);
+    }
+    if (!matchedLessonObj) {
+      matchedLessonObj = programSequence.find(x => x.kind === 'lesson' && String(x.title || '').trim() === lessonName.trim());
+    }
+
+    const objText = matchedLessonObj?.objectivesText || (Array.isArray(matchedLessonObj?.objectives) ? matchedLessonObj.objectives.join('\n') : '') || '';
+
+    lessonGroups.push({
+      lesson: lessonName,
+      items: groupItems,
+      objectives: matchedLessonObj?.objectives || [],
+      objectivesText: objText
+    });
  });
 
  const items=[];
