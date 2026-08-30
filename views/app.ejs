@@ -685,16 +685,16 @@ window.addEventListener(&quot;message&quot;, e => {
             programSequence = payload.programSequence;
         } else if (payload.syllabus && payload.syllabus.length > 0) {
             programSequence = payload.syllabus.map((l, i) => ({
-                kind: "lesson",
+                kind: &quot;lesson&quot;,
                 no: l.no || (i + 1),
-                title: l.title || "",
+                title: l.title || &quot;&quot;,
                 ltHours: l.ltHours || 0,
                 thHours: l.thHours || 0,
                 ltPeriods: l.ltPeriods || 0,
                 thPeriods: l.thPeriods || 0,
                 items: l.items || [],
                 objectives: l.objectives || [],
-                objectivesText: l.objectivesText || ""
+                objectivesText: l.objectivesText || &quot;&quot;
             }));
         }
         if (payload.rawCurriculumText || (payload.courseInfo && payload.courseInfo.rawCurriculumText)) {
@@ -703,7 +703,7 @@ window.addEventListener(&quot;message&quot;, e => {
             programSequence.forEach(l => {
                 if (l.kind === 'lesson' && l.no && reDetailMap[l.no]) {
                     l.objectives = reDetailMap[l.no].objectives || [];
-                    l.objectivesText = reDetailMap[l.no].objectivesText || "";
+                    l.objectivesText = reDetailMap[l.no].objectivesText || &quot;&quot;;
                 }
             });
         }
