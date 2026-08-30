@@ -21,11 +21,11 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
 });
 
 router.post('/', authenticateToken, isAdmin, async (req, res) => {
-    const { username, password, email, role } = req.body;
+    const { username, password, email, role, full_name } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const query = `INSERT INTO users (username, password, email, role, is_verified) VALUES ($1, $2, $3, $4, true) RETURNING id`;
-        await pool.query(query, [username, hashedPassword, email, role]);
+        const query = `INSERT INTO users (username, password, email, role, full_name, is_verified) VALUES ($1, $2, $3, $4, $5, true) RETURNING id`;
+        await pool.query(query, [username, hashedPassword, email, role, full_name || null]);
         res.status(201).json({ message: 'User created' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -33,16 +33,16 @@ router.post('/', authenticateToken, isAdmin, async (req, res) => {
 });
 
 router.put('/:id', authenticateToken, isAdmin, async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password, role, full_name } = req.body;
     try {
         let query, params;
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
-            query = `UPDATE users SET email = $1, role = $2, password = $3 WHERE id = $4`;
-            params = [email, role, hashedPassword, req.params.id];
+            query = `UPDATE users SET email = $1, role = $2, full_name = $3, password = $4 WHERE id = $5`;
+            params = [email, role, full_name || null, hashedPassword, req.params.id];
         } else {
-            query = `UPDATE users SET email = $1, role = $2 WHERE id = $3`;
-            params = [email, role, req.params.id];
+            query = `UPDATE users SET email = $1, role = $2, full_name = $3 WHERE id = $4`;
+            params = [email, role, full_name || null, req.params.id];
         }
         await pool.query(query, params);
         res.json({ message: 'User updated' });
