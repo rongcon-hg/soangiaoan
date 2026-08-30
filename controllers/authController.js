@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const query = `INSERT INTO users (username, password, email, expires_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP + INTERVAL '3 months') RETURNING id`;
+        const query = `INSERT INTO users (username, password, email, expires_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP + INTERVAL '1 month') RETURNING id`;
         
         const result = await pool.query(query, [username, hashedPassword, email]);
         

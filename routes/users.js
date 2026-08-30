@@ -45,7 +45,7 @@ router.post('/', authenticateToken, isAdmin, async (req, res) => {
             query = `INSERT INTO users (username, password, email, role, full_name, is_verified, expires_at) VALUES ($1, $2, $3, $4, $5, true, $6) RETURNING id`;
             params = [username, hashedPassword, email, role, full_name || null, finalExpires];
         } else {
-            query = `INSERT INTO users (username, password, email, role, full_name, is_verified, expires_at) VALUES ($1, $2, $3, $4, $5, true, CURRENT_TIMESTAMP + INTERVAL '3 months') RETURNING id`;
+            query = `INSERT INTO users (username, password, email, role, full_name, is_verified, expires_at) VALUES ($1, $2, $3, $4, $5, true, CURRENT_TIMESTAMP + INTERVAL '1 month') RETURNING id`;
             params = [username, hashedPassword, email, role, full_name || null];
         }
 

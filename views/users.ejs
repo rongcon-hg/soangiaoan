@@ -286,8 +286,8 @@ window.customConfirm = async function(msg) {
                 <div class="form-group" style="grid-column: 1 / -1; margin-top: -6px;">
                     <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 6px;">Chọn nhanh thời hạn gia hạn:</div>
                     <div class="expiry-presets" style="display:flex; gap:6px; flex-wrap:wrap;">
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="setExpiryPreset(1)">+1 Tháng</button>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="setExpiryPreset(3)">+3 Tháng (Mặc định)</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="setExpiryPreset(1)">+1 Tháng (Mặc định)</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="setExpiryPreset(3)">+3 Tháng</button>
                         <button type="button" class="btn btn-secondary btn-sm" onclick="setExpiryPreset(6)">+6 Tháng</button>
                         <button type="button" class="btn btn-secondary btn-sm" onclick="setExpiryPreset(12)">+1 Năm</button>
                         <button type="button" class="btn btn-secondary btn-sm" onclick="setExpiryPreset('forever')" style="color:#1d4ed8; font-weight:600;"><i class="fas fa-infinity"></i> Vô thời hạn</button>
@@ -572,7 +572,7 @@ window.customConfirm = async function(msg) {
             document.getElementById('form-email').value = '';
             document.getElementById('form-password').value = '';
             document.getElementById('form-role').value = 'User';
-            setExpiryPreset(3);
+            setExpiryPreset(1);
             document.getElementById('user-form-modal').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 

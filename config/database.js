@@ -50,7 +50,7 @@ const initDb = async () => {
             // Cập nhật tài khoản Admin là vô thời hạn và người dùng mặc định 3 tháng nếu chưa có
             await client.query(`
                 UPDATE users SET expires_at = '2099-12-31 23:59:59' WHERE role = 'Admin' AND (expires_at IS NULL OR expires_at < '2090-01-01');
-                UPDATE users SET expires_at = CURRENT_TIMESTAMP + INTERVAL '3 months' WHERE role != 'Admin' AND expires_at IS NULL;
+                UPDATE users SET expires_at = CURRENT_TIMESTAMP + INTERVAL '1 month' WHERE role != 'Admin' AND expires_at IS NULL;
             `);
         } catch (e) {
             // Bỏ qua lỗi
