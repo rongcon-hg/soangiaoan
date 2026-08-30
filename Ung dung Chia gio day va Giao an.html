@@ -3777,7 +3777,16 @@ $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&g
   $(&quot;#btnRefreshModels&quot;).onclick=refreshGeminiModels;
   $(&quot;#btnAIWhole&quot;).onclick=runWholeAI;
   loadAISettings();
+  if (window.parent && window.parent._lastSchedulePayload) {
+    receiveScheduleSession(window.parent._lastSchedulePayload);
+  }
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "PLANNER_FRAME_READY" }, "*");
+    }
+  } catch(e) {}
 }
+window.receiveScheduleSession = receiveScheduleSession;
 init();
 &lt;/script&gt;
 &lt;/body&gt;

@@ -3847,7 +3847,16 @@ $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&g
   $(&quot;#btnRefreshModels&quot;).onclick=refreshGeminiModels;
   $(&quot;#btnAIWhole&quot;).onclick=runWholeAI;
   loadAISettings();
+  if (window.parent && window.parent._lastSchedulePayload) {
+    receiveScheduleSession(window.parent._lastSchedulePayload);
+  }
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "PLANNER_FRAME_READY" }, "*");
+    }
+  } catch(e) {}
 }
+window.receiveScheduleSession = receiveScheduleSession;
 init();
 &lt;/script&gt;
 &lt;/body&gt;
@@ -3884,6 +3893,15 @@ function switchTab(step) {
       pills[0].style.background = "rgba(255,255,255,.14)";
       pills[0].style.color = "#fff";
       pills[0].style.borderColor = "rgba(255,255,255,.32)";
+      if(window._lastSchedulePayload) {
+        const pf = document.getElementById("plannerFrame");
+        if(pf && pf.contentWindow) {
+          if(typeof pf.contentWindow.receiveScheduleSession === "function") {
+            pf.contentWindow.receiveScheduleSession(window._lastSchedulePayload);
+          }
+          pf.contentWindow.postMessage({type:"LOAD_SCHEDULE_SESSION",payload:window._lastSchedulePayload},"*");
+        }
+      }
     }
   }
 }
