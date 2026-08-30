@@ -4972,6 +4972,12 @@ document.addEventListener("DOMContentLoaded", () => {
         window.CURRENT_USER = u;
         window.USER_SIGNATURE = u.signature || "";
         window.USER_NAME = u.full_name || u.username || "";
+        if (u.is_expired) {
+            setTimeout(() => {
+                if (typeof openRenewalModal === 'function') openRenewalModal();
+                if (typeof showAlert === 'function') showAlert('Tài khoản đã hết hạn sử dụng. Vui lòng gia hạn để tiếp tục sử dụng hệ thống.', 'warning');
+            }, 500);
+        }
         try {
           localStorage.setItem("giaoan_user_signature", window.USER_SIGNATURE);
           localStorage.setItem("giaoan_user_name", window.USER_NAME);

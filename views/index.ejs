@@ -316,11 +316,35 @@ window.customConfirm = async function(msg) {
         let selectedClassValue = '';
         let availableClassList = [];
 
-        checkAuth().then(user => {
+                checkAuth().then(user => {
             if(user) {
+                if (user.is_expired) {
+                    showIndexLockBanner();
+                    setTimeout(() => openRenewalModal(), 400);
+                }
                 loadProjects();
             }
         });
+
+        function showIndexLockBanner() {
+            if (document.getElementById('index-lock-banner')) return;
+            const container = document.querySelector('.card-header');
+            if (container) {
+                const banner = document.createElement('div');
+                banner.id = 'index-lock-banner';
+                banner.style.cssText = 'background:#fee2e2; border:1.5px solid #f87171; border-radius:8px; padding:12px 16px; margin-top:14px; width:100%; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;';
+                banner.innerHTML = `
+                    <div style="color:#991b1b; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-lock" style="font-size:1.2rem; color:#dc2626;"></i>
+                        <span>Trang Quản lý Môn học đang tạm khóa do tài khoản của bạn đã hết hạn sử dụng.</span>
+                    </div>
+                    <button type="button" class="btn btn-sm" onclick="openRenewalModal()" style="background:#dc2626; color:#fff; font-weight:700; border:none; padding:6px 14px; border-radius:6px; cursor:pointer;">
+                        <i class="fas fa-history"></i> Gia hạn ngay
+                    </button>
+                `;
+                container.parentNode.insertBefore(banner, container.nextSibling);
+            }
+        }
 
         function removeVietnameseTones(str) {
             str = String(str || '');
@@ -732,6 +756,7 @@ window.customConfirm = async function(msg) {
         }
 
         async function deleteProject(id) {
+            if (currentUser && currentUser.is_expired) { openRenewalModal(); return showAlert("Tài khoản đã hết hạn sử dụng. Vui lòng gia hạn!", "warning"); }
             if(!(await customConfirm('Xóa môn học này và toàn bộ giáo án liên quan?'))) return;
             try {
                 const res = await fetch(API_URL + '/projects/' + id, { method: 'DELETE', headers: getHeaders() });
