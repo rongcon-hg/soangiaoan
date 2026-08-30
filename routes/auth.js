@@ -15,6 +15,7 @@ router.put('/settings', authenticateToken, authController.updateSettings);
 router.post('/test-drive', authenticateToken, authController.testDriveConnection);
 
 router.post('/test-smtp', authenticateToken, authController.testSmtpConnection);
+router.post('/test-google', authenticateToken, authController.testGoogleConnection);
 
 router.get('/google/config', authController.getGoogleConfig);
 router.get('/google', authController.googleAuthRedirect);

@@ -458,3 +458,24 @@ exports.googleAuthCallback = async (req, res) => {
         res.redirect('/login?error=' + encodeURIComponent('Lỗi xác thực Google: ' + e.message));
     }
 };
+
+
+exports.testGoogleConnection = async (req, res) => {
+    const { clientId, clientSecret } = req.body;
+    if (!clientId || !clientSecret) {
+        return res.status(400).json({ message: 'Vui lòng nhập đầy đủ Google Client ID và Client Secret' });
+    }
+    try {
+        if (!clientId.includes('.apps.googleusercontent.com')) {
+            return res.status(400).json({ message: 'Google Client ID không đúng định dạng (cần có đuôi .apps.googleusercontent.com)' });
+        }
+        if (!clientSecret.startsWith('GOCSPX-') && clientSecret.length < 10) {
+            return res.status(400).json({ message: 'Google Client Secret không đúng định dạng (thường bắt đầu bằng GOCSPX-)' });
+        }
+        const response = await fetch('https://accounts.google.com/.well-known/openid-configuration');
+        if (!response.ok) throw new Error('Không thể kết nối tới máy chủ xác thực Google');
+        res.json({ message: 'Kết nối máy chủ Google OAuth thành công! Client ID & Secret hợp lệ.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Lỗi kiểm tra Google OAuth: ' + error.message });
+    }
+};

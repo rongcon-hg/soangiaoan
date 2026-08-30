@@ -297,8 +297,11 @@ window.customConfirm = async function(msg) {
                 </div>
 
                 <div class="action-btn-row" style="margin-top: 24px;">
-                    <button type="button" id="btn-save-google-only" onclick="saveGoogleSettingsOnly()" class="btn btn-primary" style="background: #059669;">
-                        <i class="fas fa-check"></i> <span>Lưu cấu hình</span>
+                    <button type="button" id="btn-save-google-only" onclick="saveGoogleSettingsOnly()" class="btn btn-primary">
+                        <i class="fas fa-save"></i> <span>Lưu Google</span>
+                    </button>
+                    <button type="button" onclick="testGoogleConnectionOnly()" class="btn btn-secondary">
+                        <i class="fas fa-bolt"></i> <span>Kiểm tra Google</span>
                     </button>
                 </div>
             </div>
