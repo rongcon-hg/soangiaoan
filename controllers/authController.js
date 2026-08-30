@@ -10,7 +10,7 @@ exports.register = async (req, res) => {
     const { username, password, email } = req.body;
     
     if (!username || !password || !email) {
-        return res.status(400).json({ message: 'Username, password and email are required' });
+        return res.status(400).json({ message: 'Vui lòng nhập đầy đủ Tên đăng nhập, Mật khẩu và Email.' });
     }
 
     try {
@@ -30,10 +30,10 @@ exports.register = async (req, res) => {
             console.error('Lỗi gửi mail', e);
         }
 
-        res.status(201).json({ message: 'User registered successfully. Please verify OTP.', userId: result.rows[0].id });
+        res.status(201).json({ message: 'Đăng ký tài khoản thành công! Vui lòng kiểm tra Email để lấy mã OTP.', userId: result.rows[0].id });
     } catch (error) {
         if (error.code === '23505') {
-            return res.status(400).json({ message: 'Username already exists' });
+            return res.status(400).json({ message: 'Tên đăng nhập này đã tồn tại trong hệ thống. Vui lòng chọn tên đăng nhập khác.' });
         }
         res.status(500).json({ error: error.message });
     }
@@ -46,7 +46,7 @@ exports.verifyOtp = async (req, res) => {
         const result = await pool.query(query, [username]);
         const user = result.rows[0];
 
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user) return res.status(404).json({ message: 'Tài khoản không tồn tại trong hệ thống.' });
         
         if (user.otp_code !== otp) return res.status(400).json({ message: 'Mã OTP không hợp lệ' });
         if (new Date() > new Date(user.otp_expires)) return res.status(400).json({ message: 'Mã OTP đã hết hạn' });
@@ -90,7 +90,7 @@ exports.login = async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
+        return res.status(400).json({ message: 'Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu.' });
     }
 
     try {
@@ -98,10 +98,10 @@ exports.login = async (req, res) => {
         const result = await pool.query(query, [username]);
         const user = result.rows[0];
 
-        if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+        if (!user) return res.status(401).json({ message: 'Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.' });
 
         const match = await bcrypt.compare(password, user.password);
-        if (!match) return res.status(401).json({ message: 'Invalid credentials' });
+        if (!match) return res.status(401).json({ message: 'Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.' });
 
         if (!user.is_verified) {
             // Generate and send a new OTP automatically

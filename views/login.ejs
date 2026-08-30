@@ -116,6 +116,48 @@ window.customConfirm = async function(msg) {
 
     <script src="/js/api.js"></script>
     <script>
+        
+        function translateError(msg) {
+            if (!msg) return 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.';
+            const s = String(msg).trim();
+            if (s.toLowerCase().includes('invalid credentials')) {
+                return 'Tên đăng nhập hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
+            }
+            if (s.toLowerCase().includes('username already exists') || s.toLowerCase().includes('already exists')) {
+                return 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.';
+            }
+            if (s.toLowerCase().includes('user not found')) {
+                return 'Tài khoản người dùng không tồn tại trong hệ thống.';
+            }
+            if (s.toLowerCase().includes('failed to fetch') || s.toLowerCase().includes('networkerror')) {
+                return 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.';
+            }
+            return s;
+        }
+
+        function showAlert(msg, type = 'error') {
+            const viMsg = translateError(msg);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: type === 'success' ? 'Thành công!' : (type === 'warning' ? 'Chú ý' : 'Thông báo lỗi'),
+                    text: viMsg,
+                    icon: type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'error'),
+                    confirmButtonColor: '#16469d',
+                    confirmButtonText: 'Đã hiểu'
+                });
+            } else {
+                const box = document.getElementById('alert-box');
+                if (box) {
+                    box.textContent = viMsg;
+                    box.className = 'alert-' + type;
+                    box.style.display = 'block';
+                    setTimeout(() => box.style.display = 'none', 4000);
+                } else {
+                    alert(viMsg);
+                }
+            }
+        }
+
         let isLoginMode = true;
         let pendingUsername = '';
 
@@ -238,7 +280,7 @@ window.customConfirm = async function(msg) {
                     localStorage.setItem('token', data.token);
                     window.location.href = '/';
                 }
-            } catch (err) { showAlert(err.message); }
+            } catch (err) { showAlert(translateError(err.message), 'error'); }
         }
 
         function showOtpForm() {
@@ -269,7 +311,7 @@ window.customConfirm = async function(msg) {
                 cancelOtp();
                 setAuthMode('login');
                 document.getElementById('auth-password').value = '';
-            } catch (err) { showAlert(err.message); }
+            } catch (err) { showAlert(translateError(err.message), 'error'); }
         }
 
         function showForgotPassword() {
@@ -297,7 +339,7 @@ window.customConfirm = async function(msg) {
                 if (!res.ok) throw new Error(data.message);
                 showAlert(data.message, 'success');
                 cancelForgot();
-            } catch(err) { showAlert(err.message); }
+            } catch (err) { showAlert(translateError(err.message), 'error'); }
         }
     </script>
 
