@@ -116,6 +116,39 @@
         }
     }
 
+
+    /* Pagination buttons */
+    .page-btn {
+        min-width: 34px;
+        height: 34px;
+        padding: 0 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: #334155;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .page-btn:hover:not(:disabled) {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: var(--primary);
+    }
+    .page-btn.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+    .page-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
 </style>
 <script>
 window._originalAlert = window.alert;
@@ -232,6 +265,16 @@ window.customConfirm = async function(msg) {
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination Bar -->
+        <div id="pagination-container" style="display: none; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 12px;">
+            <div id="pagination-info" style="font-size: 0.88rem; color: #64748b;">
+                Hiển thị <b>1 - 10</b> trong tổng số <b>0</b> người dùng
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;" id="pagination-buttons">
+                <!-- Page buttons -->
+            </div>
+        </div>
     </div>
 
     <script src="/js/api.js"></script>
@@ -240,6 +283,9 @@ window.customConfirm = async function(msg) {
         injectLayout('users', 'Quản lý Người dùng');
         
         let allUsersList = [];
+        let currentFilteredList = [];
+        const PAGE_SIZE = 10;
+        let currentPage = 1;
 
         checkAuth().then(user => {
             if(user) {
@@ -270,7 +316,7 @@ window.customConfirm = async function(msg) {
             const selectedRole = document.getElementById('filter-role')?.value || '';
             const selectedStatus = document.getElementById('filter-status')?.value || '';
 
-            const filtered = allUsersList.filter(u => {
+            currentFilteredList = allUsersList.filter(u => {
                 // 1. Search keyword (username, full_name, email)
                 const uName = (u.username || '').toLowerCase();
                 const fName = (u.full_name || '').toLowerCase();
@@ -286,10 +332,67 @@ window.customConfirm = async function(msg) {
                 return matchSearch && matchRole && matchStatus;
             });
 
-            renderUsersTable(filtered);
+            currentPage = 1;
+            renderCurrentPage();
         }
 
-        function renderUsersTable(users) {
+        function renderCurrentPage() {
+            const totalItems = currentFilteredList.length;
+            const totalPages = Math.ceil(totalItems / PAGE_SIZE) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIndex = (currentPage - 1) * PAGE_SIZE;
+            const endIndex = Math.min(startIndex + PAGE_SIZE, totalItems);
+            const pageItems = currentFilteredList.slice(startIndex, endIndex);
+
+            renderUsersTable(pageItems, startIndex);
+            renderPagination(totalItems, totalPages, startIndex, endIndex);
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(currentFilteredList.length / PAGE_SIZE) || 1;
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderCurrentPage();
+            document.querySelector('.table-responsive')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function renderPagination(totalItems, totalPages, startIndex, endIndex) {
+            const container = document.getElementById('pagination-container');
+            if (!container) return;
+
+            if (totalItems <= PAGE_SIZE) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'flex';
+            
+            const info = document.getElementById('pagination-info');
+            if (info) {
+                info.innerHTML = `Hiển thị <b>${startIndex + 1} - ${endIndex}</b> trong tổng số <b>${totalItems}</b> người dùng`;
+            }
+
+            const btnGroup = document.getElementById('pagination-buttons');
+            if (!btnGroup) return;
+
+            let html = `<button class="page-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước"><i class="fas fa-chevron-left"></i></button>`;
+
+            for (let p = 1; p <= totalPages; p++) {
+                if (totalPages <= 7 || p === 1 || p === totalPages || (p >= currentPage - 1 && p <= currentPage + 1)) {
+                    html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>`;
+                } else if (p === currentPage - 2 || p === currentPage + 2) {
+                    html += `<span style="padding: 0 4px; color: #94a3b8;">...</span>`;
+                }
+            }
+
+            html += `<button class="page-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang kế tiếp"><i class="fas fa-chevron-right"></i></button>`;
+
+            btnGroup.innerHTML = html;
+        }
+
+        function renderUsersTable(users, startIndex = 0) {
             const countDisplay = document.getElementById('user-count-display');
             if (countDisplay) countDisplay.textContent = users.length + ' / ' + allUsersList.length;
 
@@ -310,7 +413,7 @@ window.customConfirm = async function(msg) {
                 
                 return `
                 <tr style="border-bottom:1px solid var(--border);">
-                    <td style="padding:12px; font-weight:700; color:var(--primary); text-align:center;">${idx + 1}</td>
+                    <td style="padding:12px; font-weight:700; color:var(--primary); text-align:center;">${startIndex + idx + 1}</td>
                     <td style="padding:12px;"><b>${usernameEsc}</b></td>
                     <td style="padding:12px; font-weight:600; color:#1e293b;">${u.full_name || '<span style="color:#94a3b8; font-weight:normal;">-</span>'}</td>
                     <td style="padding:12px; color:#475569;">${u.email || '<span style="color:#94a3b8;">-</span>'}</td>
