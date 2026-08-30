@@ -1031,7 +1031,7 @@ async function uploadTextbookToDrive() {
             driveStatusDiv.id = 'textbookDriveStatusBox';
             driveStatusDiv.style.marginTop = '10px';
         }
-        driveStatusDiv.innerHTML = &quot;&lt;span style='color:#7c3aed;'&gt;⏳ &lt;b&gt;Đang tải giáo trình lên Google Drive, vui lòng chờ...&lt;/b&gt;&lt;/span&gt;&quot;;
+        driveStatusDiv.innerHTML = &quot;&lt;span style='color:#16469d;'&gt;⏳ &lt;b&gt;Đang tải giáo trình lên Google Drive, vui lòng chờ...&lt;/b&gt;&lt;/span&gt;&quot;;
         
         const chunkSize = 3 * 1024 * 1024;
         (async () =&gt; {
@@ -1160,7 +1160,7 @@ async function uploadToDrive() {
            driveStatusDiv.style.marginTop = '10px';
            
        }
-       driveStatusDiv.innerHTML = &quot;<span style='color:#7c3aed;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>&quot;;
+       driveStatusDiv.innerHTML = &quot;<span style='color:#16469d;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>&quot;;
        
        const chunkSize = 3 * 1024 * 1024; // 3MB per chunk to bypass 4.5MB limit
        
@@ -1851,7 +1851,7 @@ function renderScheduleTable() {
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_kt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.KT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'KT', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;content&quot;&gt;${content}
    &lt;div style=&quot;margin-top:8px&quot;&gt;
-     &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#7c3aed&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
+     &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#16469d; color:#fff;&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
    &lt;/div&gt;
    &lt;/td&gt;
    &lt;td class=&quot;absent&quot;&gt;&lt;/td&gt;
