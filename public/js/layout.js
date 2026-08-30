@@ -274,6 +274,14 @@ function openRenewalModal() {
 function closeRenewalModal() {
     const modal = document.getElementById('renewal-modal-overlay');
     if (modal) modal.style.display = 'none';
+
+    // Nếu tài khoản đã hết hạn và đang ở trang Quản lý Môn học hoặc Soạn giáo án, lập tức chuyển về Bảng điều khiển
+    if (currentUser && currentUser.is_expired) {
+        const path = window.location.pathname;
+        if (path === '/' || path === '/app' || path.startsWith('/app')) {
+            window.location.href = '/dashboard';
+        }
+    }
 }
 
 async function submitRenewalForm(e) {
@@ -303,7 +311,7 @@ async function submitRenewalForm(e) {
 
         closeRenewalModal();
         if (typeof Swal !== 'undefined') {
-            Swal.fire({
+            await Swal.fire({
                 title: 'Đã gửi yêu cầu!',
                 text: 'Yêu cầu gia hạn của Thầy/Cô đã được gửi tới Quản trị viên và email xác nhận đã được gửi vào hộp thư của bạn.',
                 icon: 'success',
@@ -311,6 +319,13 @@ async function submitRenewalForm(e) {
             });
         } else {
             alert('Đã gửi yêu cầu gia hạn thành công!');
+        }
+
+        if (currentUser && currentUser.is_expired) {
+            const path = window.location.pathname;
+            if (path === '/' || path === '/app' || path.startsWith('/app')) {
+                window.location.href = '/dashboard';
+            }
         }
     } catch (err) {
         console.error(err);

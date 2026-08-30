@@ -320,7 +320,8 @@ window.customConfirm = async function(msg) {
             if(user) {
                 if (user.is_expired) {
                     showIndexLockBanner();
-                    setTimeout(() => openRenewalModal(), 400);
+                    setTimeout(() => openRenewalModal(), 300);
+                    return; // Không cần tải danh sách môn học khi đã hết hạn
                 }
                 loadProjects();
             }
