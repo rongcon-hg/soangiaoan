@@ -832,10 +832,10 @@ function parseCourseInfo(text){
 }
 
 function parseDetailItems(text){
- let detail=String(text||&quot;&quot;);
+ let detail=String(text||"");
 
  const parts=detail.split(/2\.\s*Nội dung chi tiết\s*:/i);
- if(parts.length&gt;1) detail=parts.slice(1).join(&quot; &quot;);
+ if(parts.length>1) detail=parts.slice(1).join(" ");
 
  detail=detail.split(/\n\s*IV\.\s*/i)[0];
 
@@ -843,6 +843,7 @@ function parseDetailItems(text){
  const map={};
  let currentNo=null;
  let inContent=false;
+ let inObjectives=false;
 
  function numbered(line){
    // Nhận 1. / 1 / 1.1. / 1.1 nhưng lưu NGUYÊN VĂN dòng gốc.
@@ -854,21 +855,41 @@ function parseDetailItems(text){
    const lm=line.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.*)$/i);
    if(lm){
      currentNo=romanToInt(lm[1]);
-     const titleRaw=line.replace(/\s*Thời gian\s*[:\-].*$/i,&quot;&quot;).trim();
-     if(!map[currentNo]) map[currentNo]={title:titleRaw,items:[]};
+     const titleRaw=line.replace(/\s*Thời gian\s*[:\-].*$/i,"").trim();
+     if(!map[currentNo]) map[currentNo]={title:titleRaw,items:[],objectives:[],objectivesText:""};
      else if(!map[currentNo].title) map[currentNo].title=titleRaw;
+     if(!map[currentNo].objectives) map[currentNo].objectives=[];
      inContent=false;
+     inObjectives=false;
      continue;
    }
 
    if(currentNo===null) continue;
 
-   if(/^2\.\s*Nội dung\s*:?\s*$/i.test(line) || /^Nội dung\s*:?\s*$/i.test(line)){
+   // Nhận diện phần Nội dung: 2. Nội dung / Nội dung / Nội dung của bài / Nội dung bài học / Nội dung chi tiết
+   if(/^(?:\d+\.\s*)?Nội\s*dung(?:\s*chi\s*tiết|\s*của\s*(?:bài|chương)|\s*(?:bài\s*học|chương))?\s*:?\s*$/i.test(line)){
      inContent=true;
+     inObjectives=false;
      continue;
    }
-   if(/^1\.\s*Mục tiêu\s*:?\s*$/i.test(line) || /^Mục tiêu\s*:?\s*$/i.test(line)){
+
+   // Nhận diện phần Mục tiêu: 1. Mục tiêu / Mục tiêu / Mục tiêu của bài / Mục tiêu bài học / Mục tiêu của chương
+   if(/^(?:\d+\.\s*)?Mục\s*tiêu(?:\s*của\s*(?:bài|chương)|\s*(?:bài\s*học|chương))?\s*:?\s*$/i.test(line)){
      inContent=false;
+     inObjectives=true;
+     continue;
+   }
+
+   if(inObjectives){
+     const trimmed = line.trim();
+     if(trimmed){
+       if(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i.test(trimmed)){
+         inObjectives=false;
+       } else {
+         if(!map[currentNo].objectives) map[currentNo].objectives=[];
+         map[currentNo].objectives.push(trimmed);
+       }
+     }
      continue;
    }
 
@@ -876,14 +897,20 @@ function parseDetailItems(text){
      const it=numbered(line);
      if(!it) continue;
 
-     const body=it.raw.replace(/^(\d+(?:\.\d+)*)\.?\s+/,&quot;&quot;);
-     if(/^(Mục tiêu|Nội dung)$/i.test(body.trim())) continue;
+     const body=it.raw.replace(/^(\d+(?:\.\d+)*)\.?\s+/,"");
+     if(/^(Mục tiêu|Nội dung)/i.test(body.trim())) continue;
 
      const depth=(it.num.match(/\./g)||[]).length;
      const key=exactKey(it.raw);
-     if(!map[currentNo].items.some(x=&gt;exactKey(x[1])===key)){
-       map[currentNo].items.push([depth&gt;=1?&quot;sub&quot;:&quot;major&quot;, it.raw]);
+     if(!map[currentNo].items.some(x=>exactKey(x[1])===key)){
+       map[currentNo].items.push([depth>=1?"sub":"major", it.raw]);
      }
+   }
+ }
+
+ for(const k of Object.keys(map)){
+   if(map[k].objectives && map[k].objectives.length){
+     map[k].objectivesText = map[k].objectives.join("\n");
    }
  }
 
@@ -3194,12 +3221,87 @@ function activityRows(type,items,total){
 
   return normalizeRows(rows,total);
 }
+function formatObjectiveBlock(objText, lessonLabel) {
+  if (!objText || !objText.trim()) return '';
+  const lines = objText.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return '';
+
+  let htmlLines = [];
+  lines.forEach(line => {
+    if (line.startsWith('+') || line.startsWith('•') || line.startsWith('*')) {
+      htmlLines.push('&nbsp;&nbsp;&nbsp;&nbsp;' + escapeHtml(line));
+    } else if (line.startsWith('-')) {
+      htmlLines.push('&nbsp;&nbsp;' + escapeHtml(line));
+    } else {
+      htmlLines.push(escapeHtml(line));
+    }
+  });
+
+  return htmlLines.join('<br>');
+}
+
 function objectives(type){
   const p=currentProgram(),l=currentLesson(),sec=currentSection();
-  const base=`Sau khi học xong nội dung ${sec?.title||&quot;&quot;}, người học có khả năng:`;
-  if(type===&quot;theory&quot;)return `${base}&lt;br&gt;- Trình bày và giải thích được các kiến thức cốt lõi của nội dung học.&lt;br&gt;- Phân tích được ví dụ/tình huống liên quan và vận dụng kiến thức vào nhiệm vụ đơn giản.&lt;br&gt;- Chủ động học tập, trao đổi và tự đánh giá mức độ hiểu bài.`;
-  if(type===&quot;practice&quot;)return `${base}&lt;br&gt;- Thực hiện đúng quy trình và thao tác kỹ thuật theo yêu cầu.&lt;br&gt;- Tạo được sản phẩm/kết quả đạt tiêu chí cơ bản; phát hiện và sửa được lỗi thường gặp.&lt;br&gt;- Rèn luyện tác phong cẩn thận, chủ động và chịu trách nhiệm với kết quả thực hành.`;
-  return `${base}&lt;br&gt;- Trình bày được kiến thức, nguyên tắc hoặc quy trình trực tiếp liên quan đến nhiệm vụ.&lt;br&gt;- Thực hiện được các thao tác và hoàn thiện sản phẩm theo yêu cầu.&lt;br&gt;- Tự kiểm tra, điều chỉnh và chịu trách nhiệm với kết quả học tập.`
+  const schedulePayload = window._currentSchedulePayload || {};
+  const fullProg = (typeof receivedFullProgram !== 'undefined' && Array.isArray(receivedFullProgram)) 
+    ? receivedFullProgram 
+    : (Array.isArray(schedulePayload.fullProgram) ? schedulePayload.fullProgram : (p?.fullProgram || []));
+
+  // Xác định danh sách các bài/chương có trong giáo án buổi này
+  let targetLessonNames = [];
+  const groups = Array.isArray(p?.scheduleGroups) ? p.scheduleGroups : (Array.isArray(schedulePayload.lessonGroups) ? schedulePayload.lessonGroups : []);
+  if (groups.length) {
+    targetLessonNames = groups.map(g => String(g.lesson || '').trim()).filter(Boolean);
+  } else if (Array.isArray(schedulePayload.lessons) && schedulePayload.lessons.length) {
+    targetLessonNames = schedulePayload.lessons.map(x => String(x || '').trim()).filter(Boolean);
+  } else if (l?.title) {
+    targetLessonNames = [String(l.title).trim()];
+  }
+
+  // Khử trùng lặp tên bài
+  targetLessonNames = [...new Set(targetLessonNames)];
+
+  // Hàm tìm mục tiêu của bài học trong fullProg
+  function findObjectiveForLesson(lessonName) {
+    if (!lessonName) return null;
+    const numMatch = lessonName.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i);
+    const lessonNum = numMatch ? romanToInt(numMatch[1]) : null;
+
+    let found = null;
+    if (lessonNum !== null) {
+      found = fullProg.find(x => x.kind === 'lesson' && x.no === lessonNum);
+    }
+    if (!found) {
+      const cleanName = lessonName.toLowerCase().replace(/\s+/g, ' ');
+      found = fullProg.find(x => x.kind === 'lesson' && cleanName.includes(String(x.title || '').toLowerCase()));
+    }
+    return found ? (found.objectivesText || (Array.isArray(found.objectives) ? found.objectives.join('\n') : '')) : null;
+  }
+
+  const collected = [];
+  targetLessonNames.forEach(name => {
+    const obj = findObjectiveForLesson(name);
+    if (obj && obj.trim()) {
+      collected.push({ lessonName: name, objText: obj.trim() });
+    }
+  });
+
+  if (collected.length === 1) {
+    // 1 bài đơn lẻ: lấy trực tiếp mục tiêu của bài đó
+    return formatObjectiveBlock(collected[0].objText, collected[0].lessonName);
+  } else if (collected.length > 1) {
+    // Ghép 2 hoặc nhiều bài trong cùng 1 giáo án: ghép các mục tiêu lại theo từng bài
+    return collected.map(item => {
+      const shortName = item.lessonName.replace(/\s*Thời gian.*$/i, '').trim();
+      return `<b>* Mục tiêu của ${escapeHtml(shortName)}:</b><br>${formatObjectiveBlock(item.objText, item.lessonName)}`;
+    }).join('<br><br>');
+  }
+
+  // Fallback mặc định nếu chương trình không có mục tiêu
+  const base=`Sau khi học xong nội dung ${sec?.title||""}, người học có khả năng:`;
+  if(type==="theory")return `${base}<br>- Trình bày và giải thích được các kiến thức cốt lõi của nội dung học.<br>- Phân tích được ví dụ/tình huống liên quan và vận dụng kiến thức vào nhiệm vụ đơn giản.<br>- Chủ động học tập, trao đổi và tự đánh giá mức độ hiểu bài.`;
+  if(type==="practice")return `${base}<br>- Thực hiện đúng quy trình và thao tác kỹ thuật theo yêu cầu.<br>- Tạo được sản phẩm/kết quả đạt tiêu chí cơ bản; phát hiện và sửa được lỗi thường gặp.<br>- Rèn luyện tác phong cẩn thận, chủ động và chịu trách nhiệm với kết quả thực hành.`;
+  return `${base}<br>- Trình bày được kiến thức, nguyên tắc hoặc quy trình trực tiếp liên quan đến nhiệm vụ.<br>- Thực hiện được các thao tác và hoàn thiện sản phẩm theo yêu cầu.<br>- Tự kiểm tra, điều chỉnh và chịu trách nhiệm với kết quả học tập.`;
 }
 function toDirectImageUrl(url) {
   if (!url || typeof url !== &quot;string&quot;) return &quot;&quot;;
