@@ -806,6 +806,10 @@ function getExactCellLines(cell){
  return out;
 }
 
+let receivedFullCourse = null;
+let receivedFullProgram = null;
+// already declared at top
+
 function romanToInt(s) {
   if (!s) return 0;
   if (/^\d+$/.test(s)) return parseInt(s, 10);
