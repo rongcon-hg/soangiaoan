@@ -16,4 +16,8 @@ router.post('/test-drive', authenticateToken, authController.testDriveConnection
 
 router.post('/test-smtp', authenticateToken, authController.testSmtpConnection);
 
+router.get('/google/config', authController.getGoogleConfig);
+router.get('/google', authController.googleAuthRedirect);
+router.get('/google/callback', authController.googleAuthCallback);
+
 module.exports = router;

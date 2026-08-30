@@ -326,3 +326,131 @@ exports.testSmtpConnection = async (req, res) => {
         res.status(500).json({ error: 'Lỗi kết nối SMTP: ' + error.message });
     }
 };
+
+
+// Helper to retrieve Google OAuth configuration from Admin settings or env
+async function getGoogleOAuthConfig() {
+    try {
+        const adminQuery = "SELECT settings FROM users WHERE (username = 'qtv' OR role = 'Admin') AND settings IS NOT NULL ORDER BY CASE WHEN username = 'qtv' THEN 1 ELSE 2 END LIMIT 1";
+        const adminRes = await pool.query(adminQuery);
+        let settings = {};
+        if (adminRes.rows.length > 0 && adminRes.rows[0].settings) {
+            settings = typeof adminRes.rows[0].settings === 'string' ? JSON.parse(adminRes.rows[0].settings) : adminRes.rows[0].settings;
+        }
+        return {
+            enabled: settings.google_login_enabled === true || settings.google_login_enabled === 'true' || settings.google_login_enabled === '1',
+            clientId: settings.google_client_id || process.env.GOOGLE_CLIENT_ID || '',
+            clientSecret: settings.google_client_secret || process.env.GOOGLE_CLIENT_SECRET || ''
+        };
+    } catch(e) {
+        console.error('Error fetching Google config:', e);
+        return { enabled: false, clientId: '', clientSecret: '' };
+    }
+}
+
+exports.getGoogleConfig = async (req, res) => {
+    try {
+        const cfg = await getGoogleOAuthConfig();
+        res.json({
+            enabled: cfg.enabled && Boolean(cfg.clientId && cfg.clientSecret),
+            clientId: cfg.clientId
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+};
+
+exports.googleAuthRedirect = async (req, res) => {
+    try {
+        const cfg = await getGoogleOAuthConfig();
+        if (!cfg.enabled || !cfg.clientId || !cfg.clientSecret) {
+            return res.redirect('/login?error=' + encodeURIComponent('Tính năng Đăng nhập bằng Google hiện chưa được cấu hình hoặc bị tắt bởi Quản trị viên.'));
+        }
+
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+        const host = req.headers['x-forwarded-host'] || req.get('host');
+        const redirectUri = `${protocol}://${host}/api/auth/google/callback`;
+
+        const { google } = require('googleapis');
+        const oauth2Client = new google.auth.OAuth2(cfg.clientId, cfg.clientSecret, redirectUri);
+        const authUrl = oauth2Client.generateAuthUrl({
+            access_type: 'offline',
+            scope: [
+                'https://www.googleapis.com/auth/userinfo.profile',
+                'https://www.googleapis.com/auth/userinfo.email'
+            ],
+            prompt: 'select_account'
+        });
+
+        res.redirect(authUrl);
+    } catch (e) {
+        console.error('Error initiating Google OAuth:', e);
+        res.redirect('/login?error=' + encodeURIComponent('Lỗi khởi tạo đăng nhập Google: ' + e.message));
+    }
+};
+
+exports.googleAuthCallback = async (req, res) => {
+    try {
+        const { code, error } = req.query;
+        if (error) {
+            return res.redirect('/login?error=' + encodeURIComponent('Hủy đăng nhập Google hoặc phát sinh lỗi: ' + error));
+        }
+        if (!code) {
+            return res.redirect('/login?error=' + encodeURIComponent('Không nhận được mã xác thực từ Google.'));
+        }
+
+        const cfg = await getGoogleOAuthConfig();
+        if (!cfg.enabled || !cfg.clientId || !cfg.clientSecret) {
+            return res.redirect('/login?error=' + encodeURIComponent('Cấu hình Google OAuth chưa hợp lệ.'));
+        }
+
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+        const host = req.headers['x-forwarded-host'] || req.get('host');
+        const redirectUri = `${protocol}://${host}/api/auth/google/callback`;
+
+        const { google } = require('googleapis');
+        const oauth2Client = new google.auth.OAuth2(cfg.clientId, cfg.clientSecret, redirectUri);
+        const { tokens } = await oauth2Client.getToken(code);
+        oauth2Client.setCredentials(tokens);
+
+        const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+        const { data: profile } = await oauth2.userinfo.get();
+
+        if (!profile || !profile.email) {
+            return res.redirect('/login?error=' + encodeURIComponent('Không lấy được thông tin email từ tài khoản Google.'));
+        }
+
+        // Auto ensure google_id column exists
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);`).catch(() => {});
+
+        // 1. Check if user already exists with matching google_id or email
+        const userQuery = `SELECT * FROM users WHERE google_id = $1 OR LOWER(email) = LOWER($2) LIMIT 1`;
+        const userRes = await pool.query(userQuery, [profile.id, profile.email]);
+        const user = userRes.rows[0];
+
+        if (user) {
+            // User exists -> Update google_id and mark is_verified = true
+            await pool.query(
+                `UPDATE users SET google_id = $1, is_verified = true WHERE id = $2`,
+                [profile.id, user.id]
+            );
+
+            // Generate JWT Token
+            const token = jwt.sign(
+                { id: user.id, username: user.username, role: user.role },
+                JWT_SECRET,
+                { expiresIn: '7d' }
+            );
+
+            return res.redirect(`/login?google_token=${token}`);
+        } else {
+            // User does NOT exist in system
+            const emailEnc = encodeURIComponent(profile.email || '');
+            const nameEnc = encodeURIComponent(profile.name || '');
+            return res.redirect(`/login?error=google_not_registered&email=${emailEnc}&name=${nameEnc}`);
+        }
+    } catch (e) {
+        console.error('Error handling Google OAuth callback:', e);
+        res.redirect('/login?error=' + encodeURIComponent('Lỗi xác thực Google: ' + e.message));
+    }
+};
