@@ -125,6 +125,26 @@
             gap: 8px;
         }
 
+        
+        /* Responsive Table styling - single line */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .table-responsive table {
+            width: 100%;
+            min-width: 680px;
+            border-collapse: collapse;
+        }
+        .table-responsive th,
+        .table-responsive td {
+            white-space: nowrap !important;
+            vertical-align: middle;
+        }
+
         /* Quick Action Bar */
         .quick-actions {
             display: flex;
@@ -245,9 +265,9 @@
 
     <!-- Recent Subjects Card -->
     <div class="card" style="margin-bottom:24px;">
-        <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-list-ul" style="color:var(--primary); margin-right:6px;"></i> Môn học & Tiến độ Giáo án</h3>
-            <a href="/" class="btn btn-secondary btn-sm" style="font-size:0.82rem; padding:6px 12px;"><i class="fas fa-arrow-right"></i> Xem tất cả môn</a>
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:nowrap;">
+            <h3 class="card-title" style="white-space:nowrap; margin:0; font-size:1.05rem; overflow:hidden; text-overflow:ellipsis;"><i class="fas fa-list-ul" style="color:var(--primary); margin-right:6px;"></i> Môn học & Tiến độ Giáo án</h3>
+            <a href="/" class="btn btn-secondary btn-sm" style="font-size:0.82rem; padding:6px 12px; white-space:nowrap; flex-shrink:0;"><i class="fas fa-arrow-right"></i> Xem tất cả môn</a>
         </div>
         <div class="table-responsive">
             <table style="width:100%; border-collapse:collapse;">
@@ -461,7 +481,7 @@
                     : '<span style="font-size:0.75rem; font-weight:500; padding:2px 8px; border-radius:4px; background:#f8fafc; color:#94a3b8;">0 bài</span>';
 
                 return '<tr style="border-bottom:1px solid var(--border);">' +
-                    '<td style="padding:10px 14px; font-weight:700; color:var(--primary); font-size:0.88rem;">' + (idx + 1) + '</td>' +
+                    '<td style="padding:10px 14px; font-weight:700; color:var(--primary); font-size:0.88rem; text-align:center;">' + (idx + 1) + '</td>' +
                     '<td style="padding:10px 14px; font-weight:600; color:#1e293b; font-size:0.88rem;">' + escapeHtml(p.name) + '</td>' +
                     '<td style="padding:10px 14px; color:#64748b; font-size:0.85rem;">' + escapeHtml(p.course_code || "---") + (p.class_name ? ' • <b style="color:#334155;">' + escapeHtml(p.class_name) + '</b>' : '') + '</td>' +
                     '<td style="padding:10px 14px;">' +
