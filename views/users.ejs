@@ -9,7 +9,59 @@
     <link rel="stylesheet" href="/css/style.css">
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<style>.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }</style>
+<style>
+    .swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }
+    
+    /* Search & Filter Toolbar */
+    .filter-bar {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-top: 16px;
+        margin-bottom: 16px;
+        background: #f8fafc;
+        padding: 14px 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+    }
+    .search-box {
+        position: relative;
+        flex: 1;
+        min-width: 240px;
+    }
+    .search-box i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.95rem;
+    }
+    .search-box input {
+        padding-left: 36px !important;
+    }
+    
+    /* Mobile Table Scrollbar */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+    }
+    .table-responsive::-webkit-scrollbar {
+        height: 6px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+    .table-responsive table {
+        min-width: 720px;
+        margin-top: 0 !important;
+    }
+</style>
 <script>
 window._originalAlert = window.alert;
 window.alert = function(msg) {
@@ -43,6 +95,7 @@ window.customConfirm = async function(msg) {
             <button class="btn btn-primary" onclick="openNewUserForm()"><i class="fas fa-user-plus"></i> Thêm thành viên</button>
         </div>
         
+        <!-- Add/Edit User Form -->
         <div id="user-form-modal" style="display:none; background:#f8fafc; padding:20px; border-radius:10px; margin-bottom:24px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.04);">
             <h4 id="form-title" style="font-size:1.1rem; color:var(--primary); margin-bottom:16px;"><i class="fas fa-user-edit"></i> Sửa thông tin người dùng</h4>
             <input type="hidden" id="form-user-id">
@@ -77,28 +130,62 @@ window.customConfirm = async function(msg) {
             </div>
         </div>
 
-        <div class="table-responsive"><table style="width:100%; border-collapse: collapse; margin-top:10px;">
-            <thead>
-                <tr style="background:var(--bg); text-align:left;">
-                    <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.9rem;">ID</th>
-                    <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.9rem;">Tài khoản</th>
-                    <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.9rem;">Họ tên</th>
-                    <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.9rem;">Email</th>
-                    <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.9rem;">Vai trò</th>
-                    <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.9rem;">Trạng thái</th>
-                    <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.9rem; text-align:center;">Hành động</th>
-                </tr>
-            </thead>
-            <tbody id="users-table-body">
-                <!-- Render users -->
-            </tbody>
-        </table></div>
+        <!-- Filter & Search Toolbar -->
+        <div class="filter-bar">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="user-search-input" class="form-control" placeholder="Tìm theo tên đăng nhập, họ tên, email..." oninput="filterUsers()">
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <select id="filter-role" class="form-control" style="width:auto; min-width:145px;" onchange="filterUsers()">
+                    <option value="">Tất cả vai trò</option>
+                    <option value="Admin">Quản trị viên (Admin)</option>
+                    <option value="User">Giáo viên (User)</option>
+                </select>
+                <select id="filter-status" class="form-control" style="width:auto; min-width:150px;" onchange="filterUsers()">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="verified">Đã xác thực</option>
+                    <option value="unverified">Chờ xác thực</option>
+                </select>
+                <button class="btn btn-secondary" onclick="resetFilters()" title="Đặt lại bộ lọc" style="padding:10px 14px;">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; font-size:0.88rem; color:#64748b;">
+            <div>Hiển thị: <b id="user-count-display" style="color:var(--primary);">0</b> người dùng</div>
+            <div style="font-size:0.8rem;"><i class="fas fa-arrows-alt-h"></i> Vuốt ngang để xem hết bảng trên mobile</div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="table-responsive">
+            <table style="width:100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background:var(--bg); text-align:left;">
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem; width:60px; text-align:center;">STT</th>
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Tài khoản</th>
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Họ tên</th>
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Email</th>
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Vai trò</th>
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Trạng thái</th>
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem; text-align:center;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table-body">
+                    <tr><td colspan="7" style="text-align:center; padding:24px; color:#94a3b8;">Đang tải danh sách người dùng...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
     <script>
         injectLayout('users', 'Quản lý Người dùng');
+        
+        let allUsersList = [];
+
         checkAuth().then(user => {
             if(user) {
                 if(user.role !== 'Admin') {
@@ -116,32 +203,80 @@ window.customConfirm = async function(msg) {
         async function loadUsers() {
             try {
                 const res = await fetch(API_URL + '/users', { headers: getHeaders() });
-                const users = await res.json();
+                allUsersList = await res.json();
+                filterUsers();
+            } catch(e) { 
+                showAlert('Lỗi tải danh sách người dùng'); 
+            }
+        }
+
+        function filterUsers() {
+            const searchKeyword = (document.getElementById('user-search-input')?.value || '').trim().toLowerCase();
+            const selectedRole = document.getElementById('filter-role')?.value || '';
+            const selectedStatus = document.getElementById('filter-status')?.value || '';
+
+            const filtered = allUsersList.filter(u => {
+                // 1. Search keyword (username, full_name, email)
+                const uName = (u.username || '').toLowerCase();
+                const fName = (u.full_name || '').toLowerCase();
+                const email = (u.email || '').toLowerCase();
+                const matchSearch = !searchKeyword || uName.includes(searchKeyword) || fName.includes(searchKeyword) || email.includes(searchKeyword);
+
+                // 2. Role filter
+                const matchRole = !selectedRole || u.role === selectedRole;
+
+                // 3. Status filter
+                const matchStatus = !selectedStatus || (selectedStatus === 'verified' ? Boolean(u.is_verified) : !u.is_verified);
+
+                return matchSearch && matchRole && matchStatus;
+            });
+
+            renderUsersTable(filtered);
+        }
+
+        function renderUsersTable(users) {
+            const countDisplay = document.getElementById('user-count-display');
+            if (countDisplay) countDisplay.textContent = users.length + ' / ' + allUsersList.length;
+
+            const tbody = document.getElementById('users-table-body');
+            if (!users || !users.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:36px 20px; color:#94a3b8;"><i class="fas fa-user-slash" style="font-size:2rem; margin-bottom:8px; display:block; color:#cbd5e1;"></i> Không tìm thấy người dùng nào phù hợp với điều kiện tìm kiếm.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = users.map((u, idx) => {
+                const fullNameEsc = escapeHtml(u.full_name || '');
+                const usernameEsc = escapeHtml(u.username || '');
+                const emailEsc = escapeHtml(u.email || '');
+                const roleEsc = escapeHtml(u.role || 'User');
                 
-                document.getElementById('users-table-body').innerHTML = users.map(u => {
-                    const fullNameEsc = escapeHtml(u.full_name || '');
-                    const usernameEsc = escapeHtml(u.username || '');
-                    const emailEsc = escapeHtml(u.email || '');
-                    const roleEsc = escapeHtml(u.role || 'User');
-                    
-                    const editBtn = `<button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem; margin-right:6px;" onclick="openEditUserForm(${u.id}, '${usernameEsc}', '${fullNameEsc}', '${emailEsc}', '${roleEsc}')"><i class="fas fa-edit"></i> Sửa</button>`;
-                    const delBtn = `<button class="btn btn-danger" style="padding:6px 12px; font-size:0.85rem;" onclick="deleteUser(${u.id})" title="Xóa người dùng"><i class="fas fa-trash-alt"></i> Xóa</button>`;
-                    
-                    return `
-                    <tr style="border-bottom:1px solid var(--border);">
-                        <td style="padding:12px; font-weight:600; color:#64748b;">${u.id}</td>
-                        <td style="padding:12px;"><b>${usernameEsc}</b></td>
-                        <td style="padding:12px; font-weight:600; color:#1e293b;">${u.full_name || '-'}</td>
-                        <td style="padding:12px; color:#475569;">${u.email || '-'}</td>
-                        <td style="padding:12px;"><span style="background:${u.role==='Admin'?'var(--primary)':'#475569'}; color:white; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600;"><i class="fas ${u.role==='Admin'?'fa-user-shield':'fa-user'}"></i> ${u.role}</span></td>
-                        <td style="padding:12px;">${u.is_verified ? '<span style="color:var(--success); font-weight:600; font-size:0.88rem;"><i class="fas fa-check-circle"></i> Đã xác thực</span>' : '<span style="color:var(--text-light); font-size:0.88rem;">Chờ xác thực</span>'}</td>
-                        <td style="padding:12px; text-align:center; white-space:nowrap;">
-                            ${editBtn} ${delBtn}
-                        </td>
-                    </tr>
-                    `;
-                }).join('');
-            } catch(e) { showAlert('Lỗi tải danh sách'); }
+                const editBtn = `<button class="btn btn-secondary" style="padding:6px 12px; font-size:0.85rem; margin-right:6px;" onclick="openEditUserForm(${u.id}, '${usernameEsc}', '${fullNameEsc}', '${emailEsc}', '${roleEsc}')"><i class="fas fa-edit"></i> Sửa</button>`;
+                const delBtn = `<button class="btn btn-danger" style="padding:6px 12px; font-size:0.85rem;" onclick="deleteUser(${u.id})" title="Xóa người dùng"><i class="fas fa-trash-alt"></i> Xóa</button>`;
+                
+                return `
+                <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:12px; font-weight:700; color:var(--primary); text-align:center;">${idx + 1}</td>
+                    <td style="padding:12px;"><b>${usernameEsc}</b></td>
+                    <td style="padding:12px; font-weight:600; color:#1e293b;">${u.full_name || '<span style="color:#94a3b8; font-weight:normal;">-</span>'}</td>
+                    <td style="padding:12px; color:#475569;">${u.email || '<span style="color:#94a3b8;">-</span>'}</td>
+                    <td style="padding:12px;"><span style="background:${u.role==='Admin'?'var(--primary)':'#475569'}; color:white; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600;"><i class="fas ${u.role==='Admin'?'fa-user-shield':'fa-user'}"></i> ${u.role}</span></td>
+                    <td style="padding:12px;">${u.is_verified ? '<span style="color:var(--success); font-weight:600; font-size:0.88rem;"><i class="fas fa-check-circle"></i> Đã xác thực</span>' : '<span style="color:var(--text-light); font-size:0.88rem;"><i class="fas fa-clock"></i> Chờ xác thực</span>'}</td>
+                    <td style="padding:12px; text-align:center; white-space:nowrap;">
+                        ${editBtn} ${delBtn}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function resetFilters() {
+            const sInput = document.getElementById('user-search-input');
+            const rSelect = document.getElementById('filter-role');
+            const stSelect = document.getElementById('filter-status');
+            if (sInput) sInput.value = '';
+            if (rSelect) rSelect.value = '';
+            if (stSelect) stSelect.value = '';
+            filterUsers();
         }
 
         function openNewUserForm() { 
@@ -179,6 +314,8 @@ window.customConfirm = async function(msg) {
             const email = document.getElementById('form-email').value.trim();
             const password = document.getElementById('form-password').value;
             const role = document.getElementById('form-role').value;
+            
+            if (!username) return showAlert('Vui lòng nhập tên đăng nhập');
             
             try {
                 const method = id ? 'PUT' : 'POST';
