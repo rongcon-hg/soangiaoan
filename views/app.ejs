@@ -1235,6 +1235,10 @@ async function uploadTextbookToDrive() {
             driveStatusDiv = document.createElement('div');
             driveStatusDiv.id = 'textbookDriveStatusBox';
             driveStatusDiv.style.marginTop = '10px';
+            const fileStatus = document.getElementById('textbookFileStatus');
+            if (fileStatus && fileStatus.parentNode) {
+                fileStatus.parentNode.insertBefore(driveStatusDiv, fileStatus.nextSibling);
+            }
         }
         driveStatusDiv.innerHTML = &quot;&lt;span style='color:#16469d;'&gt;⏳ &lt;b&gt;Đang tải giáo trình lên Google Drive, vui lòng chờ...&lt;/b&gt;&lt;/span&gt;&quot;;
         
@@ -1363,7 +1367,10 @@ async function uploadToDrive() {
            driveStatusDiv = document.createElement('div');
            driveStatusDiv.id = 'driveStatusBox';
            driveStatusDiv.style.marginTop = '10px';
-           
+           const fileStatus = document.getElementById('fileStatus');
+           if (fileStatus && fileStatus.parentNode) {
+               fileStatus.parentNode.insertBefore(driveStatusDiv, fileStatus.nextSibling);
+           }
        }
        driveStatusDiv.innerHTML = &quot;<span style='color:#16469d;'>⏳ <b>Hệ thống đang đẩy file lên Google Drive, vui lòng chờ...</b></span>&quot;;
        
@@ -1433,7 +1440,7 @@ async function uploadToDrive() {
            }
        })();
    }
-}
+ else { alert('Vui lòng đăng nhập lại để sử dụng tính năng tải lên Google Drive.'); } }
 
 async function readProgramFile(file){
  if(!file)return;
