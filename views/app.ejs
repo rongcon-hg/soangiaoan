@@ -3355,23 +3355,43 @@ function buildPaper(){
       : `Tên bài học trước: ${escapeHtml(prevValue||&quot;................................................&quot;)}`;
   }
 
-  const rowHtml=rows.map((r,i)=&gt;`&lt;tr&gt;
-    &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
-    &lt;td class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title)}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
-      &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
-        &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
-        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'expand')&quot;&gt;✨ Triển khai bằng AI&lt;/button&gt;
-        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'rewrite')&quot;&gt;✍ Viết lại&lt;/button&gt;
-        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'example')&quot;&gt;➕ Ví dụ&lt;/button&gt;
-        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'steps')&quot;&gt;🔧 Thao tác&lt;/button&gt;
-        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'errors')&quot;&gt;⚠ Lỗi &amp; khắc phục&lt;/button&gt;
-        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'skillcheck')&quot;&gt;✓ Kiểm tra Skill&lt;/button&gt;
-      &lt;/div&gt;
-    &lt;/td&gt;
-    &lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;${escapeHtml(r.gv)}&lt;/td&gt;
-    &lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;${escapeHtml(r.sv)}&lt;/td&gt;
-    &lt;td class=&quot;time&quot;&gt;&lt;input class=&quot;time-input&quot; type=&quot;number&quot; min=&quot;0&quot; value=&quot;${r.time}&quot; oninput=&quot;checkTime()&quot;&gt;&lt;/td&gt;
-  &lt;/tr&gt;`).join(&quot;&quot;);
+  const rowHtml=rows.map((r,i)=&gt;{
+    const isSelfStudy = type === &quot;theory&quot; && (String(r.title||&quot;&quot;).includes(&quot;Hướng dẫn tự học&quot;) || String(r.title||&quot;&quot;).includes(&quot;4. Hướng dẫn tự học&quot;));
+    if (isSelfStudy) {
+      return `&lt;tr&gt;
+        &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
+        &lt;td colspan=&quot;3&quot; class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title)}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
+          &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
+            &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
+            &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'expand')&quot;&gt;✨ Triển khai bằng AI&lt;/button&gt;
+            &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'rewrite')&quot;&gt;✍ Viết lại&lt;/button&gt;
+            &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'example')&quot;&gt;➕ Ví dụ&lt;/button&gt;
+            &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'steps')&quot;&gt;🔧 Thao tác&lt;/button&gt;
+            &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'errors')&quot;&gt;⚠ Lỗi &amp; khắc phục&lt;/button&gt;
+            &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'skillcheck')&quot;&gt;✓ Kiểm tra Skill&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/td&gt;
+        &lt;td class=&quot;time&quot;&gt;&lt;input class=&quot;time-input&quot; type=&quot;number&quot; min=&quot;0&quot; value=&quot;${r.time}&quot; oninput=&quot;checkTime()&quot;&gt;&lt;/td&gt;
+      &lt;/tr&gt;`;
+    }
+    return `&lt;tr&gt;
+      &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
+      &lt;td class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title)}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
+        &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
+          &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
+          &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'expand')&quot;&gt;✨ Triển khai bằng AI&lt;/button&gt;
+          &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'rewrite')&quot;&gt;✍ Viết lại&lt;/button&gt;
+          &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'example')&quot;&gt;➕ Ví dụ&lt;/button&gt;
+          &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'steps')&quot;&gt;🔧 Thao tác&lt;/button&gt;
+          &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'errors')&quot;&gt;⚠ Lỗi &amp; khắc phục&lt;/button&gt;
+          &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'skillcheck')&quot;&gt;✓ Kiểm tra Skill&lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/td&gt;
+      &lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;${escapeHtml(r.gv)}&lt;/td&gt;
+      &lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;${escapeHtml(r.sv)}&lt;/td&gt;
+      &lt;td class=&quot;time&quot;&gt;&lt;input class=&quot;time-input&quot; type=&quot;number&quot; min=&quot;0&quot; value=&quot;${r.time}&quot; oninput=&quot;checkTime()&quot;&gt;&lt;/td&gt;
+    &lt;/tr&gt;`;
+  }).join(&quot;&quot;);
 
   $(&quot;#paper&quot;).innerHTML=`
     &lt;table class=&quot;top-template&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;border:none!important&quot;&gt;
