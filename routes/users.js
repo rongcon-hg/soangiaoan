@@ -3,6 +3,7 @@ const router = express.Router();
 const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
 const authenticateToken = require('../middlewares/auth');
+const mailer = require('../utils/mailer');
 
 // Middleware to check if user is Admin
 const isAdmin = (req, res, next) => {
@@ -12,7 +13,7 @@ const isAdmin = (req, res, next) => {
 
 router.get('/', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const query = `SELECT id, username, role, full_name, email, is_verified FROM users ORDER BY id DESC`;
+        const query = `SELECT id, username, role, full_name, email, is_verified, expires_at, department, phone, avatar, settings, created_at FROM users ORDER BY id DESC`;
         const result = await pool.query(query);
         res.json(result.rows);
     } catch (error) {
@@ -21,31 +22,76 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
 });
 
 router.post('/', authenticateToken, isAdmin, async (req, res) => {
-    const { username, password, email, role, full_name } = req.body;
+    const { username, password, email, role, full_name, expires_at } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const query = `INSERT INTO users (username, password, email, role, full_name, is_verified) VALUES ($1, $2, $3, $4, $5, true) RETURNING id`;
-        await pool.query(query, [username, hashedPassword, email, role, full_name || null]);
-        res.status(201).json({ message: 'User created' });
+        let finalExpires = expires_at;
+        if (!finalExpires) {
+            finalExpires = role === 'Admin' ? '2099-12-31 23:59:59' : null;
+        }
+
+        let query, params;
+        if (finalExpires) {
+            query = `INSERT INTO users (username, password, email, role, full_name, is_verified, expires_at) VALUES ($1, $2, $3, $4, $5, true, $6) RETURNING id`;
+            params = [username, hashedPassword, email, role, full_name || null, finalExpires];
+        } else {
+            query = `INSERT INTO users (username, password, email, role, full_name, is_verified, expires_at) VALUES ($1, $2, $3, $4, $5, true, CURRENT_TIMESTAMP + INTERVAL '3 months') RETURNING id`;
+            params = [username, hashedPassword, email, role, full_name || null];
+        }
+
+        await pool.query(query, params);
+        res.status(201).json({ message: 'Thêm người dùng thành công' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 router.put('/:id', authenticateToken, isAdmin, async (req, res) => {
-    const { email, password, role, full_name } = req.body;
+    const { email, password, role, full_name, expires_at } = req.body;
     try {
+        const prevRes = await pool.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
+        const prevUser = prevRes.rows[0];
+
+        let finalExpires = expires_at;
+        if (role === 'Admin' && (!finalExpires || new Date(finalExpires) < new Date('2090-01-01'))) {
+            finalExpires = '2099-12-31 23:59:59';
+        }
+
         let query, params;
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
-            query = `UPDATE users SET email = $1, role = $2, full_name = $3, password = $4 WHERE id = $5`;
-            params = [email, role, full_name || null, hashedPassword, req.params.id];
+            query = `UPDATE users SET email = $1, role = $2, full_name = $3, password = $4, expires_at = $5 WHERE id = $6`;
+            params = [email, role, full_name || null, hashedPassword, finalExpires, req.params.id];
         } else {
-            query = `UPDATE users SET email = $1, role = $2, full_name = $3 WHERE id = $4`;
-            params = [email, role, full_name || null, req.params.id];
+            query = `UPDATE users SET email = $1, role = $2, full_name = $3, expires_at = $4 WHERE id = $5`;
+            params = [email, role, full_name || null, finalExpires, req.params.id];
         }
         await pool.query(query, params);
-        res.json({ message: 'User updated' });
+
+        // Nếu gia hạn thêm thời gian sử dụng mới, gửi email thông báo cho giảng viên
+        if (prevUser && prevUser.email && finalExpires && role !== 'Admin') {
+            const newDate = new Date(finalExpires);
+            const prevDate = prevUser.expires_at ? new Date(prevUser.expires_at) : new Date(0);
+            if (newDate > prevDate && newDate > new Date()) {
+                try {
+                    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+                    const host = req.headers['x-forwarded-host'] || req.get('host');
+                    const loginUrl = `${protocol}://${host}/login`;
+                    const d = newDate;
+                    const newExpiryFormatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                    
+                    await mailer.sendMail(prevUser.email, '[Hệ thống Giáo án] Tài khoản của bạn đã được gia hạn thành công!', 'renewal-approved-user', {
+                        fullName: full_name || prevUser.full_name || prevUser.username,
+                        newExpiryFormatted,
+                        loginUrl
+                    });
+                } catch (mailErr) {
+                    console.error('Lỗi gửi mail thông báo gia hạn thành công:', mailErr);
+                }
+            }
+        }
+
+        res.json({ message: 'Cập nhật người dùng thành công' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

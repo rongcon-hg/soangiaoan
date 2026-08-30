@@ -15,7 +15,7 @@ exports.register = async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const query = `INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING id`;
+        const query = `INSERT INTO users (username, password, email, expires_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP + INTERVAL '3 months') RETURNING id`;
         
         const result = await pool.query(query, [username, hashedPassword, email]);
         
@@ -155,7 +155,7 @@ exports.me = async (req, res) => {
     try {
         let user;
         try {
-            const query = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, signature, signature_filename, settings FROM users WHERE id = $1`;
+            const query = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, signature, signature_filename, settings, expires_at FROM users WHERE id = $1`;
             const result = await pool.query(query, [req.user.id]);
             user = result.rows[0];
         } catch (colErr) {
@@ -187,6 +187,9 @@ exports.me = async (req, res) => {
         if (adminRes.rows.length > 0) {
             user.admin_gemini_api_key = adminRes.rows[0].gemini_api_key;
         }
+
+        // Kiểm tra hết hạn (Admin không bao giờ hết hạn)
+        user.is_expired = (user.role !== 'Admin' && user.expires_at) ? (new Date(user.expires_at) < new Date()) : false;
 
         res.json({ user });
     } catch (error) {
@@ -477,5 +480,72 @@ exports.testGoogleConnection = async (req, res) => {
         res.json({ message: 'Kết nối máy chủ Google OAuth thành công! Client ID & Secret hợp lệ.' });
     } catch (error) {
         res.status(500).json({ error: 'Lỗi kiểm tra Google OAuth: ' + error.message });
+    }
+};
+
+
+exports.requestRenewal = async (req, res) => {
+    const { fullName, username, email, phone, department, reason } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp email liên hệ' });
+    }
+    try {
+        let user = null;
+        if (req.user && req.user.id) {
+            const uRes = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
+            user = uRes.rows[0];
+        } else if (username) {
+            const uRes = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
+            user = uRes.rows[0];
+        }
+
+        const uName = user ? user.username : (username || email);
+        const uFullName = user?.full_name || fullName || uName;
+        const uEmail = user?.email || email;
+        const uPhone = user?.phone || phone || '';
+        const uDept = user?.department || department || '';
+        
+        let currentExpiryFormatted = 'Chưa xác định';
+        if (user?.expires_at) {
+            const d = new Date(user.expires_at);
+            currentExpiryFormatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
+        const adminRes = await pool.query("SELECT email, settings FROM users WHERE (username = 'qtv' OR role = 'Admin') AND email IS NOT NULL ORDER BY CASE WHEN username = 'qtv' THEN 1 ELSE 2 END LIMIT 1");
+        const adminEmail = adminRes.rows[0]?.email || 'nguyenluyen@nsg.edu.vn';
+
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+        const host = req.headers['x-forwarded-host'] || req.get('host');
+        const adminUsersUrl = `${protocol}://${host}/users`;
+
+        // 1. Gửi email cho Admin
+        try {
+            await mailer.sendMail(adminEmail, `[Hệ thống Giáo án] Yêu cầu gia hạn tài khoản từ ${uFullName}`, 'renewal-request-admin', {
+                fullName: uFullName,
+                username: uName,
+                email: uEmail,
+                phone: uPhone,
+                department: uDept,
+                currentExpiryFormatted,
+                reason: reason || 'Kính nhờ Quản trị viên xem xét gia hạn thêm thời gian sử dụng tài khoản.',
+                adminUsersUrl
+            });
+        } catch (e) {
+            console.error('Lỗi gửi mail yêu cầu gia hạn tới Admin:', e);
+        }
+
+        // 2. Gửi email xác nhận cho User
+        try {
+            await mailer.sendMail(uEmail, `[Hệ thống Giáo án] Xác nhận yêu cầu gia hạn tài khoản`, 'renewal-request-user', {
+                fullName: uFullName
+            });
+        } catch (e) {
+            console.error('Lỗi gửi mail xác nhận cho User:', e);
+        }
+
+        res.json({ message: 'Yêu cầu gia hạn đã được gửi thành công tới Quản trị viên!' });
+    } catch (error) {
+        console.error('Error requestRenewal:', error);
+        res.status(500).json({ error: error.message });
     }
 };

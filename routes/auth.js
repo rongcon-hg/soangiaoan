@@ -21,4 +21,6 @@ router.get('/google/config', authController.getGoogleConfig);
 router.get('/google', authController.googleAuthRedirect);
 router.get('/google/callback', authController.googleAuthCallback);
 
+router.post('/request-renewal', authController.requestRenewal);
+
 module.exports = router;

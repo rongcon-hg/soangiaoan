@@ -89,6 +89,53 @@ function injectLayout(pageId, pageTitle) {
     mainContent.appendChild(contentArea);
     document.body.appendChild(mainContent);
     document.body.insertAdjacentHTML('beforeend', `
+<!-- Renewal Request Modal -->
+<div id="renewal-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#fff; border-radius:14px; max-width:520px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0;">
+        <div style="background:linear-gradient(135deg, #16469d 0%, #1e3a8a 100%); color:#fff; padding:18px 22px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px; color:#fff;">
+                <i class="fas fa-history"></i> Gửi Yêu cầu Gia hạn Sử dụng
+            </h3>
+            <button type="button" onclick="closeRenewalModal()" style="background:transparent; border:none; color:#fff; font-size:1.4rem; cursor:pointer; opacity:0.8; line-height:1;" title="Đóng">&times;</button>
+        </div>
+        <div style="padding:22px; max-height:80vh; overflow-y:auto;">
+            <div style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 14px; border-radius:6px; margin-bottom:18px; color:#991b1b; font-size:0.88rem; line-height:1.5;">
+                <i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn dùng thử. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!
+            </div>
+            <form id="renewal-request-form" onsubmit="submitRenewalForm(event)">
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Họ và tên <span style="color:#ef4444;">*</span></label>
+                    <input type="text" id="renewal-fullname" class="form-control" required placeholder="Nhập họ và tên...">
+                </div>
+                <div class="form-group" style="margin-bottom:14px;">
+                    <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Email liên hệ <span style="color:#ef4444;">*</span></label>
+                    <input type="email" id="renewal-email" class="form-control" required placeholder="name@nsg.edu.vn">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                    <div class="form-group">
+                        <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Số điện thoại</label>
+                        <input type="text" id="renewal-phone" class="form-control" placeholder="09xx...">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Khoa / Bộ môn</label>
+                        <input type="text" id="renewal-dept" class="form-control" placeholder="Ví dụ: Khoa Cơ khí">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:18px;">
+                    <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Lời nhắn gửi Quản trị viên</label>
+                    <textarea id="renewal-reason" class="form-control" rows="3" placeholder="Ví dụ: Em cần soạn thêm giáo án cho học kỳ này, kính nhờ Thầy/Cô gia hạn giúp em ạ..."></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeRenewalModal()">Đóng</button>
+                    <button type="submit" id="btn-submit-renewal" class="btn btn-primary" style="background:#16469d;">
+                        <i class="fas fa-paper-plane"></i> Gửi yêu cầu gia hạn
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Back to Top Button -->
 <button class="back-to-top" onclick="scrollToTop()" title="Lên đầu trang"><i class="fas fa-arrow-up"></i></button>
 `);
@@ -160,4 +207,89 @@ function setupBackToTop() {
         if (window.scrollY > 300) btn.style.display = 'flex';
         else btn.style.display = 'none';
     });
+}
+
+
+function showExpiredWarningBanner(user) {
+    if (document.getElementById('expired-warning-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'expired-warning-banner';
+    banner.style.cssText = 'background:#fee2e2; border-bottom:1px solid #fca5a5; color:#991b1b; padding:10px 16px; font-size:0.88rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; z-index:999;';
+    banner.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-exclamation-circle" style="font-size:1.1rem; color:#dc2626;"></i>
+            <span>Tài khoản của bạn đã <b>hết thời hạn sử dụng</b>. Một số tính năng có thể bị khóa.</span>
+        </div>
+        <button type="button" onclick="openRenewalModal()" class="btn btn-sm" style="background:#dc2626; color:#fff; font-size:0.82rem; padding:5px 12px; border:none; border-radius:6px; font-weight:600; cursor:pointer;">
+            <i class="fas fa-history"></i> Gửi yêu cầu gia hạn ngay
+        </button>
+    `;
+    const topbar = document.querySelector('.topbar');
+    if (topbar && topbar.parentNode) {
+        topbar.parentNode.insertBefore(banner, topbar.nextSibling);
+    }
+}
+
+function openRenewalModal() {
+    const modal = document.getElementById('renewal-modal-overlay');
+    if (!modal) return;
+    if (currentUser) {
+        document.getElementById('renewal-fullname').value = currentUser.full_name || currentUser.username || '';
+        document.getElementById('renewal-email').value = currentUser.email || '';
+        document.getElementById('renewal-phone').value = currentUser.phone || '';
+        document.getElementById('renewal-dept').value = currentUser.department || '';
+    }
+    modal.style.display = 'flex';
+}
+
+function closeRenewalModal() {
+    const modal = document.getElementById('renewal-modal-overlay');
+    if (modal) modal.style.display = 'none';
+}
+
+async function submitRenewalForm(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btn-submit-renewal');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+    }
+
+    const payload = {
+        fullName: document.getElementById('renewal-fullname')?.value.trim() || '',
+        email: document.getElementById('renewal-email')?.value.trim() || '',
+        phone: document.getElementById('renewal-phone')?.value.trim() || '',
+        department: document.getElementById('renewal-dept')?.value.trim() || '',
+        reason: document.getElementById('renewal-reason')?.value.trim() || ''
+    };
+
+    try {
+        const res = await fetch(API_URL + '/auth/request-renewal', {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error);
+
+        closeRenewalModal();
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'Đã gửi yêu cầu!',
+                text: 'Yêu cầu gia hạn của Thầy/Cô đã được gửi tới Quản trị viên và email xác nhận đã được gửi vào hộp thư của bạn.',
+                icon: 'success',
+                confirmButtonColor: '#16469d'
+            });
+        } else {
+            alert('Đã gửi yêu cầu gia hạn thành công!');
+        }
+    } catch (err) {
+        console.error(err);
+        alert(err.message || 'Lỗi khi gửi yêu cầu gia hạn');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi yêu cầu gia hạn';
+        }
+    }
 }

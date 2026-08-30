@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #1e293b; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+        .header { background: linear-gradient(135deg, #16469d 0%, #1e3a8a 100%); color: #ffffff; padding: 24px 28px; text-align: center; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+        .content { padding: 28px; line-height: 1.6; }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; background: #fef3c7; color: #92400e; }
+        .info-table { width: 100%; border-collapse: collapse; margin: 20px 0; background: #f8fafc; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .info-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        .info-table td.label { font-weight: 600; color: #475569; width: 35%; }
+        .info-table td.value { color: #0f172a; font-weight: 500; }
+        .btn-wrapper { text-align: center; margin: 28px 0 10px 0; }
+        .btn { display: inline-block; background: #16469d; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 10px rgba(22, 70, 157, 0.25); }
+        .footer { background: #f1f5f9; padding: 16px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 YÊU CẦU GIA HẠN TÀI KHOẢN</h1>
+        </div>
+        <div class="content">
+            <p>Kính gửi <b>Quản trị viên</b>,</p>
+            <p>Hệ thống vừa tiếp nhận yêu cầu xin gia hạn thêm thời gian sử dụng tài khoản từ giảng viên sau:</p>
+            
+            <table class="info-table">
+                <tr>
+                    <td class="label">Họ và tên:</td>
+                    <td class="value"><b><%= fullName %></b></td>
+                </tr>
+                <tr>
+                    <td class="label">Tên đăng nhập:</td>
+                    <td class="value"><b><%= username %></b></td>
+                </tr>
+                <tr>
+                    <td class="label">Email liên hệ:</td>
+                    <td class="value"><a href="mailto:<%= email %>" style="color:#16469d;"><%= email %></a></td>
+                </tr>
+                <tr>
+                    <td class="label">Số điện thoại:</td>
+                    <td class="value"><%= phone || 'Chưa cập nhật' %></td>
+                </tr>
+                <tr>
+                    <td class="label">Khoa / Bộ môn:</td>
+                    <td class="value"><%= department || 'Chưa cập nhật' %></td>
+                </tr>
+                <tr>
+                    <td class="label">Hạn dùng hiện tại:</td>
+                    <td class="value"><span class="badge"><%= currentExpiryFormatted %></span></td>
+                </tr>
+                <tr>
+                    <td class="label">Lời nhắn / Lý do:</td>
+                    <td class="value" style="color:#1e40af; font-style:italic;"><%= reason || 'Không có ghi chú' %></td>
+                </tr>
+            </table>
+
+            <div class="btn-wrapper">
+                <a href="<%= adminUsersUrl %>" class="btn">👉 Truy cập Quản lý Người dùng để Gia hạn</a>
+            </div>
+            
+            <p style="font-size: 13px; color: #64748b; margin-top: 20px; text-align: center;">
+                Quản trị viên có thể vào trang quản lý và chọn thời gian gia hạn (+1 tháng, +3 tháng, +6 tháng, +1 năm hoặc vô thời hạn).
+            </p>
+        </div>
+        <div class="footer">
+            Hệ thống Quản lý Sổ đầu bài & Soạn giáo án điện tử thông minh<br>
+            Email này được gửi tự động từ hệ thống.
+        </div>
+    </div>
+</body>
+</html>

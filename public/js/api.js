@@ -66,6 +66,11 @@ async function checkAuth(redirectIfNotAuth = true) {
             if(adminTab) adminTab.style.display = 'flex';
         }
 
+        // Kiểm tra hết hạn sử dụng (User)
+        if(currentUser && currentUser.is_expired && typeof showExpiredWarningBanner === 'function') {
+            showExpiredWarningBanner(currentUser);
+        }
+
         return currentUser;
     } catch (err) {
         localStorage.removeItem('token');
