@@ -1193,7 +1193,7 @@ function buildProgramUnits(){
  return units;
 }
 
-function esc(s){return s.replace(/[&amp;&lt;&gt;&quot;&#x27;]/g,m=&gt;({&quot;&amp;&quot;:&quot;&amp;amp;&quot;,&quot;&lt;&quot;:&quot;&amp;lt;&quot;,&quot;&gt;&quot;:&quot;&amp;gt;&quot;,&#x27;&quot;&#x27;:&quot;&amp;quot;&quot;,&quot;&#x27;&quot;:&quot;&amp;#039;&quot;}[m]))}
+function esc(s){return s.replace(/[&amp;&lt;&gt;&quot;&#x27;]/g,m=&gt;({&quot;&amp;&quot;:&quot;&amp;amp;&quot;,&quot;&lt;&quot;:&quot;&amp;lt;&quot;,&quot;&gt;&quot;:&quot;&amp;gt;&quot;,&quot;\&quot;&quot;:&quot;&amp;quot;&quot;,&quot;&#x27;&quot;:&quot;&amp;#039;&quot;}[m]))}
 function fmt(d){return `${String(d.getDate()).padStart(2,&quot;0&quot;)}/${String(d.getMonth()+1).padStart(2,&quot;0&quot;)}/${d.getFullYear()}`}
 function weekdayName(d){
  const names=[&quot;Chủ nhật&quot;,&quot;Thứ 2&quot;,&quot;Thứ 3&quot;,&quot;Thứ 4&quot;,&quot;Thứ 5&quot;,&quot;Thứ 6&quot;,&quot;Thứ 7&quot;];
@@ -2188,7 +2188,7 @@ window.viewProgram=id=&gt;{
 }
 function showModal(t,b){$(&quot;#modalTitle&quot;).textContent=t;$(&quot;#modalBody&quot;).innerHTML=b;$(&quot;#modal&quot;).classList.remove(&quot;hidden&quot;)}
 function closeModal(){$(&quot;#modal&quot;).classList.add(&quot;hidden&quot;)}
-function escapeHtml(s){return String(s).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g,m=&gt;({&quot;&amp;&quot;:&quot;&amp;amp;&quot;,&quot;&lt;&quot;:&quot;&amp;lt;&quot;,&quot;&gt;&quot;:&quot;&amp;gt;&quot;,&#x27;&quot;&#x27;:&quot;&amp;quot;&quot;,&quot;&#x27;&quot;:&quot;&amp;#039;&quot;}[m]))}
+function escapeHtml(s){return String(s).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g,m=&gt;({&quot;&amp;&quot;:&quot;&amp;amp;&quot;,&quot;&lt;&quot;:&quot;&amp;lt;&quot;,&quot;&gt;&quot;:&quot;&amp;gt;&quot;,&quot;\&quot;&quot;:&quot;&amp;quot;&quot;,&quot;&#x27;&quot;:&quot;&amp;#039;&quot;}[m]))}
 
 function distribute(total,n){
   if(n&lt;=0)return[];
@@ -2812,7 +2812,7 @@ function buildPaper(){
 window.handleTimeInput = function(inp) {
   if (!inp) return;
   const raw = inp.value.trim();
-  if (raw === "") {
+  if (raw === &quot;&quot;) {
     checkTime();
     return;
   }
@@ -2820,10 +2820,10 @@ window.handleTimeInput = function(inp) {
   if (isNaN(val)) return;
 
   if (val > 15) {
-    alert("Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút.");
+    alert(&quot;Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút.&quot;);
     inp.value = 15;
-  } else if (val < 1 && raw !== "") {
-    alert("Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút (không được nhập số 0 hoặc nhỏ hơn 1).");
+  } else if (val < 1 && raw !== &quot;&quot;) {
+    alert(&quot;Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút (không được nhập số 0 hoặc nhỏ hơn 1).&quot;);
     inp.value = 1;
   }
   checkTime();
@@ -2833,11 +2833,11 @@ window.handleTimeChange = function(inp) {
   if (!inp) return;
   const raw = inp.value.trim();
   const val = Number(raw);
-  if (raw === "" || isNaN(val) || val < 1) {
-    alert("Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút. Hệ thống tự động đặt về 1 phút.");
+  if (raw === &quot;&quot; || isNaN(val) || val < 1) {
+    alert(&quot;Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút. Hệ thống tự động đặt về 1 phút.&quot;);
     inp.value = 1;
   } else if (val > 15) {
-    alert("Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút. Hệ thống tự động đặt về 15 phút.");
+    alert(&quot;Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút. Hệ thống tự động đặt về 15 phút.&quot;);
     inp.value = 15;
   }
   checkTime();
@@ -3256,10 +3256,10 @@ function runTimeCheck(){
 }
 
 function addRow(){
-  const tbody=$("#paper table.ga tbody"); if(!tbody){alert("Hãy tạo giáo án trước.");return}
+  const tbody=$(&quot;#paper table.ga tbody&quot;); if(!tbody){alert(&quot;Hãy tạo giáo án trước.&quot;);return}
   const i=tbody.children.length+1;
-  const tr=document.createElement("tr");
-  tr.innerHTML=`<td class="tt">${i}</td><td class="content editable" contenteditable="true"><b>Nội dung bổ sung</b><br>Mô tả chi tiết...</td><td class="activity editable" contenteditable="true">Hướng dẫn.</td><td class="activity editable" contenteditable="true">Thực hiện.</td><td class="time"><input class="time-input" type="number" min="1" max="15" value="5" oninput="handleTimeInput(this)" onchange="handleTimeChange(this)"></td>`;
+  const tr=document.createElement(&quot;tr&quot;);
+  tr.innerHTML=`&lt;td class=&quot;tt&quot;&gt;${i}&lt;/td&gt;&lt;td class=&quot;content editable&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;Nội dung bổ sung&lt;/b&gt;&lt;br&gt;Mô tả chi tiết...&lt;/td&gt;&lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;Hướng dẫn.&lt;/td&gt;&lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;Thực hiện.&lt;/td&gt;&lt;td class=&quot;time&quot;&gt;&lt;input class=&quot;time-input&quot; type=&quot;number&quot; min=&quot;0&quot; value=&quot;5&quot; oninput=&quot;checkTime()&quot;&gt;&lt;/td&gt;`;
   tbody.appendChild(tr);checkTime()
 }
 
@@ -3892,7 +3892,7 @@ $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&g
   }
   try {
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "PLANNER_FRAME_READY" }, "*");
+      window.parent.postMessage({ type: &quot;PLANNER_FRAME_READY&quot; }, &quot;*&quot;);
     }
   } catch(e) {}
 }

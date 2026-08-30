@@ -3033,52 +3033,46 @@ function activityRows(type,items,total){
 
     push(&quot;2. Hướng dẫn ban đầu&quot;,
       &quot;Kiểm tra điều kiện thực hành; giới thiệu quy trình tổng quát, dữ liệu/công cụ cần dùng và các điểm an toàn hoặc lưu ý trước khi thao tác.&quot;,
-    push("1. Dẫn nhập",
-      "Nêu nhiệm vụ thực hành, sản phẩm/kết quả cần đạt, yêu cầu kỹ thuật và tiêu chí đánh giá.",
-      "Nêu yêu cầu.","Lắng nghe; xác định nhiệm vụ.",lead);
-
-    push("2. Hướng dẫn ban đầu",
-      "Kiểm tra điều kiện thực hành; giới thiệu quy trình tổng quát, dữ liệu/công cụ cần dùng và các điểm an toàn hoặc lưu ý trước khi thao tác.",
-      "Hướng dẫn; kiểm tra chuẩn bị.","Quan sát; chuẩn bị.",initial);
+      &quot;Hướng dẫn; kiểm tra chuẩn bị.&quot;,&quot;Quan sát; chuẩn bị.&quot;,initial);
 
     const blocks=distribute(remain,contentItems.length);
-    contentItems.forEach((x,i)=>addItemRows(cleanLabel(x),blocks[i],"practice"));
+    contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;practice&quot;));
 
-    push("4. Hướng dẫn kết thúc",
-      "Nhận xét kết quả thực hành; tổng hợp các lỗi thực tế đã xuất hiện trong buổi học và hướng dẫn cách khắc phục tương ứng.",
-      "Nhận xét; tổng kết.","Lắng nghe; sửa lỗi.",endTime);
+    push(&quot;4. Hướng dẫn kết thúc&quot;,
+      &quot;Nhận xét kết quả thực hành; tổng hợp các lỗi thực tế đã xuất hiện trong buổi học và hướng dẫn cách khắc phục tương ứng.&quot;,
+      &quot;Nhận xét; tổng kết.&quot;,&quot;Lắng nghe; sửa lỗi.&quot;,endTime);
 
-    push("5. Hướng dẫn tự rèn luyện",
-      "Giao nhiệm vụ luyện tập tiếp theo với dữ liệu khác để củng cố kỹ năng; yêu cầu tự đối chiếu bằng checklist hoặc tiêu chí đã học.",
-      "Giao nhiệm vụ.","Ghi nhận nhiệm vụ.",self);
+    push(&quot;5. Hướng dẫn tự rèn luyện&quot;,
+      &quot;Giao nhiệm vụ luyện tập tiếp theo với dữ liệu khác để củng cố kỹ năng; yêu cầu tự đối chiếu bằng checklist hoặc tiêu chí đã học.&quot;,
+      &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,self);
 
   }else{
     const lead=5,intro=8,endTime=8,self=5;
     const remain=Math.max(0,total-lead-intro-endTime-self);
 
-    push("1. Dẫn nhập",
-      "Tạo tình huống thực tế gắn với nội dung; nêu vấn đề cần giải quyết, mục tiêu kiến thức – kỹ năng và sản phẩm/kết quả người học cần đạt.",
-      "Nêu vấn đề; đặt câu hỏi.","Lắng nghe; trả lời.",lead);
+    push(&quot;1. Dẫn nhập&quot;,
+      &quot;Tạo tình huống thực tế gắn với nội dung; nêu vấn đề cần giải quyết, mục tiêu kiến thức – kỹ năng và sản phẩm/kết quả người học cần đạt.&quot;,
+      &quot;Nêu vấn đề; đặt câu hỏi.&quot;,&quot;Lắng nghe; trả lời.&quot;,lead);
 
-    push("2. Giới thiệu chủ đề",
-      "Giới thiệu phạm vi nhiệm vụ, yêu cầu kỹ thuật, dữ liệu/công cụ cần chuẩn bị và tiêu chí đánh giá kết quả.",
-      "Giải thích; minh họa.","Quan sát; ghi chép.",intro);
+    push(&quot;2. Giới thiệu chủ đề&quot;,
+      &quot;Giới thiệu phạm vi nhiệm vụ, yêu cầu kỹ thuật, dữ liệu/công cụ cần chuẩn bị và tiêu chí đánh giá kết quả.&quot;,
+      &quot;Giải thích; minh họa.&quot;,&quot;Quan sát; ghi chép.&quot;,intro);
 
     const blocks=distribute(remain,contentItems.length);
-    contentItems.forEach((x,i)=>addItemRows(cleanLabel(x),blocks[i],"integrated"));
+    contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;integrated&quot;));
 
-    push("4. Kết thúc vấn đề",
-      "Đối chiếu kết quả cuối buổi với mục tiêu; chốt kiến thức, kỹ năng đã hình thành và các điểm cần cải thiện.",
-      "Tổng kết; nhận xét.","Hệ thống hóa; sửa lỗi.",endTime);
+    push(&quot;4. Kết thúc vấn đề&quot;,
+      &quot;Đối chiếu kết quả cuối buổi với mục tiêu; chốt kiến thức, kỹ năng đã hình thành và các điểm cần cải thiện.&quot;,
+      &quot;Tổng kết; nhận xét.&quot;,&quot;Hệ thống hóa; sửa lỗi.&quot;,endTime);
 
-    push("5. Hướng dẫn tự học",
-      "Giao nhiệm vụ mở rộng hoặc hoàn thiện sản phẩm bằng dữ liệu khác; yêu cầu chuẩn bị nội dung cho buổi sau.",
-      "Giao nhiệm vụ.","Ghi nhận nhiệm vụ.",self);
+    push(&quot;5. Hướng dẫn tự học&quot;,
+      &quot;Giao nhiệm vụ mở rộng hoặc hoàn thiện sản phẩm bằng dữ liệu khác; yêu cầu chuẩn bị nội dung cho buổi sau.&quot;,
+      &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,self);
   }
 
   const seen=new Set();
-  rows.forEach((r,idx)=>{
-    const key=(String(r.title)+"||"+String(r.content)).replace(/\s+/g," ").trim().toLowerCase();
+  rows.forEach((r,idx)=&gt;{
+    const key=(String(r.title)+&quot;||&quot;+String(r.content)).replace(/\s+/g,&quot; &quot;).trim().toLowerCase();
     if(seen.has(key)){
       const e=getEnrichment(r.title);
       r.title=`${r.title} – ${e.label}`;
@@ -3086,114 +3080,114 @@ function activityRows(type,items,total){
       r.gv=e.gv;
       r.sv=e.sv;
     }
-    seen.add((String(r.title)+"||"+String(r.content)).replace(/\s+/g," ").trim().toLowerCase());
+    seen.add((String(r.title)+&quot;||&quot;+String(r.content)).replace(/\s+/g,&quot; &quot;).trim().toLowerCase());
   });
 
   return normalizeRows(rows,total);
 }
 function objectives(type){
   const p=currentProgram(),l=currentLesson(),sec=currentSection();
-  const base=`Sau khi học xong nội dung ${sec?.title||""}, người học có khả năng:`;
-  if(type==="theory")return `${base}<br>- Trình bày và giải thích được các kiến thức cốt lõi của nội dung học.<br>- Phân tích được ví dụ/tình huống liên quan và vận dụng kiến thức vào nhiệm vụ đơn giản.<br>- Chủ động học tập, trao đổi và tự đánh giá mức độ hiểu bài.`;
-  if(type==="practice")return `${base}<br>- Thực hiện đúng quy trình và thao tác kỹ thuật theo yêu cầu.<br>- Tạo được sản phẩm/kết quả đạt tiêu chí cơ bản; phát hiện và sửa được lỗi thường gặp.<br>- Rèn luyện tác phong cẩn thận, chủ động và chịu trách nhiệm với kết quả thực hành.`;
-  return `${base}<br>- Trình bày được kiến thức, nguyên tắc hoặc quy trình trực tiếp liên quan đến nhiệm vụ.<br>- Thực hiện được các thao tác và hoàn thiện sản phẩm theo yêu cầu.<br>- Tự kiểm tra, điều chỉnh và chịu trách nhiệm với kết quả học tập.`
+  const base=`Sau khi học xong nội dung ${sec?.title||&quot;&quot;}, người học có khả năng:`;
+  if(type===&quot;theory&quot;)return `${base}&lt;br&gt;- Trình bày và giải thích được các kiến thức cốt lõi của nội dung học.&lt;br&gt;- Phân tích được ví dụ/tình huống liên quan và vận dụng kiến thức vào nhiệm vụ đơn giản.&lt;br&gt;- Chủ động học tập, trao đổi và tự đánh giá mức độ hiểu bài.`;
+  if(type===&quot;practice&quot;)return `${base}&lt;br&gt;- Thực hiện đúng quy trình và thao tác kỹ thuật theo yêu cầu.&lt;br&gt;- Tạo được sản phẩm/kết quả đạt tiêu chí cơ bản; phát hiện và sửa được lỗi thường gặp.&lt;br&gt;- Rèn luyện tác phong cẩn thận, chủ động và chịu trách nhiệm với kết quả thực hành.`;
+  return `${base}&lt;br&gt;- Trình bày được kiến thức, nguyên tắc hoặc quy trình trực tiếp liên quan đến nhiệm vụ.&lt;br&gt;- Thực hiện được các thao tác và hoàn thiện sản phẩm theo yêu cầu.&lt;br&gt;- Tự kiểm tra, điều chỉnh và chịu trách nhiệm với kết quả học tập.`
 }
 function buildPaper(){
-  const type=$("#type").value,p=currentProgram(),l=currentLesson(),sec=currentSection(),items=selectedContent();
-  if(!p||!l||!sec){alert("Vui lòng chọn đủ môn, bài/chương và nội dung.");return}
+  const type=$(&quot;#type&quot;).value,p=currentProgram(),l=currentLesson(),sec=currentSection(),items=selectedContent();
+  if(!p||!l||!sec){alert(&quot;Vui lòng chọn đủ môn, bài/chương và nội dung.&quot;);return}
 
-  if($("#subject").disabled){
-    const imported=$("#scheduleImportInfo")?.innerText||"";
+  if($(&quot;#subject&quot;).disabled){
+    const imported=$(&quot;#scheduleImportInfo&quot;)?.innerText||&quot;&quot;;
     if(!imported.includes(p.name) || !imported.includes(p.code)){
-      alert("Không thể tạo giáo án vì Môn học – Mã môn tại Bước 2 không khớp dữ liệu từ Bước 1.");
+      alert(&quot;Không thể tạo giáo án vì Môn học – Mã môn tại Bước 2 không khớp dữ liệu từ Bước 1.&quot;);
       return;
     }
   }
 
-  if($("#subject").disabled && !$("#type").disabled){
-    alert("Không thể tạo giáo án vì Loại giáo án phải được khóa theo Sổ đầu bài ở Bước 1.");
+  if($(&quot;#subject&quot;).disabled &amp;&amp; !$(&quot;#type&quot;).disabled){
+    alert(&quot;Không thể tạo giáo án vì Loại giáo án phải được khóa theo Sổ đầu bài ở Bước 1.&quot;);
     return;
   }
 
-  if($("#subject").disabled){
-    const expectedPeriods=Number($("#periods").dataset.fromSchedule)||0;
-    const actualPeriods=Number($("#periods").value)||0;
-    if(expectedPeriods<=0 || actualPeriods!==expectedPeriods){
-      alert("Không thể tạo giáo án vì Số tiết tại Bước 2 không khớp Sổ đầu bài ở Bước 1.");
+  if($(&quot;#subject&quot;).disabled){
+    const expectedPeriods=Number($(&quot;#periods&quot;).dataset.fromSchedule)||0;
+    const actualPeriods=Number($(&quot;#periods&quot;).value)||0;
+    if(expectedPeriods&lt;=0 || actualPeriods!==expectedPeriods){
+      alert(&quot;Không thể tạo giáo án vì Số tiết tại Bước 2 không khớp Sổ đầu bài ở Bước 1.&quot;);
       return;
     }
   }
 
-  if($("#subject").disabled){
-    const expectedLesson=$("#lesson").dataset.fromSchedule;
-    const actualLesson=$("#lesson").value;
+  if($(&quot;#subject&quot;).disabled){
+    const expectedLesson=$(&quot;#lesson&quot;).dataset.fromSchedule;
+    const actualLesson=$(&quot;#lesson&quot;).value;
     if(expectedLesson===undefined || actualLesson!==expectedLesson){
-      alert("Không thể tạo giáo án vì Bài / Chương tại Bước 2 không khớp Sổ đầu bài ở Bước 1.");
+      alert(&quot;Không thể tạo giáo án vì Bài / Chương tại Bước 2 không khớp Sổ đầu bài ở Bước 1.&quot;);
       return;
     }
   }
 
-  if($("#subject").disabled){
-    const expectedTotal=Number($("#totalMinutes").dataset.fromSchedule)||0;
-    const actualTotal=(Number($("#periods").value)||0)*45;
-    if(expectedTotal<=0 || actualTotal!==expectedTotal){
-      alert("Không thể tạo giáo án vì Tổng thời gian tại Bước 2 không khớp Sổ đầu bài ở Bước 1.");
+  if($(&quot;#subject&quot;).disabled){
+    const expectedTotal=Number($(&quot;#totalMinutes&quot;).dataset.fromSchedule)||0;
+    const actualTotal=(Number($(&quot;#periods&quot;).value)||0)*45;
+    if(expectedTotal&lt;=0 || actualTotal!==expectedTotal){
+      alert(&quot;Không thể tạo giáo án vì Tổng thời gian tại Bước 2 không khớp Sổ đầu bài ở Bước 1.&quot;);
       return;
     }
   }
-  const total=Number($("#periods").value)*45;
-  const stabilize = total>=90 ? 5 : 3;
+  const total=Number($(&quot;#periods&quot;).value)*45;
+  const stabilize = total&gt;=90 ? 5 : 3;
   const lessonTotal = total-stabilize;
   const rows=activityRows(type,items,lessonTotal);
 
-  const names={theory:"GIÁO ÁN LÝ THUYẾT",practice:"GIÁO ÁN THỰC HÀNH",integrated:"GIÁO ÁN TÍCH HỢP"};
-  const scheduleDate=String($("#gaNumber").dataset.date||"").trim();
-  const scheduleClass=String($("#gaNumber").dataset.className||"").trim();
+  const names={theory:&quot;GIÁO ÁN LÝ THUYẾT&quot;,practice:&quot;GIÁO ÁN THỰC HÀNH&quot;,integrated:&quot;GIÁO ÁN TÍCH HỢP&quot;};
+  const scheduleDate=String($(&quot;#gaNumber&quot;).dataset.date||&quot;&quot;).trim();
+  const scheduleClass=String($(&quot;#gaNumber&quot;).dataset.className||&quot;&quot;).trim();
   const dateDisplay = scheduleDate ? `Thực hiện ngày ${escapeHtml(scheduleDate)}` : `Thực hiện từ ngày ................. đến ngày .................`;
   const classDisplay = scheduleClass ? `Lớp: ${escapeHtml(scheduleClass)}` : `Lớp: ........................................`;
-  let signDateText = "Ngày.....tháng.....năm.....";
+  let signDateText = &quot;Ngày.....tháng.....năm.....&quot;;
   if(scheduleDate){
-    const dParts = scheduleDate.split("/");
+    const dParts = scheduleDate.split(&quot;/&quot;);
     if(dParts.length === 3){
       signDateText = `Ngày ${dParts[0]} tháng ${dParts[1]} năm ${dParts[2]}`;
     }
   }
-  const prevValue=String($("#prevLesson").value||"").trim();
+  const prevValue=String($(&quot;#prevLesson&quot;).value||&quot;&quot;).trim();
   let lead;
-  if($("#subject").disabled){
-    const prevTitle=String($("#prevLesson").dataset.title||"").trim();
+  if($(&quot;#subject&quot;).disabled){
+    const prevTitle=String($(&quot;#prevLesson&quot;).dataset.title||&quot;&quot;).trim();
     let prevItems=[];
-    try{ prevItems=JSON.parse($("#prevLesson").dataset.items||"[]"); }catch(e){ prevItems=[]; }
+    try{ prevItems=JSON.parse($(&quot;#prevLesson&quot;).dataset.items||&quot;[]&quot;); }catch(e){ prevItems=[]; }
 
     if(prevTitle){
-      const itemHtml=(prevItems||[]).map(x=>`<div style="margin-left:18px">${escapeHtml(x)}</div>`).join("");
-      lead = `<b>Tên bài học trước:</b> ${escapeHtml(prevTitle)}${itemHtml}`;
+      const itemHtml=(prevItems||[]).map(x=&gt;`&lt;div style=&quot;margin-left:18px&quot;&gt;${escapeHtml(x)}&lt;/div&gt;`).join(&quot;&quot;);
+      lead = `&lt;b&gt;Tên bài học trước:&lt;/b&gt; ${escapeHtml(prevTitle)}${itemHtml}`;
     }else{
-      lead = `<b>Tên bài học trước:</b>`;
+      lead = `&lt;b&gt;Tên bài học trước:&lt;/b&gt;`;
     }
   }else{
-    lead = type==="theory"
-      ? `Tên chương: ${escapeHtml(prevValue||"................................................")}`
-      : `Tên bài học trước: ${escapeHtml(prevValue||"................................................")}`;
+    lead = type===&quot;theory&quot;
+      ? `Tên chương: ${escapeHtml(prevValue||&quot;................................................&quot;)}`
+      : `Tên bài học trước: ${escapeHtml(prevValue||&quot;................................................&quot;)}`;
   }
 
-  const rowHtml=rows.map((r,i)=>`<tr>
-    <td class="tt">${i+1}</td>
-    <td class="content editable ai-content-cell" contenteditable="true"><b>${escapeHtml(r.title)}</b><br><span class="ai-text">${escapeHtml(r.content)}</span>
-      <div class="ai-tools no-print" contenteditable="false">
-        <button class="ai-btn" style="background:#0284c7;color:#fff;" onclick="runRowTextbook(this)">📖 Triển khai từ Giáo trình</button>
-        <button class="ai-btn" onclick="runRowAI(this,'expand')">✨ Triển khai bằng AI</button>
-        <button class="ai-btn" onclick="runRowAI(this,'rewrite')">✍ Viết lại</button>
-        <button class="ai-btn" onclick="runRowAI(this,'example')">➕ Ví dụ</button>
-        <button class="ai-btn" onclick="runRowAI(this,'steps')">🔧 Thao tác</button>
-        <button class="ai-btn" onclick="runRowAI(this,'errors')">⚠ Lỗi & khắc phục</button>
-        <button class="ai-btn" onclick="runRowAI(this,'skillcheck')">✓ Kiểm tra Skill</button>
-      </div>
-    </td>
-    <td class="activity editable" contenteditable="true">${escapeHtml(r.gv)}</td>
-    <td class="activity editable" contenteditable="true">${escapeHtml(r.sv)}</td>
-    <td class="time"><input class="time-input" type="number" min="1" max="15" value="${r.time}" oninput="handleTimeInput(this)" onchange="handleTimeChange(this)"></td>
-  </tr>`).join("");
+  const rowHtml=rows.map((r,i)=&gt;`&lt;tr&gt;
+    &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
+    &lt;td class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title)}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
+      &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
+        &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
+        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'expand')&quot;&gt;✨ Triển khai bằng AI&lt;/button&gt;
+        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'rewrite')&quot;&gt;✍ Viết lại&lt;/button&gt;
+        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'example')&quot;&gt;➕ Ví dụ&lt;/button&gt;
+        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'steps')&quot;&gt;🔧 Thao tác&lt;/button&gt;
+        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'errors')&quot;&gt;⚠ Lỗi &amp; khắc phục&lt;/button&gt;
+        &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'skillcheck')&quot;&gt;✓ Kiểm tra Skill&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/td&gt;
+    &lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;${escapeHtml(r.gv)}&lt;/td&gt;
+    &lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;${escapeHtml(r.sv)}&lt;/td&gt;
+    &lt;td class=&quot;time&quot;&gt;&lt;input class=&quot;time-input&quot; type=&quot;number&quot; min=&quot;0&quot; value=&quot;${r.time}&quot; oninput=&quot;checkTime()&quot;&gt;&lt;/td&gt;
+  &lt;/tr&gt;`).join(&quot;&quot;);
 
   $(&quot;#paper&quot;).innerHTML=`
     &lt;table class=&quot;top-template&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; cellpadding=&quot;0&quot; style=&quot;border:none!important&quot;&gt;
@@ -3295,7 +3289,7 @@ function buildPaper(){
 window.handleTimeInput = function(inp) {
   if (!inp) return;
   const raw = inp.value.trim();
-  if (raw === "") {
+  if (raw === &quot;&quot;) {
     checkTime();
     return;
   }
@@ -3303,10 +3297,10 @@ window.handleTimeInput = function(inp) {
   if (isNaN(val)) return;
 
   if (val > 15) {
-    alert("Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút.");
+    alert(&quot;Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút.&quot;);
     inp.value = 15;
-  } else if (val < 1 && raw !== "") {
-    alert("Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút (không được nhập số 0 hoặc nhỏ hơn 1).");
+  } else if (val < 1 && raw !== &quot;&quot;) {
+    alert(&quot;Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút (không được nhập số 0 hoặc nhỏ hơn 1).&quot;);
     inp.value = 1;
   }
   checkTime();
@@ -3316,11 +3310,11 @@ window.handleTimeChange = function(inp) {
   if (!inp) return;
   const raw = inp.value.trim();
   const val = Number(raw);
-  if (raw === "" || isNaN(val) || val < 1) {
-    alert("Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút. Hệ thống tự động đặt về 1 phút.");
+  if (raw === &quot;&quot; || isNaN(val) || val < 1) {
+    alert(&quot;Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút. Hệ thống tự động đặt về 1 phút.&quot;);
     inp.value = 1;
   } else if (val > 15) {
-    alert("Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút. Hệ thống tự động đặt về 15 phút.");
+    alert(&quot;Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút. Hệ thống tự động đặt về 15 phút.&quot;);
     inp.value = 15;
   }
   checkTime();
@@ -3749,10 +3743,10 @@ function runTimeCheck(){
 }
 
 function addRow(){
-  const tbody=$("#paper table.ga tbody"); if(!tbody){alert("Hãy tạo giáo án trước.");return}
+  const tbody=$(&quot;#paper table.ga tbody&quot;); if(!tbody){alert(&quot;Hãy tạo giáo án trước.&quot;);return}
   const i=tbody.children.length+1;
-  const tr=document.createElement("tr");
-  tr.innerHTML=`<td class="tt">${i}</td><td class="content editable" contenteditable="true"><b>Nội dung bổ sung</b><br>Mô tả chi tiết...</td><td class="activity editable" contenteditable="true">Hướng dẫn.</td><td class="activity editable" contenteditable="true">Thực hiện.</td><td class="time"><input class="time-input" type="number" min="1" max="15" value="5" oninput="handleTimeInput(this)" onchange="handleTimeChange(this)"></td>`;
+  const tr=document.createElement(&quot;tr&quot;);
+  tr.innerHTML=`&lt;td class=&quot;tt&quot;&gt;${i}&lt;/td&gt;&lt;td class=&quot;content editable&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;Nội dung bổ sung&lt;/b&gt;&lt;br&gt;Mô tả chi tiết...&lt;/td&gt;&lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;Hướng dẫn.&lt;/td&gt;&lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;Thực hiện.&lt;/td&gt;&lt;td class=&quot;time&quot;&gt;&lt;input class=&quot;time-input&quot; type=&quot;number&quot; min=&quot;0&quot; value=&quot;5&quot; oninput=&quot;checkTime()&quot;&gt;&lt;/td&gt;`;
   tbody.appendChild(tr);checkTime()
 }
 
@@ -4595,7 +4589,7 @@ $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&g
   }
   try {
     if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: "PLANNER_FRAME_READY" }, "*");
+      window.parent.postMessage({ type: &quot;PLANNER_FRAME_READY&quot; }, &quot;*&quot;);
     }
   } catch(e) {}
 }
