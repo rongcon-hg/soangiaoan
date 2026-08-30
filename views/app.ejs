@@ -1465,6 +1465,7 @@ async function readProgramFile(file){
    course={name:&quot;&quot;,code:&quot;&quot;,total:0,lt:0,th:0,kt:0};
    document.getElementById(&quot;tbody&quot;).innerHTML=&quot;&quot;;
 
+   course.rawCurriculumText = text; // Fix: luu nguyen van
    parseCourseInfo(text);
    const detailMap=parseDetailItems(text);
 
