@@ -682,6 +682,74 @@ window.customConfirm = async function(msg) {
             }
         }
 
+        function copyCallbackUrl() {
+            const url = document.getElementById('google-callback-url-display')?.textContent || (window.location.origin + '/api/auth/google/callback');
+            navigator.clipboard.writeText(url).then(() => {
+                showAlert('Đã sao chép Redirect URI vào bộ nhớ tạm!', 'success');
+            }).catch(() => {
+                alert('URL: ' + url);
+            });
+        }
+
+        async function saveGoogleSettingsOnly() {
+            const btn = document.getElementById('btn-save-google-only');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            }
+
+            const updatedSettings = Object.assign({}, userSettings, {
+                google_login_enabled: document.getElementById('cfg-google-enabled')?.checked || false,
+                google_client_id: document.getElementById('cfg-google-client-id')?.value.trim() || '',
+                google_client_secret: document.getElementById('cfg-google-client-secret')?.value.trim() || ''
+            });
+
+            try {
+                const res = await fetch(API_URL + '/auth/settings', {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ settings: updatedSettings })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || data.message || 'Lỗi khi lưu cấu hình Google OAuth');
+
+                userSettings = updatedSettings;
+                showAlert('Đã lưu cấu hình Đăng nhập Google thành công!', 'success');
+            } catch (err) {
+                console.error(err);
+                showAlert(err.message || 'Lỗi khi lưu cấu hình Google', 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save"></i> <span>Lưu Google</span>';
+                }
+            }
+        }
+
+        async function testGoogleConnectionOnly() {
+            const clientId = document.getElementById('cfg-google-client-id')?.value.trim() || '';
+            const clientSecret = document.getElementById('cfg-google-client-secret')?.value.trim() || '';
+            
+            if (!clientId || !clientSecret) {
+                return showAlert('Vui lòng điền đủ Client ID và Client Secret trước khi kiểm tra', 'error');
+            }
+
+            try {
+                showAlert('Đang kiểm tra kết nối Google OAuth...', 'success');
+                const res = await fetch(API_URL + '/auth/test-google', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ clientId, clientSecret })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || data.message);
+                showAlert('✅ ' + data.message, 'success');
+            } catch(e) {
+                showAlert('❌ ' + e.message, 'error');
+            }
+        }
+
         async function saveDriveSettingsOnly() {
             const btn = document.getElementById('btn-save-drive-only');
             if (btn) {
