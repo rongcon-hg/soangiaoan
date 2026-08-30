@@ -140,9 +140,27 @@ exports.updateApiKey = async (req, res) => {
 
 exports.me = async (req, res) => {
     try {
-        const query = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, signature, signature_filename, settings FROM users WHERE id = $1`;
-        const result = await pool.query(query, [req.user.id]);
-        const user = result.rows[0];
+        let user;
+        try {
+            const query = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, signature, signature_filename, settings FROM users WHERE id = $1`;
+            const result = await pool.query(query, [req.user.id]);
+            user = result.rows[0];
+        } catch (colErr) {
+            // Auto run migration if columns missing
+            await pool.query(`
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS signature TEXT,
+                ADD COLUMN IF NOT EXISTS signature_filename TEXT;
+            `).catch(() => {});
+
+            const fallbackQuery = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, settings FROM users WHERE id = $1`;
+            const fallbackRes = await pool.query(fallbackQuery, [req.user.id]);
+            user = fallbackRes.rows[0];
+            if (user) {
+                user.signature = null;
+                user.signature_filename = null;
+            }
+        }
 
         if (!user) return res.status(404).json({ message: 'User not found' });
         

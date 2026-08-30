@@ -115,6 +115,11 @@ pool.on('connect', async (client) => {
         migrated = true;
         try {
             await client.query(`
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'User',
+                ADD COLUMN IF NOT EXISTS signature TEXT,
+                ADD COLUMN IF NOT EXISTS signature_filename TEXT;
+
                 ALTER TABLE projects 
                 ADD COLUMN IF NOT EXISTS system_type VARCHAR(50) DEFAULT 'Trung cấp',
                 ADD COLUMN IF NOT EXISTS class_name VARCHAR(100);
