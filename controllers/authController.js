@@ -138,6 +138,18 @@ exports.updateApiKey = async (req, res) => {
     }
 };
 
+function toDirectDriveUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.startsWith('data:image') || url.startsWith('blob:') || url.includes('googleusercontent.com')) {
+        return url;
+    }
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+        return `https://lh3.googleusercontent.com/d/${match[1]}`;
+    }
+    return url;
+}
+
 exports.me = async (req, res) => {
     try {
         let user;
@@ -164,6 +176,10 @@ exports.me = async (req, res) => {
 
         if (!user) return res.status(404).json({ message: 'User not found' });
         
+        // Normalize signature & avatar to direct image links
+        if (user.signature) user.signature = toDirectDriveUrl(user.signature);
+        if (user.avatar) user.avatar = toDirectDriveUrl(user.avatar);
+
         // Lấy admin key để fallback nếu user không có
         const adminQuery = `SELECT gemini_api_key FROM users WHERE role = 'Admin' AND gemini_api_key IS NOT NULL LIMIT 1`;
         const adminRes = await pool.query(adminQuery);
@@ -209,6 +225,7 @@ exports.updateProfile = async (req, res) => {
             }
         }
 
+        avatar = toDirectDriveUrl(avatar);
         const query = `UPDATE users SET full_name = $1, department = $2, phone = $3, email = $4, avatar = $5 WHERE id = $6`;
         await pool.query(query, [full_name, department, phone, email, avatar, req.user.id]);
         res.json({ message: 'Profile updated successfully', avatar_url: avatar });
@@ -250,6 +267,7 @@ exports.updateSignature = async (req, res) => {
             }
         }
 
+        signature = toDirectDriveUrl(signature);
         const query = `UPDATE users SET signature = $1, signature_filename = $2 WHERE id = $3`;
         await pool.query(query, [signature || null, signature_filename || null, req.user.id]);
         res.json({ message: 'Signature updated successfully', signature_url: signature, signature_filename });

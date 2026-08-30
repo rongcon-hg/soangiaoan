@@ -113,6 +113,9 @@ exports.setPublicPermission = async (email, key, fileId) => {
                 }
             }
         }
+        if (file && file.data && file.data.id) {
+            return `https://lh3.googleusercontent.com/d/${file.data.id}`;
+        }
         return file.data.webViewLink;
     } catch (error) {
         throw new Error('Set Permission Error: ' + error.message);
@@ -128,7 +131,7 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
         const file = await drive.files.create({
             resource: { name: fileName, parents: [targetFolderId] },
             media: { mimeType: mimeType, body: bufferStream },
-            fields: 'id, webViewLink',
+            fields: 'id, webViewLink, webContentLink',
             supportsAllDrives: true
         });
         await drive.permissions.create({
@@ -136,6 +139,9 @@ exports.uploadToDrive = async (email, key, folderId, fileBuffer, fileName, mimeT
             requestBody: { role: 'reader', type: 'anyone' },
             supportsAllDrives: true
         });
+        if (mimeType && mimeType.startsWith('image/')) {
+            return `https://lh3.googleusercontent.com/d/${file.data.id}`;
+        }
         return file.data.webViewLink;
     } catch (error) {
         throw new Error('Google Drive upload failed: ' + error.message);

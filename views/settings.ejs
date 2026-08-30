@@ -342,6 +342,18 @@ window.customConfirm = async function(msg) {
             }
         }
 
+        function toDirectImageUrl(url) {
+            if (!url || typeof url !== 'string') return '';
+            if (url.startsWith('data:image') || url.startsWith('blob:') || url.includes('googleusercontent.com')) {
+                return url;
+            }
+            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                return `https://lh3.googleusercontent.com/d/${match[1]}`;
+            }
+            return url;
+        }
+
         function renderCurrentSignature() {
             const img = document.getElementById('sig-current-img');
             const empty = document.getElementById('sig-current-empty');
@@ -349,7 +361,8 @@ window.customConfirm = async function(msg) {
             const btnDel = document.getElementById('btn-delete-sig');
 
             if (currentSignatureData) {
-                img.src = currentSignatureData;
+                const directUrl = toDirectImageUrl(currentSignatureData);
+                img.src = directUrl;
                 img.style.display = 'block';
                 empty.style.display = 'none';
                 fnDisplay.textContent = 'Tên file: ' + (currentSignatureFilename || 'signature.png');
