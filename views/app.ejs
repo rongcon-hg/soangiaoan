@@ -880,10 +880,10 @@ function parseCourseInfo(text){
 function parseDetailItems(text){
  let detail=String(text||&quot;&quot;);
 
- const parts=detail.split(/2\.\s*Nội dung chi tiết\s*:/i);
- if(parts.length&gt;1) detail=parts.slice(1).join(&quot; &quot;);
+ const parts=detail.split(/(?:(?:2|II|B)\.\s*)?Nội\s*dung\s*chi\s*tiết(?:\s*của\s*môn\s*học)?\s*:/i);
+ if(parts.length&gt;1) detail=parts.slice(1).join(&quot;\n&quot;);
 
- detail=detail.split(/\n\s*IV\.\s*/i)[0];
+ detail=detail.split(/\n\s*(?:IV|V)\.\s*/i)[0];
 
  const lines=normalizeLines(detail);
  const map={};
@@ -1058,17 +1058,19 @@ function parseProgramTable(htmlText, detailMap){
        }
      }
 
-     sequence.push({
-       kind:&quot;lesson&quot;,
-       no,
-       title,
-       ltHours,
-       thHours,
-       ltPeriods:Math.ceil(ltHours),
-       thPeriods:Math.ceil(thHours*60/45),
-       items:mergedItems,
-       itemCount:mergedItems.length
-     });
+           sequence.push({
+        kind:&quot;lesson&quot;,
+        no,
+        title,
+        ltHours,
+        thHours,
+        ltPeriods:Math.ceil(ltHours),
+        thPeriods:Math.ceil(thHours*60/45),
+        items:mergedItems,
+        itemCount:mergedItems.length,
+        objectives: (detailMap[no] &amp;&amp; detailMap[no].objectives) || [],
+        objectivesText: (detailMap[no] &amp;&amp; detailMap[no].objectivesText) || &quot;&quot;
+      });
      continue;
    }
 
@@ -1450,11 +1452,13 @@ async function readProgramFile(file){
    if(!programSequence.length &amp;&amp; Object.keys(detailMap).length){
      for(const [noStr,d] of Object.entries(detailMap)){
        const no=Number(noStr);
-       programSequence.push({
-         kind:&quot;lesson&quot;,no,
-         title:`Bài ${no}: ${d.title||&quot;&quot;}`,
-         ltHours:0,thHours:0,ltPeriods:0,thPeriods:0,items:d.items||[]
-       });
+               programSequence.push({
+          kind:&quot;lesson&quot;,no,
+          title:`Bài ${no}: ${d.title||&quot;&quot;}`,
+          ltHours:0,thHours:0,ltPeriods:0,thPeriods:0,items:d.items||[],
+          objectives: d.objectives||[],
+          objectivesText: d.objectivesText||&quot;&quot;
+        });
      }
    }
 
@@ -3289,12 +3293,13 @@ function formatObjectiveBlock(objText, lessonLabel) {
 
   let htmlLines = [];
   lines.forEach(line =&gt; {
-    if (line.startsWith('+') || line.startsWith('•') || line.startsWith('*')) {
-      htmlLines.push('&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;' + escapeHtml(line));
-    } else if (line.startsWith('-')) {
-      htmlLines.push('&amp;nbsp;&amp;nbsp;' + escapeHtml(line));
+    const trimmed = line.trim();
+    if (trimmed.startsWith('+') || trimmed.startsWith('•') || trimmed.startsWith('*')) {
+      htmlLines.push('&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;' + escapeHtml(trimmed));
+    } else if (trimmed.startsWith('-')) {
+      htmlLines.push('&amp;nbsp;&amp;nbsp;' + escapeHtml(trimmed));
     } else {
-      htmlLines.push(escapeHtml(line));
+      htmlLines.push(escapeHtml(trimmed));
     }
   });
 
