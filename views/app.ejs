@@ -3103,7 +3103,38 @@ function getUserSignature(){
   const raw = window.USER_SIGNATURE || (window.parent && window.parent.USER_SIGNATURE) || localStorage.getItem(&quot;giaoan_user_signature&quot;) || &quot;&quot;;
   return toDirectImageUrl(raw);
 }
-function getUserName(){ return window.USER_NAME || (window.parent && window.parent.USER_NAME) || localStorage.getItem(&quot;giaoan_user_name&quot;) || &quot;&quot;; }
+function getUserName(){ 
+  return window.USER_NAME || (window.parent && window.parent.USER_NAME) || localStorage.getItem(&quot;giaoan_user_name&quot;) || &quot;&quot;; 
+}
+
+function updatePaperSignature(){
+  const paper = document.getElementById(&quot;paper&quot;);
+  if (!paper) return;
+  const footerTable = paper.querySelector(&quot;.footer-sign-table&quot;);
+  if (!footerTable) return;
+  const cells = footerTable.querySelectorAll(&quot;td&quot;);
+  if (cells.length < 2) return;
+  const gvCell = cells[1];
+  
+  const userSig = getUserSignature();
+  const userName = getUserName();
+  
+  let dateText = &quot;Ngày.....tháng.....năm.....&quot;;
+  const dateSpan = gvCell.querySelector(&quot;span[contenteditable]&quot;);
+  if (dateSpan && dateSpan.textContent.trim()) {
+    dateText = dateSpan.textContent.trim();
+  } else {
+    const textMatch = gvCell.innerHTML.match(/(Ngày\s*[\d\.]*\s*tháng\s*[\d\.]*\s*năm\s*[\d\.]*)/i);
+    if (textMatch) dateText = textMatch[1];
+  }
+  
+  const sigImgHtml = userSig 
+    ? `<img class=&quot;teacher-signature&quot; src=&quot;${userSig}&quot; style=&quot;max-height:70px; max-width:180px; object-fit:contain; display:block; margin:6px auto 4px auto;&quot; alt=&quot;Chữ ký giảng viên&quot;>` 
+    : `<div style=&quot;height:55px;&quot;></div>`;
+  const teacherNameHtml = `<div style=&quot;margin-top:2px; font-size:14px;&quot;><b><span contenteditable=&quot;true&quot;>${escapeHtml(userName || &quot;&quot;)}</span></b></div>`;
+  
+  gvCell.innerHTML = `<span contenteditable=&quot;true&quot;>${dateText}</span><br><b>GIẢNG VIÊN</b><br>${sigImgHtml}${teacherNameHtml}`;
+}
 function buildPaper(){
   const type=$(&quot;#type&quot;).value,p=currentProgram(),l=currentLesson(),sec=currentSection(),items=selectedContent();
   if(!p||!l||!sec){alert(&quot;Vui lòng chọn đủ môn, bài/chương và nội dung.&quot;);return}
@@ -4526,6 +4557,7 @@ async function receiveScheduleSession(data){
   if(pld.savedLesson) {
     const paper = document.getElementById(&quot;paper&quot;);
     paper.innerHTML = pld.savedLesson;
+    updatePaperSignature();
     // Re-attach input event to all time inputs
     paper.querySelectorAll(&quot;.time-input&quot;).forEach(inp =&gt; {
       inp.oninput = checkTime;
@@ -4682,7 +4714,11 @@ document.addEventListener("DOMContentLoaded", () => {
         window.GEMINI_MODEL = u.gemini_model || "gemini-1.5-pro";
         window.CURRENT_USER = u;
         window.USER_SIGNATURE = u.signature || "";
-        window.USER_NAME = u.full_name || u.username || ""; 
+        window.USER_NAME = u.full_name || u.username || "";
+        try {
+          localStorage.setItem("giaoan_user_signature", window.USER_SIGNATURE);
+          localStorage.setItem("giaoan_user_name", window.USER_NAME);
+        } catch(e) {} 
 
         // Update plannerFrame AI settings
         const pf = document.getElementById("plannerFrame");
