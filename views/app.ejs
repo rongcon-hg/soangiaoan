@@ -214,6 +214,54 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1150px;table-layout:fi
   }
 }
 
+
+
+
+
+.upload-drive-box {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+}
+.upload-file-input {
+  flex: 1;
+  max-width: 100%;
+}
+.btn-drive-upload {
+  background: #16469d;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  border-radius: 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+}
+@media(max-width: 768px) {
+  .upload-drive-box {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .upload-file-input {
+    width: 100%;
+  }
+  .btn-drive-upload {
+    width: 100%;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    padding: 10px 14px;
+  }
+}
+
 .exclusions{margin-top:12px}
 
 .exclusion-list{margin-top:10px;border:1px solid #d9e1ec;border-radius:9px;overflow:hidden}
@@ -406,9 +454,9 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;section-title&quot;&gt;1. Tải Chương trình môn học&lt;/div&gt;
 &lt;div class=&quot;filebox&quot;&gt;
 &lt;label&gt;Chọn file chương trình môn học&lt;/label&gt;
-&lt;div style=&quot;margin-top:8px;&quot;&gt;
-    &lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot; style=&quot;width:100%; margin-bottom:8px; display:block;&quot;&gt;
-    &lt;button id=&quot;btnUploadDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;&quot; onclick=&quot;uploadToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
+&lt;div class=&quot;upload-drive-box&quot;&gt;
+    &lt;input id=&quot;programFile&quot; class=&quot;upload-file-input&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
+    &lt;button id=&quot;btnUploadDrive&quot; class=&quot;btn-drive-upload&quot; type=&quot;button&quot; onclick=&quot;uploadToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
 &lt;/div&gt;
 &lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
 &lt;div id=&quot;driveStatusBox&quot;&gt;&lt;/div&gt;
@@ -427,9 +475,9 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;section-title&quot;&gt;2. Tải lên Giáo trình môn học&lt;/div&gt;
 &lt;div class=&quot;filebox&quot;&gt;
 &lt;label&gt;Chọn file giáo trình (Word .docx, PDF .pdf, Text .txt, .md)&lt;/label&gt;
-&lt;div style=&quot;margin-top:8px;&quot;&gt;
-    &lt;input id=&quot;textbookFile&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readTextbookFile(this.files[0])&quot; style=&quot;width:100%; margin-bottom:8px; display:block;&quot;&gt;
-    &lt;button id=&quot;btnUploadTextbookDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;&quot; onclick=&quot;uploadTextbookToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
+&lt;div class=&quot;upload-drive-box&quot;&gt;
+    &lt;input id=&quot;textbookFile&quot; class=&quot;upload-file-input&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readTextbookFile(this.files[0])&quot;&gt;
+    &lt;button id=&quot;btnUploadTextbookDrive&quot; class=&quot;btn-drive-upload&quot; type=&quot;button&quot; onclick=&quot;uploadTextbookToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
 &lt;/div&gt;
 &lt;div class=&quot;file-status&quot; id=&quot;textbookFileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa tải giáo trình môn học. Khi có giáo trình, Bước 2 có thể tự động trích xuất nội dung bài học tương ứng.&lt;/div&gt;
 &lt;div id=&quot;textbookDriveStatusBox&quot;&gt;&lt;/div&gt;
