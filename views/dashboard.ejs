@@ -90,10 +90,15 @@
             line-height: 1.1;
         }
         .kpi-label {
-            font-size: 0.83rem;
-            color: #64748b;
-            font-weight: 600;
+            font-size: 0.86rem;
+            color: #1e293b;
+            font-weight: 700;
             margin-top: 4px;
+        }
+        .kpi-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 2px;
         }
 
         /* Charts Grid */
@@ -170,43 +175,47 @@
 
     <!-- KPI Summary Cards -->
     <div class="kpi-grid">
-        <div class="kpi-card">
+        <div class="kpi-card" title="Tổng số môn học bạn đang phụ trách">
             <div class="kpi-icon" style="background:#eff6ff; color:#2563eb;">
                 <i class="fas fa-book-open"></i>
             </div>
             <div>
                 <div class="kpi-val" id="stat-projects">0</div>
                 <div class="kpi-label">Tổng số Môn học</div>
+                <div class="kpi-sub">Số môn trong danh mục</div>
             </div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" title="Tổng số giờ giảng dạy của tất cả các môn">
             <div class="kpi-icon" style="background:#fef3c7; color:#d97706;">
                 <i class="fas fa-clock"></i>
             </div>
             <div>
                 <div class="kpi-val" id="stat-hours">0</div>
                 <div class="kpi-label">Tổng giờ Giảng dạy</div>
+                <div class="kpi-sub">Số tiết được phân công</div>
             </div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" title="Số lượng môn học đã được chia lịch giảng & lập Sổ đầu bài">
             <div class="kpi-icon" style="background:#ecfdf5; color:#059669;">
                 <i class="fas fa-calendar-check"></i>
             </div>
             <div>
                 <div class="kpi-val" id="stat-schedules">0</div>
-                <div class="kpi-label">Sổ đầu bài đã lập</div>
+                <div class="kpi-label">Môn đã chia Lịch giảng</div>
+                <div class="kpi-sub">Sổ đầu bài đã lưu CSDL</div>
             </div>
         </div>
 
-        <div class="kpi-card">
+        <div class="kpi-card" title="Tổng số buổi giáo án từng môn đã được lưu trữ vào Cơ sở dữ liệu">
             <div class="kpi-icon" style="background:#f3e8ff; color:#7c3aed;">
                 <i class="fas fa-file-alt"></i>
             </div>
             <div>
                 <div class="kpi-val" id="stat-lessons">0</div>
-                <div class="kpi-label">Giáo án đã hoàn thành</div>
+                <div class="kpi-label">Giáo án đã lưu (CSDL)</div>
+                <div class="kpi-sub">Số bài giảng đã hoàn thành</div>
             </div>
         </div>
     </div>
@@ -237,8 +246,8 @@
     <!-- Recent Subjects Card -->
     <div class="card" style="margin-bottom:24px;">
         <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-list-ul" style="color:var(--primary); margin-right:6px;"></i> Môn học gần đây</h3>
-            <a href="/" class="btn btn-secondary btn-sm" style="font-size:0.82rem; padding:6px 12px;"><i class="fas fa-arrow-right"></i> Xem tất cả</a>
+            <h3 class="card-title"><i class="fas fa-list-ul" style="color:var(--primary); margin-right:6px;"></i> Môn học & Tiến độ Giáo án</h3>
+            <a href="/" class="btn btn-secondary btn-sm" style="font-size:0.82rem; padding:6px 12px;"><i class="fas fa-arrow-right"></i> Xem tất cả môn</a>
         </div>
         <div class="table-responsive">
             <table style="width:100%; border-collapse:collapse;">
@@ -246,15 +255,16 @@
                     <tr style="background:var(--bg); text-align:left;">
                         <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">STT</th>
                         <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Tên môn học</th>
-                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Mã môn</th>
-                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Lớp</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Mã môn / Lớp</th>
                         <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Hệ đào tạo</th>
                         <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Số giờ</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Sổ đầu bài</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Giáo án CSDL</th>
                         <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem; text-align:center;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="recent-projects-tbody">
-                    <tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">Đang tải danh sách...</td></tr>
+                    <tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">Đang tải danh sách...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -437,22 +447,31 @@
         function renderRecentProjects(projects) {
             const tbody = document.getElementById("recent-projects-tbody");
             if(!projects || !projects.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">Bạn chưa có môn học nào. Bấm vào Quản lý Môn học để thêm môn mới nhé!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">Bạn chưa có môn học nào. Bấm vào Quản lý Môn học để thêm môn mới nhé!</td></tr>';
                 return;
             }
 
             tbody.innerHTML = projects.map((p, idx) => {
+                const schedBadge = p.hasSchedule 
+                    ? '<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; background:#dcfce7; color:#15803d;"><i class="fas fa-check-circle"></i> Đã chia lịch</span>'
+                    : '<span style="font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px; background:#f1f5f9; color:#64748b;"><i class="fas fa-clock"></i> Chưa lập lịch</span>';
+                
+                const lessonBadge = p.savedLessonsCount > 0
+                    ? '<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; background:#f3e8ff; color:#6b21a8;"><i class="fas fa-file-alt"></i> ' + p.savedLessonsCount + ' bài đã lưu</span>'
+                    : '<span style="font-size:0.75rem; font-weight:500; padding:2px 8px; border-radius:4px; background:#f8fafc; color:#94a3b8;">0 bài</span>';
+
                 return '<tr style="border-bottom:1px solid var(--border);">' +
                     '<td style="padding:10px 14px; font-weight:700; color:var(--primary); font-size:0.88rem;">' + (idx + 1) + '</td>' +
                     '<td style="padding:10px 14px; font-weight:600; color:#1e293b; font-size:0.88rem;">' + escapeHtml(p.name) + '</td>' +
-                    '<td style="padding:10px 14px; color:#64748b; font-size:0.85rem;">' + escapeHtml(p.course_code || "---") + '</td>' +
-                    '<td style="padding:10px 14px; color:#64748b; font-size:0.85rem;">' + escapeHtml(p.class_name || "---") + '</td>' +
+                    '<td style="padding:10px 14px; color:#64748b; font-size:0.85rem;">' + escapeHtml(p.course_code || "---") + (p.class_name ? ' • <b style="color:#334155;">' + escapeHtml(p.class_name) + '</b>' : '') + '</td>' +
                     '<td style="padding:10px 14px;">' +
                         '<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; background:' + (p.system_type === "Cao đẳng" ? "#e0e7ff; color:#3730a3;" : "#fef3c7; color:#92400e;") + '">' +
                             escapeHtml(p.system_type || "Trung cấp") +
                         '</span>' +
                     '</td>' +
                     '<td style="padding:10px 14px; font-weight:700; color:#334155; font-size:0.88rem;">' + (p.total_hours || 0) + ' giờ</td>' +
+                    '<td style="padding:10px 14px;">' + schedBadge + '</td>' +
+                    '<td style="padding:10px 14px;">' + lessonBadge + '</td>' +
                     '<td style="padding:10px 14px; text-align:center;">' +
                         '<button class="btn btn-primary btn-sm" onclick="window.location.href=\'/app?id=' + p.id + '\'" style="font-size:0.8rem; padding:4px 10px;">' +
                             '<i class="fas fa-file-signature"></i> Soạn Giáo Án' +

@@ -5,7 +5,7 @@ exports.getStats = async (req, res) => {
     const userRole = req.user.role;
 
     try {
-        // 1. Lay danh sach mon hoc cua user
+        // 1. Lấy danh sách môn học của user
         const projectsRes = await pool.query(
             `SELECT id, name, course_code, total_hours, system_type, class_name, created_at 
              FROM projects 
@@ -15,11 +15,11 @@ exports.getStats = async (req, res) => {
         );
         const projects = projectsRes.rows;
 
-        // 2. Thong ke tong so mon hoc va tong gio giang day
+        // 2. Thống kê tổng số môn học và tổng giờ giảng dạy
         const totalProjects = projects.length;
         const totalHours = projects.reduce((acc, p) => acc + (parseInt(p.total_hours) || 0), 0);
 
-        // 3. Phan bo theo he dao tao (Cao dang vs Trung cap)
+        // 3. Phân bổ theo hệ đào tạo (Cao đẳng vs Trung cấp)
         let cdCount = 0;
         let tcCount = 0;
         let cdHours = 0;
@@ -36,27 +36,27 @@ exports.getStats = async (req, res) => {
             }
         });
 
-        // 4. Thong ke so luong So dau bai da tao
+        // 4. Thống kê số lượng môn đã được chia lịch giảng (đã lưu Sổ đầu bài)
         const schedulesRes = await pool.query(
             `SELECT COUNT(DISTINCT s.project_id) as total_schedules 
              FROM schedules s 
              JOIN projects p ON s.project_id = p.id 
-             WHERE p.user_id = $1`,
+             WHERE p.user_id = $1 AND s.schedule_data IS NOT NULL AND s.schedule_data != '' AND s.schedule_data != 'null' AND s.schedule_data != '[]'`,
             [userId]
         );
         const totalSchedules = parseInt(schedulesRes.rows[0]?.total_schedules || 0);
 
-        // 5. Thong ke tong so giao an buoi hoc (lessons) da soan
+        // 5. Thống kê tổng số giáo án từng môn đã được lưu trữ vào CSDL
         const lessonsRes = await pool.query(
             `SELECT COUNT(l.id) as total_lessons 
              FROM lessons l 
              JOIN projects p ON l.project_id = p.id 
-             WHERE p.user_id = $1`,
+             WHERE p.user_id = $1 AND l.lesson_data IS NOT NULL AND l.lesson_data != ''`,
             [userId]
         );
         const totalLessons = parseInt(lessonsRes.rows[0]?.total_lessons || 0);
 
-        // 6. Lay trang thai user (API Key, Chu ky)
+        // 6. Lấy trạng thái user (API Key, Chữ ký)
         const userRes = await pool.query(
             `SELECT username, full_name, role, gemini_api_key, signature, signature_filename, department 
              FROM users 
@@ -65,7 +65,7 @@ exports.getStats = async (req, res) => {
         );
         const user = userRes.rows[0] || {};
 
-        // 7. Thong ke Admin toan he thong (neu la Admin)
+        // 7. Thống kê Admin toàn hệ thống (nếu là Admin)
         let systemStats = null;
         if (userRole === "Admin") {
             const allUsersCount = await pool.query(`SELECT COUNT(*) as c FROM users`);
@@ -78,7 +78,7 @@ exports.getStats = async (req, res) => {
             };
         }
 
-        // 8. Du lieu bieu do phan bo gio theo tung mon hoc (Top 7 mon nhieu gio nhat)
+        // 8. Dữ liệu biểu đồ phân bổ giờ theo từng môn học (Top 7 môn nhiều giờ nhất)
         const topProjectsByHours = [...projects]
             .sort((a, b) => (parseInt(b.total_hours) || 0) - (parseInt(a.total_hours) || 0))
             .slice(0, 7)
@@ -89,8 +89,39 @@ exports.getStats = async (req, res) => {
                 class_name: p.class_name || ""
             }));
 
-        // 9. Danh sach 5 mon hoc gan day nhat
-        const recentProjects = projects.slice(0, 5);
+        // 9. Lấy trạng thái Sổ đầu bài và số lượng giáo án đã lưu cho từng môn
+        const projectIds = projects.map(p => p.id);
+        const projectStatsMap = {};
+        if (projectIds.length > 0) {
+            const schedRows = await pool.query(
+                `SELECT project_id FROM schedules WHERE project_id = ANY($1::int[]) AND schedule_data IS NOT NULL AND schedule_data != '' AND schedule_data != 'null' AND schedule_data != '[]'`,
+                [projectIds]
+            );
+            const lessonCounts = await pool.query(
+                `SELECT project_id, COUNT(id) as count FROM lessons WHERE project_id = ANY($1::int[]) AND lesson_data IS NOT NULL AND lesson_data != '' GROUP BY project_id`,
+                [projectIds]
+            );
+            schedRows.rows.forEach(r => {
+                if (!projectStatsMap[r.project_id]) projectStatsMap[r.project_id] = {};
+                projectStatsMap[r.project_id].hasSchedule = true;
+            });
+            lessonCounts.rows.forEach(r => {
+                if (!projectStatsMap[r.project_id]) projectStatsMap[r.project_id] = {};
+                projectStatsMap[r.project_id].lessonCount = parseInt(r.count) || 0;
+            });
+        }
+
+        // 10. Danh sách 5 môn học gần đây nhất kèm trạng thái
+        const recentProjects = projects.slice(0, 5).map(p => ({
+            id: p.id,
+            name: p.name,
+            course_code: p.course_code || "",
+            total_hours: p.total_hours || 0,
+            system_type: p.system_type || "Trung cấp",
+            class_name: p.class_name || "",
+            hasSchedule: Boolean(projectStatsMap[p.id]?.hasSchedule),
+            savedLessonsCount: projectStatsMap[p.id]?.lessonCount || 0
+        }));
 
         res.json({
             user: {
