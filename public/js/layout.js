@@ -1,10 +1,20 @@
 const sidebarHTML = `
 <div class="sidebar">
-    <div class="sidebar-header" style="display:flex; align-items:center; justify-content:space-between;">
-        <a href="/" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:8px;" title="Về trang chủ">
-            <h2 style="margin:0; font-size:1.15rem; color:var(--primary); cursor:pointer;"><i class="fas fa-book-open"></i> Giáo án điện tử</h2>
+    <div class="sidebar-header" style="text-align:center; padding:18px 16px 14px; position:relative; border-bottom:1px solid var(--border);">
+        <button type="button" class="sidebar-close-btn" onclick="toggleSidebar()" title="Đóng menu" style="position:absolute; top:10px; right:10px; background:none; border:none; color:#64748b; font-size:1.2rem; cursor:pointer; padding:4px 8px;"><i class="fas fa-times"></i></button>
+        
+        <div style="margin-bottom:10px;">
+            <a href="/profile" style="text-decoration:none; display:inline-block;" title="Xem & Cập nhật Hồ sơ cá nhân">
+                <div style="position:relative; width:64px; height:64px; margin:0 auto;">
+                    <img id="sidebar-user-avatar" class="sidebar-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E" alt="Avatar" style="width:64px; height:64px; border-radius:50%; object-fit:cover; border:2.5px solid var(--primary); box-shadow:0 3px 10px rgba(22,70,157,0.18); background:#f8fafc; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+            </a>
+            <div id="sidebar-user-fullname" style="font-size:0.88rem; font-weight:700; color:#1e293b; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px; margin-left:auto; margin-right:auto;">...</div>
+        </div>
+
+        <a href="/" style="text-decoration:none; color:inherit; display:flex; align-items:center; justify-content:center; gap:8px;" title="Về trang chủ">
+            <h2 style="margin:0; font-size:1.05rem; color:var(--primary); cursor:pointer;"><i class="fas fa-book-open"></i> Giáo án điện tử</h2>
         </a>
-        <button type="button" class="sidebar-close-btn" onclick="toggleSidebar()" title="Đóng menu" style="background:none; border:none; color:#64748b; font-size:1.2rem; cursor:pointer; padding:4px 8px;"><i class="fas fa-times"></i></button>
     </div>
     <div class="nav-menu">
         <a href="/dashboard" class="nav-item" id="nav-dashboard">

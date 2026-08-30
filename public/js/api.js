@@ -48,8 +48,17 @@ async function checkAuth(redirectIfNotAuth = true) {
         }
 
         // Cập nhật thông tin UI nếu có
+        const displayName = currentUser.full_name || currentUser.username;
         const nameEl = document.getElementById('topbar-username');
-        if(nameEl) nameEl.textContent = currentUser.full_name || currentUser.username;
+        if(nameEl) nameEl.textContent = displayName;
+
+        const sidebarNameEl = document.getElementById('sidebar-user-fullname');
+        if(sidebarNameEl) sidebarNameEl.textContent = displayName;
+
+        const avatarEl = document.getElementById('sidebar-user-avatar');
+        if(avatarEl && currentUser.avatar) {
+            avatarEl.src = currentUser.avatar;
+        }
 
         // Hiện tab admin
         if(currentUser.role === 'Admin') {

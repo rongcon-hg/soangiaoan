@@ -203,6 +203,17 @@ window.customConfirm = async function(msg) {
                 }
                 if(!res.ok) throw new Error(data.error || data.message || 'Không thể lưu thông tin');
                 
+                // Cập nhật giao diện sidebar và topbar tức thì
+                const newName = payload.full_name || '';
+                const nameEl = document.getElementById('topbar-username');
+                if (nameEl && newName) nameEl.textContent = newName;
+                const sidebarNameEl = document.getElementById('sidebar-user-fullname');
+                if (sidebarNameEl && newName) sidebarNameEl.textContent = newName;
+                if (payload.avatar) {
+                    const sidebarAvatar = document.getElementById('sidebar-user-avatar');
+                    if (sidebarAvatar) sidebarAvatar.src = payload.avatar;
+                }
+
                 showAlert('Đã cập nhật hồ sơ cá nhân', 'success');
             } catch(err) {
                 showAlert(err.message);
