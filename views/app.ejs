@@ -164,39 +164,64 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1150px;table-layout:fi
 .kpi{border:1px solid #dde5ef;border-radius:9px;padding:10px}.kpi b{display:block;font-size:18px;margin-top:4px}.kpi .breakdown{font-size:13px;line-height:1.55;margin-top:7px;color:#334155}.pending{color:#b45309;font-weight:700}
 
 
-.exclusion-row{display:grid;grid-template-columns:160px 160px 1fr 150px;gap:8px;margin-bottom:8px;}
-@media(max-width:768px){.exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}}
-@media(max-width:480px){.exclusion-row{grid-template-columns:1fr;gap:6px;}}
 
-.exclusion-row{display:grid;grid-template-columns:150px 150px 1fr 140px;gap:8px;margin-bottom:8px;}
+@media(max-width:768px){}
+@media(max-width:480px){}
+
+
 .exclusion-item{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 10px;border-bottom:1px solid #e5e7eb;}
 .exclusion-item:last-child{border-bottom:0;}
 @media(max-width:768px){
-  .exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}
+  
   .exclusion-item{flex-direction:column;align-items:flex-start;gap:6px;}
 }
 @media(max-width:480px){
-  .exclusion-row{grid-template-columns:1fr;gap:6px;}
+  
 }
 
-.exclusion-row{display:grid;grid-template-columns:140px 140px 1fr 140px;gap:8px;margin-bottom:8px;}
+
 .exclusion-item{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 10px;border-bottom:1px solid #e5e7eb;}
 .exclusion-item:last-child{border-bottom:0;}
 @media(max-width:768px){
-  .exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}
+  
   .exclusion-item{flex-direction:column;align-items:flex-start;gap:6px;}
 }
 @media(max-width:480px){
-  .exclusion-row{grid-template-columns:1fr;gap:6px;}
+  
 }
+
+.exclusion-row {
+  display: grid;
+  grid-template-columns: 130px 130px 1fr 140px;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 8px;
+}
+.exclusion-row input, .exclusion-row select {
+  width: 100%;
+  box-sizing: border-box;
+}
+@media(max-width: 650px) {
+  .exclusion-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+}
+@media(max-width: 400px) {
+  .exclusion-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
 .exclusions{margin-top:12px}
-.exclusion-row{display:grid;grid-template-columns:160px 1fr 90px;gap:8px;align-items:end;margin-bottom:8px}
+
 .exclusion-list{margin-top:10px;border:1px solid #d9e1ec;border-radius:9px;overflow:hidden}
 .exclusion-item{display:grid;grid-template-columns:120px 1fr 90px;gap:8px;padding:8px 10px;border-bottom:1px solid #e5e7eb;align-items:center}
 .exclusion-item:last-child{border-bottom:0}
 .tag-holiday{display:inline-block;padding:2px 7px;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:12px;font-weight:700}
 .tag-school{display:inline-block;padding:2px 7px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:12px;font-weight:700}
-@media(max-width:700px){.exclusion-row,.exclusion-item{grid-template-columns:1fr}}
+
 
 
 
@@ -2087,13 +2112,13 @@ function exportExcel(){
  const table = clone.outerHTML;
  const css=`&lt;style&gt;table{border-collapse:collapse;width:100%;font-family:&quot;Times New Roman&quot;;font-size:12pt}th,td{border:1px solid #000;padding:5px;vertical-align:middle}th{text-align:center;font-weight:bold}.stt,.date,.small,.absent,.sign{text-align:center}.content{vertical-align:top}.lesson-title,.major{font-weight:bold}.sub{margin-left:18px}
 .exclusions{margin-top:12px}
-.exclusion-row{display:grid;grid-template-columns:160px 1fr 90px;gap:8px;align-items:end;margin-bottom:8px}
+
 .exclusion-list{margin-top:10px;border:1px solid #d9e1ec;border-radius:9px;overflow:hidden}
 .exclusion-item{display:grid;grid-template-columns:120px 1fr 90px;gap:8px;padding:8px 10px;border-bottom:1px solid #e5e7eb;align-items:center}
 .exclusion-item:last-child{border-bottom:0}
 .tag-holiday{display:inline-block;padding:2px 7px;border-radius:999px;background:#fee2e2;color:#b91c1c;font-size:12px;font-weight:700}
 .tag-school{display:inline-block;padding:2px 7px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:12px;font-weight:700}
-@media(max-width:700px){.exclusion-row,.exclusion-item{grid-template-columns:1fr}}
+
 
 &lt;/style&gt;`;
  const xls=`&lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot; xmlns:x=&quot;urn:schemas-microsoft-com:office:excel&quot; xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;${css}&lt;/head&gt;&lt;body&gt;${table}&lt;/body&gt;&lt;/html&gt;`;
