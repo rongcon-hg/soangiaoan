@@ -167,6 +167,28 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1150px;table-layout:fi
 .exclusion-row{display:grid;grid-template-columns:160px 160px 1fr 150px;gap:8px;margin-bottom:8px;}
 @media(max-width:768px){.exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}}
 @media(max-width:480px){.exclusion-row{grid-template-columns:1fr;gap:6px;}}
+
+.exclusion-row{display:grid;grid-template-columns:150px 150px 1fr 140px;gap:8px;margin-bottom:8px;}
+.exclusion-item{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 10px;border-bottom:1px solid #e5e7eb;}
+.exclusion-item:last-child{border-bottom:0;}
+@media(max-width:768px){
+  .exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}
+  .exclusion-item{flex-direction:column;align-items:flex-start;gap:6px;}
+}
+@media(max-width:480px){
+  .exclusion-row{grid-template-columns:1fr;gap:6px;}
+}
+
+.exclusion-row{display:grid;grid-template-columns:140px 140px 1fr 140px;gap:8px;margin-bottom:8px;}
+.exclusion-item{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 10px;border-bottom:1px solid #e5e7eb;}
+.exclusion-item:last-child{border-bottom:0;}
+@media(max-width:768px){
+  .exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}
+  .exclusion-item{flex-direction:column;align-items:flex-start;gap:6px;}
+}
+@media(max-width:480px){
+  .exclusion-row{grid-template-columns:1fr;gap:6px;}
+}
 .exclusions{margin-top:12px}
 .exclusion-row{display:grid;grid-template-columns:160px 1fr 90px;gap:8px;align-items:end;margin-bottom:8px}
 .exclusion-list{margin-top:10px;border:1px solid #d9e1ec;border-radius:9px;overflow:hidden}
@@ -359,9 +381,9 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;section-title&quot;&gt;1. Tải Chương trình môn học&lt;/div&gt;
 &lt;div class=&quot;filebox&quot;&gt;
 &lt;label&gt;Chọn file chương trình môn học&lt;/label&gt;
-&lt;div style=&quot;display:flex; gap:10px; align-items:center; margin-top:8px;&quot;&gt;
-    &lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot;&gt;
-    &lt;button id=&quot;btnUploadDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; white-space:nowrap; border-radius:7px; cursor:pointer;&quot; onclick=&quot;uploadToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
+&lt;div style=&quot;margin-top:8px;&quot;&gt;
+    &lt;input id=&quot;programFile&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readProgramFile(this.files[0])&quot; style=&quot;width:100%; margin-bottom:8px; display:block;&quot;&gt;
+    &lt;button id=&quot;btnUploadDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;&quot; onclick=&quot;uploadToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
 &lt;/div&gt;
 &lt;div class=&quot;file-status&quot; id=&quot;fileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa chọn file. Demo đang dùng sẵn dữ liệu —.&lt;/div&gt;
 &lt;div id=&quot;driveStatusBox&quot;&gt;&lt;/div&gt;
@@ -380,9 +402,9 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;section-title&quot;&gt;2. Tải lên Giáo trình môn học&lt;/div&gt;
 &lt;div class=&quot;filebox&quot;&gt;
 &lt;label&gt;Chọn file giáo trình (Word .docx, PDF .pdf, Text .txt, .md)&lt;/label&gt;
-&lt;div style=&quot;display:flex; gap:10px; align-items:center; margin-top:8px;&quot;&gt;
-    &lt;input id=&quot;textbookFile&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readTextbookFile(this.files[0])&quot;&gt;
-    &lt;button id=&quot;btnUploadTextbookDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; white-space:nowrap; border-radius:7px; cursor:pointer;&quot; onclick=&quot;uploadTextbookToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
+&lt;div style=&quot;margin-top:8px;&quot;&gt;
+    &lt;input id=&quot;textbookFile&quot; type=&quot;file&quot; accept=&quot;.docx,.pdf,.txt,.md&quot; onchange=&quot;readTextbookFile(this.files[0])&quot; style=&quot;width:100%; margin-bottom:8px; display:block;&quot;&gt;
+    &lt;button id=&quot;btnUploadTextbookDrive&quot; type=&quot;button&quot; style=&quot;background:#16469d; color:#fff; border:none; padding:8px 14px; font-size:13px; font-weight:700; border-radius:7px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;&quot; onclick=&quot;uploadTextbookToDrive()&quot;&gt;☁️ Tải lên Google Drive&lt;/button&gt;
 &lt;/div&gt;
 &lt;div class=&quot;file-status&quot; id=&quot;textbookFileStatus&quot; style=&quot;margin-top:8px;&quot;&gt;Chưa tải giáo trình môn học. Khi có giáo trình, Bước 2 có thể tự động trích xuất nội dung bài học tương ứng.&lt;/div&gt;
 &lt;div id=&quot;textbookDriveStatusBox&quot;&gt;&lt;/div&gt;
@@ -423,7 +445,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 
 &lt;div class=&quot;exclusions&quot;&gt;
 &lt;div class=&quot;section-title&quot; style=&quot;font-size:16px;margin-top:16px&quot;&gt;Ngày nghỉ lễ / Kế hoạch nhà trường&lt;/div&gt;
-&lt;div class=&quot;exclusion-row&quot; style=&quot;grid-template-columns:160px 160px 1fr 150px&quot;&gt;
+&lt;div class=&quot;exclusion-row&quot;&gt;
 &lt;div&gt;
 &lt;label&gt;Nghỉ từ ngày&lt;/label&gt;
 &lt;input id=&quot;excludeStartDate&quot; type=&quot;text&quot; inputmode=&quot;numeric&quot; placeholder=&quot;dd/mm/yyyy&quot; maxlength=&quot;10&quot; oninput=&quot;formatDateInput(this);onExclusionDraftChange()&quot;&gt;

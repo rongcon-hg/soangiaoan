@@ -134,6 +134,28 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1150px;table-layout:fi
 .exclusion-row{display:grid;grid-template-columns:160px 160px 1fr 150px;gap:8px;margin-bottom:8px;}
 @media(max-width:768px){.exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}}
 @media(max-width:480px){.exclusion-row{grid-template-columns:1fr;gap:6px;}}
+
+.exclusion-row{display:grid;grid-template-columns:150px 150px 1fr 140px;gap:8px;margin-bottom:8px;}
+.exclusion-item{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 10px;border-bottom:1px solid #e5e7eb;}
+.exclusion-item:last-child{border-bottom:0;}
+@media(max-width:768px){
+  .exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}
+  .exclusion-item{flex-direction:column;align-items:flex-start;gap:6px;}
+}
+@media(max-width:480px){
+  .exclusion-row{grid-template-columns:1fr;gap:6px;}
+}
+
+.exclusion-row{display:grid;grid-template-columns:140px 140px 1fr 140px;gap:8px;margin-bottom:8px;}
+.exclusion-item{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 10px;border-bottom:1px solid #e5e7eb;}
+.exclusion-item:last-child{border-bottom:0;}
+@media(max-width:768px){
+  .exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}
+  .exclusion-item{flex-direction:column;align-items:flex-start;gap:6px;}
+}
+@media(max-width:480px){
+  .exclusion-row{grid-template-columns:1fr;gap:6px;}
+}
 .exclusions{margin-top:12px}
 .exclusion-row{display:grid;grid-template-columns:160px 1fr 90px;gap:8px;align-items:end;margin-bottom:8px}
 .exclusion-list{margin-top:10px;border:1px solid #d9e1ec;border-radius:9px;overflow:hidden}
@@ -372,7 +394,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 
 &lt;div class=&quot;exclusions&quot;&gt;
 &lt;div class=&quot;section-title&quot; style=&quot;font-size:16px;margin-top:16px&quot;&gt;Ngày nghỉ lễ / Kế hoạch nhà trường&lt;/div&gt;
-&lt;div class=&quot;exclusion-row&quot; style=&quot;grid-template-columns:160px 160px 1fr 150px&quot;&gt;
+&lt;div class=&quot;exclusion-row&quot;&gt;
 &lt;div&gt;
 &lt;label&gt;Nghỉ từ ngày&lt;/label&gt;
 &lt;input id=&quot;excludeStartDate&quot; type=&quot;text&quot; inputmode=&quot;numeric&quot; placeholder=&quot;dd/mm/yyyy&quot; maxlength=&quot;10&quot; oninput=&quot;formatDateInput(this);onExclusionDraftChange()&quot;&gt;
