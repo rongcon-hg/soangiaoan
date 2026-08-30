@@ -568,11 +568,16 @@ window.customConfirm = async function(msg) {
             const endIndex = Math.min(startIndex + PAGE_SIZE, total);
             const pageItems = filteredProjectsList.slice(startIndex, endIndex);
 
-            grid.innerHTML = pageItems.map(p => `
+            grid.innerHTML = pageItems.map((p, idx) => {
+                const itemIndex = startIndex + idx + 1;
+                return `
                 <div class="project-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                        <div class="project-title" style="margin-bottom:0;">${escapeHtml(p.name)}</div>
-                        <span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:6px; background:${p.system_type === 'Cao đẳng' ? '#e0e7ff; color:#3730a3;' : '#fef3c7; color:#92400e;'}">${escapeHtml(p.system_type || 'Trung cấp')}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px; gap:8px;">
+                        <div style="display:flex; align-items:flex-start; gap:8px; flex:1; min-width:0;">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; padding:0 4px; border-radius:5px; background:#16469d; color:#fff; font-weight:700; font-size:0.75rem; flex-shrink:0; margin-top:1px;" title="Số thứ tự: ${itemIndex}">${itemIndex}</span>
+                            <div class="project-title" style="margin-bottom:0; word-break:break-word;">${escapeHtml(p.name)}</div>
+                        </div>
+                        <span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:6px; background:${p.system_type === 'Cao đẳng' ? '#e0e7ff; color:#3730a3;' : '#fef3c7; color:#92400e;'} flex-shrink:0;">${escapeHtml(p.system_type || 'Trung cấp')}</span>
                     </div>
                     <div class="project-meta">
                         Mã: <b>${escapeHtml(p.course_code || '---')}</b> &bull; Lớp: <b>${escapeHtml(p.class_name || '---')}</b> &bull; Tổng giờ: <b>${p.total_hours || 0}</b>
@@ -583,7 +588,8 @@ window.customConfirm = async function(msg) {
                         <button class="btn btn-danger btn-sm btn-icon-only" title="Xóa môn học" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             // Hiển thị / Ẩn thanh phân trang nếu > 12 môn
             const paginationContainer = document.getElementById('pagination-container');

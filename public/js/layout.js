@@ -1,7 +1,8 @@
 const sidebarHTML = `
 <div class="sidebar">
-    <div class="sidebar-header">
-        <h2><i class="fas fa-book-open"></i> Giáo án điện tử</h2>
+    <div class="sidebar-header" style="display:flex; align-items:center; justify-content:space-between;">
+        <h2 style="margin:0; font-size:1.15rem;"><i class="fas fa-book-open"></i> Giáo án điện tử</h2>
+        <button type="button" class="sidebar-close-btn" onclick="toggleSidebar()" title="Đóng menu" style="background:none; border:none; color:#64748b; font-size:1.2rem; cursor:pointer; padding:4px 8px;"><i class="fas fa-times"></i></button>
     </div>
     <div class="nav-menu">
         <a href="/" class="nav-item" id="nav-projects">
@@ -24,7 +25,7 @@ const sidebarHTML = `
 `;
 
 function injectLayout(pageId, pageTitle) {
-    document.body.insertAdjacentHTML('afterbegin', '<div class=\x22sidebar-overlay\x22 onclick=\x22toggleSidebar()\x22></div>' + sidebarHTML);
+    document.body.insertAdjacentHTML('afterbegin', '<div class="sidebar-overlay" onclick="toggleSidebar()"></div>' + sidebarHTML);
     
     // Set active
     const activeNav = document.getElementById('nav-' + pageId);
@@ -37,8 +38,8 @@ function injectLayout(pageId, pageTitle) {
     const topbar = `
         <div class="topbar">
             <div style="display:flex; align-items:center;">
-                <button class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-            <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
+                <button type="button" class="mobile-toggle" onclick="toggleSidebar()" title="Menu"><i class="fas fa-bars"></i></button>
+                <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
             </div>
             <div>
                 <div class="user-greeting"><span class="hello-text">Xin chào,</span> <b id="topbar-username" style="color:var(--primary)">...</b> <a href="#" onclick="logout()" style="margin-left: 8px; color: var(--danger); font-size: 1.1em; text-decoration: none;" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a></div>
@@ -51,10 +52,10 @@ function injectLayout(pageId, pageTitle) {
     const contentArea = document.createElement('div');
     contentArea.className = 'content-area';
     
-    // Grab all direct children of body that are not sidebar, alert-box or scripts
+    // Grab all direct children of body that are not sidebar, sidebar-overlay, alert-box or scripts
     const children = Array.from(document.body.children);
     children.forEach(child => {
-        if(child.className !== 'sidebar' && child.id !== 'alert-box' && child.tagName !== 'SCRIPT') {
+        if(child.className !== 'sidebar' && child.className !== 'sidebar-overlay' && child.id !== 'alert-box' && child.tagName !== 'SCRIPT') {
             contentArea.appendChild(child);
         }
     });
@@ -68,10 +69,10 @@ function injectLayout(pageId, pageTitle) {
     setupBackToTop();
 }
 
-
 function toggleSidebar() {
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
+    if (!sidebar) return;
     if (window.innerWidth <= 768) {
         sidebar.classList.toggle('open');
         if(overlay) overlay.classList.toggle('active');
