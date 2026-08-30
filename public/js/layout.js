@@ -293,8 +293,9 @@ async function submitRenewalForm(e) {
     }
 
     const payload = {
-        fullName: document.getElementById('renewal-fullname')?.value.trim() || '',
-        email: document.getElementById('renewal-email')?.value.trim() || '',
+        fullName: document.getElementById('renewal-fullname')?.value.trim() || (currentUser?.full_name || ''),
+        username: currentUser?.username || '',
+        email: document.getElementById('renewal-email')?.value.trim() || (currentUser?.email || ''),
         phone: document.getElementById('renewal-phone')?.value.trim() || '',
         department: document.getElementById('renewal-dept')?.value.trim() || '',
         reason: document.getElementById('renewal-reason')?.value.trim() || ''

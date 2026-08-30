@@ -486,17 +486,35 @@ exports.testGoogleConnection = async (req, res) => {
 
 exports.requestRenewal = async (req, res) => {
     const { fullName, username, email, phone, department, reason } = req.body;
-    if (!email) {
-        return res.status(400).json({ message: 'Vui lòng cung cấp email liên hệ' });
+    if (!email && !username) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp email liên hệ hoặc tên đăng nhập' });
     }
     try {
         let user = null;
-        if (req.user && req.user.id) {
-            const uRes = await pool.query('SELECT * FROM users WHERE id = $1', [req.user.id]);
-            user = uRes.rows[0];
-        } else if (username) {
-            const uRes = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
-            user = uRes.rows[0];
+
+        // 1. Giải mã token JWT nếu có
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, JWT_SECRET);
+                if (decoded && decoded.id) {
+                    const uRes = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+                    user = uRes.rows[0];
+                }
+            } catch (e) {}
+        }
+
+        // 2. Tìm theo username hoặc email trong CSDL nếu chưa lấy được user
+        if (!user) {
+            if (username) {
+                const uRes = await pool.query('SELECT * FROM users WHERE username = $1', [username.trim()]);
+                user = uRes.rows[0];
+            }
+            if (!user && email) {
+                const uRes = await pool.query('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [email.trim()]);
+                user = uRes.rows[0];
+            }
         }
 
         const uName = user ? user.username : (username || email);
@@ -505,10 +523,23 @@ exports.requestRenewal = async (req, res) => {
         const uPhone = user?.phone || phone || '';
         const uDept = user?.department || department || '';
         
-        let currentExpiryFormatted = 'Chưa xác định';
-        if (user?.expires_at) {
+        let currentExpiryFormatted = 'Chưa thiết lập';
+        if (user?.role === 'Admin') {
+            currentExpiryFormatted = 'Vô thời hạn (Admin)';
+        } else if (user?.expires_at) {
             const d = new Date(user.expires_at);
-            currentExpiryFormatted = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+            const now = new Date();
+            const diffTime = d.getTime() - now.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const dateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+
+            if (diffDays <= 0) {
+                currentExpiryFormatted = `Đã hết hạn (${dateStr})`;
+            } else if (diffDays <= 7) {
+                currentExpiryFormatted = `Còn ${diffDays} ngày (${dateStr})`;
+            } else {
+                currentExpiryFormatted = `Còn ${diffDays} ngày (${dateStr})`;
+            }
         }
 
         const adminRes = await pool.query("SELECT email, settings FROM users WHERE (username = 'qtv' OR role = 'Admin') AND email IS NOT NULL ORDER BY CASE WHEN username = 'qtv' THEN 1 ELSE 2 END LIMIT 1");
