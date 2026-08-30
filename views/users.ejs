@@ -12,23 +12,24 @@
 <style>
     .swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }
     
-    /* Search & Filter Toolbar */
+    /* Search & Filter Toolbar - Desktop (1 Single Row) */
     .filter-bar {
         display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
+        flex-direction: row;
         align-items: center;
+        gap: 10px;
+        flex-wrap: nowrap;
         margin-top: 16px;
         margin-bottom: 16px;
         background: #f8fafc;
-        padding: 14px 16px;
+        padding: 12px 14px;
         border-radius: 8px;
         border: 1px solid var(--border);
     }
     .search-box {
         position: relative;
         flex: 1;
-        min-width: 240px;
+        min-width: 180px;
     }
     .search-box i {
         position: absolute;
@@ -40,6 +41,41 @@
     }
     .search-box input {
         padding-left: 36px !important;
+        height: 40px;
+    }
+    .filter-controls {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        flex-wrap: nowrap;
+    }
+    .filter-controls select#filter-role {
+        width: 165px;
+        min-width: 165px;
+        height: 40px;
+    }
+    .filter-status-group {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        flex-wrap: nowrap;
+    }
+    .filter-status-group select#filter-status {
+        width: 165px;
+        min-width: 165px;
+        height: 40px;
+    }
+    .filter-status-group button {
+        height: 40px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
     
     /* Mobile Table Scrollbar */
@@ -58,21 +94,18 @@
         border-radius: 3px;
     }
     .table-responsive table {
-        min-width: 720px;
-        margin-top: 0 !important;
-    }
-
-    /* Table single line & sticky action */
-    .table-responsive table {
         width: 100%;
         min-width: 680px;
         border-collapse: collapse;
+        margin-top: 0 !important;
     }
     .table-responsive table th,
     .table-responsive table td {
         white-space: nowrap !important;
         vertical-align: middle;
     }
+
+    /* Sticky action column */
     .sticky-action {
         position: sticky;
         right: 0;
@@ -99,19 +132,7 @@
         gap: 5px;
     }
 
-    /* Filter Controls */
-    .filter-controls {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-    .filter-status-group {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
+    /* Responsive Mobile Layout (< 768px) */
     @media (max-width: 768px) {
         .filter-bar {
             flex-direction: column !important;
@@ -144,7 +165,7 @@
         }
         .filter-status-group button {
             flex-shrink: 0 !important;
-            padding: 10px 16px !important;
+            padding: 0 16px !important;
         }
         
         .btn-action {
