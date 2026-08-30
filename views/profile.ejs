@@ -118,6 +118,20 @@ window.customConfirm = async function(msg) {
             </div>
         </div>
     </div>
+    <!-- Account Expiry & Renewal Card -->
+    <div class="card" style="margin-top:24px; border-left:4px solid var(--primary);">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <h3 class="card-title" style="margin:0; font-size:1.05rem;"><i class="fas fa-id-badge" style="color:var(--primary); margin-right:6px;"></i> Gói tài khoản & Hạn sử dụng</h3>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openRenewalModal()" style="font-size:0.85rem; padding:6px 14px;">
+                <i class="fas fa-history"></i> Gửi yêu cầu gia hạn
+            </button>
+        </div>
+        <div style="padding:16px 20px;">
+            <div id="profile-expiry-content" style="font-size:0.92rem; color:#334155; line-height:1.8;">
+                Đang tải thông tin gói tài khoản...
+            </div>
+        </div>
+    </div>
 
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
@@ -138,6 +152,35 @@ window.customConfirm = async function(msg) {
                     currentAvatarBase64 = user.avatar;
                     document.getElementById('avatar-preview').src = user.avatar;
                 }
+
+                const expContent = document.getElementById('profile-expiry-content');
+                if (expContent) {
+                    if (user.role === 'Admin') {
+                        expContent.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:4px 10px; border-radius:6px;"><i class="fas fa-shield-alt"></i> Tài khoản Quản trị viên</span> <span>Thời hạn: <b>Vô thời hạn</b></span></div>';
+                    } else if (user.expires_at) {
+                        const expDate = new Date(user.expires_at);
+                        const now = new Date();
+                        const diffTime = expDate.getTime() - now.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const expFormatted = String(expDate.getDate()).padStart(2, '0') + '/' + String(expDate.getMonth() + 1).padStart(2, '0') + '/' + expDate.getFullYear();
+                        
+                        let statusHtml = '';
+                        if (diffDays <= 0) {
+                            statusHtml = '<b style="color:#b91c1c;"><i class="fas fa-times-circle"></i> Đã hết hạn</b>';
+                        } else if (diffDays <= 7) {
+                            statusHtml = '<b style="color:#b45309;"><i class="fas fa-hourglass-half"></i> Sắp hết hạn (Còn ' + diffDays + ' ngày)</b>';
+                        } else {
+                            statusHtml = '<b style="color:#15803d;"><i class="fas fa-check-circle"></i> Đang hoạt động (Còn ' + diffDays + ' ngày)</b>';
+                        }
+
+                        expContent.innerHTML = '<div>Trạng thái: ' + statusHtml + '</div>' +
+                                              '<div>Ngày hết hạn sử dụng: <b style="color:var(--primary); font-size:1.02rem;">' + expFormatted + '</b></div>' +
+                                              '<div style="margin-top:6px; font-size:0.85rem; color:#64748b;">Khi gần hết hạn hoặc đã hết hạn, Thầy/Cô hãy bấm nút <b>[Gửi yêu cầu gia hạn]</b> để thông báo cho Quản trị viên kích hoạt thêm thời gian sử dụng nhé!</div>';
+                    } else {
+                        expContent.innerHTML = '<div>Thời hạn sử dụng: <b>3 tháng kể từ ngày kích hoạt</b></div>';
+                    }
+                }
+
             }
         });
 

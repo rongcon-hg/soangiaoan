@@ -12,6 +12,7 @@ const sidebarHTML = `
                 </div>
             </a>
             <div id="sidebar-user-fullname" class="sidebar-user-fullname" style="font-size:0.88rem; font-weight:700; color:#1e293b; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px; margin-left:auto; margin-right:auto;">...</div>
+            <div id="sidebar-expiry-badge" style="display:none; margin:4px auto 0 auto; cursor:pointer; text-align:center;" onclick="openRenewalModal()" title="Bấm vào đây để gửi yêu cầu gia hạn sử dụng"></div>
         </div>
 
         <a href="/dashboard" class="sidebar-brand-link" style="text-decoration:none; color:inherit; display:flex; align-items:center; justify-content:center; gap:8px;" title="Bảng điều khiển">
@@ -62,6 +63,8 @@ function injectLayout(pageId, pageTitle) {
                 <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
             </div>
             <div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                <div id="topbar-expiry-badge" style="display:none; cursor:pointer;" onclick="openRenewalModal()" title="Bấm vào đây để gửi yêu cầu gia hạn sử dụng"></div>
                 <div class="user-greeting">
                     <span class="hello-text">Xin chào,</span> 
                     <a href="/profile" style="text-decoration:none; color:inherit;" title="Xem thông tin cá nhân">
@@ -69,6 +72,7 @@ function injectLayout(pageId, pageTitle) {
                     </a> 
                     <a href="#" onclick="logout()" style="margin-left: 8px; color: var(--danger); font-size: 1.1em; text-decoration: none;" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
                 </div>
+            </div>
             </div>
         </div>
     `;
@@ -291,5 +295,38 @@ async function submitRenewalForm(e) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi yêu cầu gia hạn';
         }
+    }
+}
+
+
+function updateExpiryUI(user) {
+    if (!user) return;
+    const sbBadge = document.getElementById('sidebar-expiry-badge');
+    const tbBadge = document.getElementById('topbar-expiry-badge');
+
+    if (user.role === 'Admin') {
+        const html = `<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:999px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; display:inline-flex; align-items:center; gap:4px;"><i class="fas fa-infinity"></i> Vô thời hạn</span>`;
+        if (sbBadge) { sbBadge.innerHTML = html; sbBadge.style.display = 'block'; }
+        return;
+    }
+
+    if (user.expires_at) {
+        const expDate = new Date(user.expires_at);
+        const now = new Date();
+        const diffTime = expDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const expFormatted = `${String(expDate.getDate()).padStart(2, '0')}/${String(expDate.getMonth() + 1).padStart(2, '0')}/${expDate.getFullYear()}`;
+
+        let badgeHtml = '';
+        if (diffDays <= 0) {
+            badgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:999px; background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-times-circle"></i> Đã hết hạn <span style="text-decoration:underline; margin-left:2px;">[Gia hạn]</span></span>`;
+        } else if (diffDays <= 7) {
+            badgeHtml = `<span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:999px; background:#fef3c7; color:#b45309; border:1px solid #fde68a; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-hourglass-half"></i> Còn ${diffDays} ngày <span style="text-decoration:underline; margin-left:2px;">[Gia hạn]</span></span>`;
+        } else {
+            badgeHtml = `<span style="font-size:0.75rem; font-weight:600; padding:3px 8px; border-radius:999px; background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-clock"></i> Còn ${diffDays} ngày <span style="opacity:0.8; margin-left:2px;">[Gia hạn]</span></span>`;
+        }
+
+        if (sbBadge) { sbBadge.innerHTML = badgeHtml; sbBadge.style.display = 'block'; }
+        if (tbBadge) { tbBadge.innerHTML = badgeHtml; tbBadge.style.display = 'inline-flex'; }
     }
 }

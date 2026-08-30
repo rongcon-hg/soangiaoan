@@ -71,6 +71,8 @@ async function checkAuth(redirectIfNotAuth = true) {
             showExpiredWarningBanner(currentUser);
         }
 
+        if (typeof updateExpiryUI === 'function') { updateExpiryUI(currentUser); }
+
         return currentUser;
     } catch (err) {
         localStorage.removeItem('token');
