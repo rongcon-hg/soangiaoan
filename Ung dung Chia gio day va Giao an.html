@@ -86,6 +86,10 @@ table.sheet{border-collapse:collapse;width:100%;min-width:1150px;table-layout:fi
 .lesson-title{font-weight:bold;margin:0 0 2px}.major{font-weight:bold;margin:2px 0}.sub{margin:1px 0 1px 18px}
 .kpi{border:1px solid #dde5ef;border-radius:9px;padding:10px}.kpi b{display:block;font-size:18px;margin-top:4px}.kpi .breakdown{font-size:13px;line-height:1.55;margin-top:7px;color:#334155}.pending{color:#b45309;font-weight:700}
 
+
+.exclusion-row{display:grid;grid-template-columns:160px 160px 1fr 150px;gap:8px;margin-bottom:8px;}
+@media(max-width:768px){.exclusion-row{grid-template-columns:1fr 1fr;gap:8px;}}
+@media(max-width:480px){.exclusion-row{grid-template-columns:1fr;gap:6px;}}
 .exclusions{margin-top:12px}
 .exclusion-row{display:grid;grid-template-columns:160px 1fr 90px;gap:8px;align-items:end;margin-bottom:8px}
 .exclusion-list{margin-top:10px;border:1px solid #d9e1ec;border-radius:9px;overflow:hidden}
