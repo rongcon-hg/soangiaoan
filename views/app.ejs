@@ -3221,6 +3221,21 @@ function activityRows(type,items,total){
 
   return normalizeRows(rows,total);
 }
+function romanToInt(s) {
+  if (!s) return 0;
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  const map = {I:1, V:5, X:10, L:50, C:100, D:500, M:1000};
+  let num = 0, prev = 0;
+  const str = String(s).toUpperCase().trim();
+  for (let i = str.length - 1; i &gt;= 0; i--) {
+    const curr = map[str[i]] || 0;
+    if (curr &lt; prev) num -= curr;
+    else num += curr;
+    prev = curr;
+  }
+  return num || parseInt(s, 10) || 0;
+}
+
 function formatObjectiveBlock(objText, lessonLabel) {
   if (!objText || !objText.trim()) return '';
   const lines = objText.split('\n').map(l =&gt; l.trim()).filter(Boolean);
