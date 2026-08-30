@@ -534,69 +534,164 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div&gt;
 &lt;label&gt;Loại&lt;/label&gt;
 &lt;select id=&quot;excludeType&quot; onchange=&quot;onExclusionDraftChange()&quot;&gt;
-&lt;option value=&quot;holiday&quot;&gt;Nghỉ lễ&lt;/option&gt;
-&lt;option value=&quot;school&quot;&gt;Kế hoạch trường&lt;/option&gt;
-&lt;/select&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div style=&quot;display:flex;gap:8px;flex-wrap:wrap&quot;&gt;
-&lt;button class=&quot;gray&quot; onclick=&quot;addExclusion()&quot;&gt;THÊM NGÀY NGHỈ&lt;/button&gt;
-&lt;button class=&quot;gray&quot; onclick=&quot;clearExclusions()&quot;&gt;XÓA TẤT CẢ&lt;/button&gt;
-&lt;/div&gt;
-&lt;div id=&quot;exclusionList&quot; class=&quot;exclusion-list&quot;&gt;&lt;/div&gt;
-&lt;div style=&quot;margin-top:7px;font-size:12px;color:#475569&quot;&gt;
-&lt;b&gt;Khoảng ngày đang chọn có hiệu lực ngay.&lt;/b&gt; Hệ thống tự bỏ qua toàn bộ ngày trong khoảng này khi chia lịch. Nút “THÊM NGÀY NGHỈ” chỉ dùng để lưu thêm nhiều đợt nghỉ.
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div style=&quot;margin-top:12px;display:flex;gap:10px;flex-wrap:wrap&quot;&gt;
-&lt;button onclick=&quot;buildSchedule()&quot;&gt;CHIA LỊCH&lt;/button&gt;
-&lt;button class=&quot;export&quot; onclick=&quot;exportExcel()&quot;&gt;XUẤT EXCEL&lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+  font-family:"Times New Roman",Times,serif!important;
+}
 
-&lt;div class=&quot;card&quot;&gt;
-&lt;div style=&quot;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;&quot;&gt;
-&lt;div class=&quot;section-title&quot; style=&quot;margin:0;&quot;&gt;5. Sổ đầu bài&lt;/div&gt;
-&lt;div style=&quot;display:flex;gap:8px;&quot;&gt;
-  &lt;button type=&quot;button&quot; onclick=&quot;updateScheduleProgression()&quot; style=&quot;background:#16469d;color:#fff;padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:5px;border-radius:6px;&quot; title=&quot;Tự động tính lại nội dung và tiến độ các buổi sau khi chỉnh số tiết&quot;&gt;🔄 CẬP NHẬT LẠI TIẾN ĐỘ&lt;/button&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div class=&quot;sheet-wrap&quot;&gt;
-&lt;table class=&quot;sheet&quot; id=&quot;mainTable&quot;&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th rowspan=&quot;2&quot; class=&quot;stt&quot;&gt;STT&lt;/th&gt;
-&lt;th rowspan=&quot;2&quot; class=&quot;date&quot;&gt;NGÀY LÊN&lt;br&gt;LỚP&lt;/th&gt;
-&lt;th colspan=&quot;3&quot;&gt;SỐ TIẾT&lt;/th&gt;
-&lt;th rowspan=&quot;2&quot; class=&quot;content&quot;&gt;TÓM TẮT NỘI DUNG BÀI DẠY, KIỂM TRA&lt;/th&gt;
-&lt;th rowspan=&quot;2&quot; class=&quot;absent&quot;&gt;SỐ HỌC SINH, SINH VIÊN VẮNG MẶT&lt;/th&gt;
-&lt;th rowspan=&quot;2&quot; class=&quot;sign&quot;&gt;CHỮ KÝ GIÁO VIÊN&lt;/th&gt;
-&lt;/tr&gt;
-&lt;tr&gt;&lt;th class=&quot;small&quot;&gt;Lý thuyết&lt;/th&gt;&lt;th class=&quot;small&quot;&gt;Thực hành&lt;/th&gt;&lt;th class=&quot;small&quot;&gt;Kiểm tra&lt;/th&gt;&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody id=&quot;tbody&quot;&gt;&lt;/tbody&gt;
-&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;
+</style>
+</head>
+<body>
 
-&lt;/div&gt;
 
-&lt;script&gt;
-let course = {name:&quot;&quot;,code:&quot;&quot;,total:0,lt:0,th:0,kt:0};
+<div class="wrap" style="margin-top:0">
+
+<div class="card">
+<div class="section-title">1. Tải Chương trình môn học</div>
+<div class="filebox">
+<label>Chọn file chương trình môn học</label>
+<div class="upload-drive-box">
+    <input id="programFile" class="upload-file-input" type="file" accept=".docx,.pdf,.txt,.md" onchange="readProgramFile(this.files[0])">
+    <button id="btnUploadDrive" class="btn-drive-upload" type="button" onclick="uploadToDrive()">☁️ Tải lên Google Drive</button>
+</div>
+<div class="file-status" id="fileStatus" style="margin-top:8px;">Chưa chọn file. Demo đang dùng sẵn dữ liệu —.</div>
+<div id="driveStatusBox"></div>
+</div>
+<div class="grid" style="margin-top:12px">
+<div class="kpi">Tên môn học<b id="courseName">Chưa tải chương trình môn học</b></div>
+<div class="kpi">Mã môn<b id="courseCode">—</b></div>
+<div class="kpi">Hệ & Lớp<b id="courseSystemClass">—</b></div>
+<div class="kpi">Tổng giờ<b id="totalHours">—</b></div>
+<div class="kpi">Sau quy đổi<b id="converted">—</b><div id="convertedBreakdown" class="breakdown"></div></div>
+</div>
+<div class="notice" id="formulaInfo"><b>Quy tắc:</b> LT = giờ LT; TH = làm tròn lên (giờ TH × 60/45); KT = giờ KT.</div>
+</div>
+
+<div class="card">
+<div class="section-title">2. Tải lên Giáo trình môn học</div>
+<div class="filebox">
+<label>Chọn file giáo trình (Word .docx, PDF .pdf, Text .txt, .md)</label>
+<div class="upload-drive-box">
+    <input id="textbookFile" class="upload-file-input" type="file" accept=".docx,.pdf,.txt,.md" onchange="readTextbookFile(this.files[0])">
+    <button id="btnUploadTextbookDrive" class="btn-drive-upload" type="button" onclick="uploadTextbookToDrive()">☁️ Tải lên Google Drive</button>
+</div>
+<div class="file-status" id="textbookFileStatus" style="margin-top:8px;">Chưa tải giáo trình môn học. Khi có giáo trình, Bước 2 có thể tự động trích xuất nội dung bài học tương ứng.</div>
+<div id="textbookDriveStatusBox"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="section-title">3. Kiểm tra quy đổi theo từng Bài / Kiểm tra / Thi</div>
+<div id="conversionPreview" style="overflow:auto">
+<div style="color:#64748b;font-size:13px">Tải Chương trình môn học để xem kết quả quy đổi.</div>
+</div>
+</div>
+
+<div class="card schedule-card">
+<div class="schedule-head">
+  <div>
+    <div class="section-title">4. Thiết lập lịch học trong tuần</div>
+    <div class="schedule-sub">Chọn ngày bắt đầu và cấu hình số tiết cố định cho từng buổi học trong tuần.</div>
+  </div>
+</div>
+
+<div class="schedule-inline">
+  <div class="field-box field-date">
+    <label>Ngày bắt đầu</label>
+    <input id="startDate" type="date" value="2026-07-07" onchange="if(typeof saveStateToBackend === 'function') saveStateToBackend();">
+  </div>
+  <div class="field-box field-count">
+    <label>Số buổi học / tuần</label>
+    <input id="weeklyCount" type="number" value="2" min="1" max="7" onchange="renderWeeklySlots()">
+  </div>
+  <div id="weeklySlots"></div>
+</div>
+<div id="weeklyCheck" class="schedule-summary"></div>
+<div class="schedule-rule"><b>Quy tắc nội dung:</b> mỗi buổi luôn hiển thị đầy đủ <b>Tên bài + đề mục đang học</b>. Trong cùng một buổi, phải trình bày theo đúng thứ tự <b>Tên bài → các đề mục của bài đó → mới sang bài kế tiếp</b>. Mỗi đề mục chỉ hiển thị một lần; chỉ khi cùng đề mục của cùng bài tiếp tục sang buổi sau mới ghi <b>(tiếp theo)</b>.<br>
+  <b>Quy tắc cố định theo thứ:</b> số tiết gắn với từng thứ trong tuần và được giữ nguyên suốt khóa.
+  Nếu một ngày học rơi vào kỳ nghỉ thì chỉ bỏ qua ngày đó; buổi kế tiếp vẫn dùng đúng số tiết của <b>thứ thực tế</b>.
+</div>
+
+<div class="exclusions">
+<div class="section-title" style="font-size:16px;margin-top:16px">Ngày nghỉ lễ / Kế hoạch nhà trường</div>
+<div class="exclusion-row">
+<div>
+<label>Nghỉ từ ngày</label>
+<input id="excludeStartDate" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" oninput="formatDateInput(this);onExclusionDraftChange()">
+</div>
+<div>
+<label>Đến ngày</label>
+<input id="excludeEndDate" type="text" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" oninput="formatDateInput(this);onExclusionDraftChange()">
+</div>
+<div>
+<label>Lý do</label>
+<input id="excludeReason" type="text" placeholder="Ví dụ: Quốc khánh, nghỉ Tết, họp toàn trường..." oninput="onExclusionDraftChange()">
+</div>
+<div>
+<label>Loại</label>
+<select id="excludeType" onchange="onExclusionDraftChange()">
+<option value="holiday">Nghỉ lễ</option>
+<option value="school">Kế hoạch trường</option>
+</select>
+</div>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="gray" onclick="addExclusion()">THÊM NGÀY NGHỈ</button>
+<button class="gray" onclick="clearExclusions()">XÓA TẤT CẢ</button>
+</div>
+<div id="exclusionList" class="exclusion-list"></div>
+<div style="margin-top:7px;font-size:12px;color:#475569">
+<b>Khoảng ngày đang chọn có hiệu lực ngay.</b> Hệ thống tự bỏ qua toàn bộ ngày trong khoảng này khi chia lịch. Nút “THÊM NGÀY NGHỈ” chỉ dùng để lưu thêm nhiều đợt nghỉ.
+</div>
+</div>
+<div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+<button type="button" onclick="buildSchedule()">CHIA LỊCH</button>
+<button type="button" onclick="manualSaveSchedule()" style="background:#059669;color:#fff;">💾 LƯU SỔ ĐẦU BÀI</button>
+<button type="button" class="export" onclick="exportExcel()">XUẤT EXCEL</button>
+</div>
+</div>
+
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+<div class="section-title" style="margin:0;">5. Sổ đầu bài</div>
+<div style="display:flex;gap:8px;">
+  <button type="button" onclick="updateScheduleProgression()" style="background:#16469d;color:#fff;padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:5px;border-radius:6px;" title="Tự động tính lại nội dung và tiến độ các buổi sau khi chỉnh số tiết">🔄 CẬP NHẬT LẠI TIẾN ĐỘ</button>
+</div>
+</div>
+<div class="sheet-wrap">
+<table class="sheet" id="mainTable">
+<thead>
+<tr>
+<th rowspan="2" class="stt">STT</th>
+<th rowspan="2" class="date">NGÀY LÊN<br>LỚP</th>
+<th colspan="3">SỐ TIẾT</th>
+<th rowspan="2" class="content">TÓM TẮT NỘI DUNG BÀI DẠY, KIỂM TRA</th>
+<th rowspan="2" class="absent">SỐ HỌC SINH, SINH VIÊN VẮNG MẶT</th>
+<th rowspan="2" class="sign">CHỮ KÝ GIÁO VIÊN</th>
+</tr>
+<tr><th class="small">Lý thuyết</th><th class="small">Thực hành</th><th class="small">Kiểm tra</th></tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<script>
+let course = {name:"",code:"",total:0,lt:0,th:0,kt:0};
 let lessons = [];
-let programSequence = []; // đúng thứ tự: Bài -&gt; Kiểm tra -&gt; Bài -&gt; ... -&gt; Thi
+let programSequence = []; // đúng thứ tự: Bài -> Kiểm tra -> Bài -> ... -> Thi
 let currentSessions = [];
-let textbookData = { fileName: &quot;&quot;, text: &quot;&quot;, driveLink: &quot;&quot; };
+let textbookData = { fileName: "", text: "", driveLink: "" };
 
-function saveStateToBackend() {
+function saveStateToBackend(showToast = false) {
     const scheduleSettings = {
-        startDate: document.getElementById(&quot;startDate&quot;).value,
-        slotCount: document.getElementById(&quot;weeklyCount&quot;).value,
+        startDate: document.getElementById("startDate").value,
+        slotCount: document.getElementById("weeklyCount").value,
         slots: []
     };
     for(let i = 0; i < Number(scheduleSettings.slotCount||0); i++) {
-        const wd = document.getElementById(&quot;wd&quot;+i);
-        const cp = document.getElementById(&quot;cp&quot;+i);
+        const wd = document.getElementById("wd"+i);
+        const cp = document.getElementById("cp"+i);
         if(wd && cp) {
             scheduleSettings.slots.push({ weekday: wd.value, periods: cp.value });
         }
@@ -4917,9 +5012,23 @@ window.addEventListener("message", async e => {
                   program_data: e.data.payload
               })
           });
+
+          // Đồng thời lưu vào bảng schedules để thống kê và dữ liệu luôn đồng bộ
+          if (e.data.payload?.generatedSchedule && e.data.payload.generatedSchedule.length > 0) {
+              await fetch(API_URL + '/lessons/' + projectId + '/schedule', {
+                  method: 'POST',
+                  headers: getHeaders(),
+                  body: JSON.stringify({ schedule_data: e.data.payload.generatedSchedule })
+              }).catch(() => {});
+          }
+
+          if (e.data.showToast) {
+              alert("✅ Đã lưu Lịch giảng & Sổ đầu bài thành công vào CSDL!");
+          }
           console.log("Đã lưu trạng thái vào CSDL");
       } catch(err) {
           console.error("Lỗi lưu trạng thái", err);
+          if (e.data.showToast) alert("Lỗi khi lưu Sổ đầu bài vào CSDL.");
       }
   }
 
