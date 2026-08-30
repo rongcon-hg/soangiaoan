@@ -690,8 +690,8 @@ window.addEventListener(&quot;message&quot;, e => {
                 title: l.title || &quot;&quot;,
                 ltHours: l.ltHours || 0,
                 thHours: l.thHours || 0,
-                ltPeriods: l.ltPeriods || 0,
-                thPeriods: l.thPeriods || 0,
+                ltPeriods: l.ltPeriods !== undefined ? l.ltPeriods : Math.ceil(l.ltHours || 0),
+                thPeriods: l.thPeriods !== undefined ? l.thPeriods : Math.ceil((l.thHours || 0) * 60 / 45),
                 items: l.items || [],
                 objectives: l.objectives || [],
                 objectivesText: l.objectivesText || &quot;&quot;
