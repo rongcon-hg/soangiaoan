@@ -41,9 +41,11 @@ app.use('/api/projects', require('./routes/projects'));
 app.use('/api/drive', require('./routes/drive'));
 app.use('/api/lessons', require('./routes/lessons'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/dashboard', require('./routes/dashboard'));
 
 // Page routes
 app.get('/login', (req, res) => res.render('login'));
+app.get('/dashboard', (req, res) => res.render('dashboard'));
 app.get('/profile', (req, res) => res.render('profile'));
 app.get('/settings', (req, res) => res.render('settings'));
 app.get('/users', (req, res) => res.render('users'));

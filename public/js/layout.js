@@ -1,10 +1,15 @@
 const sidebarHTML = `
 <div class="sidebar">
     <div class="sidebar-header" style="display:flex; align-items:center; justify-content:space-between;">
-        <h2 style="margin:0; font-size:1.15rem;"><i class="fas fa-book-open"></i> Giáo án điện tử</h2>
+        <a href="/" style="text-decoration:none; color:inherit; display:flex; align-items:center; gap:8px;" title="Về trang chủ">
+            <h2 style="margin:0; font-size:1.15rem; color:var(--primary); cursor:pointer;"><i class="fas fa-book-open"></i> Giáo án điện tử</h2>
+        </a>
         <button type="button" class="sidebar-close-btn" onclick="toggleSidebar()" title="Đóng menu" style="background:none; border:none; color:#64748b; font-size:1.2rem; cursor:pointer; padding:4px 8px;"><i class="fas fa-times"></i></button>
     </div>
     <div class="nav-menu">
+        <a href="/dashboard" class="nav-item" id="nav-dashboard">
+            <i class="fas fa-chart-pie"></i> Bảng điều khiển
+        </a>
         <a href="/" class="nav-item" id="nav-projects">
             <i class="fas fa-layer-group"></i> Quản lý Môn học
         </a>
@@ -42,7 +47,13 @@ function injectLayout(pageId, pageTitle) {
                 <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
             </div>
             <div>
-                <div class="user-greeting"><span class="hello-text">Xin chào,</span> <b id="topbar-username" style="color:var(--primary)">...</b> <a href="#" onclick="logout()" style="margin-left: 8px; color: var(--danger); font-size: 1.1em; text-decoration: none;" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a></div>
+                <div class="user-greeting">
+                    <span class="hello-text">Xin chào,</span> 
+                    <a href="/profile" style="text-decoration:none; color:inherit;" title="Xem thông tin cá nhân">
+                        <b id="topbar-username" style="color:var(--primary); cursor:pointer; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">...</b>
+                    </a> 
+                    <a href="#" onclick="logout()" style="margin-left: 8px; color: var(--danger); font-size: 1.1em; text-decoration: none;" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
+                </div>
             </div>
         </div>
     `;

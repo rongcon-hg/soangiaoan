@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điều khiển (Dashboard) - Hệ thống Giáo án</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .dashboard-hero {
+            background: linear-gradient(135deg, #16469d 0%, #1e40af 100%);
+            color: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 15px rgba(22, 70, 157, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .dashboard-hero h2 {
+            margin: 0 0 6px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .dashboard-hero p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        .hero-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 18px 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .kpi-val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.1;
+        }
+        .kpi-label {
+            font-size: 0.83rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.6fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .chart-box {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .chart-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Quick Action Bar */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 992px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @media (max-width: 576px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            .dashboard-hero {
+                padding: 16px;
+            }
+            .dashboard-hero h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="alert-box"></div>
+
+    <!-- Dashboard Hero Banner -->
+    <div class="dashboard-hero">
+        <div>
+            <h2 id="hero-welcome">Xin chào Giảng viên 👋</h2>
+            <p id="hero-sub">Hệ thống Quản lý Sổ đầu bài & Soạn giáo án điện tử thông minh</p>
+        </div>
+        <div class="hero-badges">
+            <div class="hero-badge" id="badge-gemini" title="Trạng thái cấu hình AI Gemini">
+                <i class="fas fa-brain"></i> <span id="badge-gemini-text">Đang kiểm tra AI...</span>
+            </div>
+            <div class="hero-badge" id="badge-signature" title="Trạng thái chữ ký điện tử">
+                <i class="fas fa-signature"></i> <span id="badge-sig-text">Đang kiểm tra chữ ký...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Summary Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#eff6ff; color:#2563eb;">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <div>
+                <div class="kpi-val" id="stat-projects">0</div>
+                <div class="kpi-label">Tổng số Môn học</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#fef3c7; color:#d97706;">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div>
+                <div class="kpi-val" id="stat-hours">0</div>
+                <div class="kpi-label">Tổng giờ Giảng dạy</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#ecfdf5; color:#059669;">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div>
+                <div class="kpi-val" id="stat-schedules">0</div>
+                <div class="kpi-label">Sổ đầu bài đã lập</div>
+            </div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#f3e8ff; color:#7c3aed;">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div>
+                <div class="kpi-val" id="stat-lessons">0</div>
+                <div class="kpi-label">Giáo án đã hoàn thành</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-grid">
+        <!-- Chart 1: Doughnut Phân bổ Hệ Đào tạo -->
+        <div class="chart-box">
+            <div class="chart-title">
+                <i class="fas fa-chart-pie" style="color:var(--primary)"></i> Phân bổ Hệ đào tạo
+            </div>
+            <div style="position:relative; height:240px; display:flex; align-items:center; justify-content:center;">
+                <canvas id="systemDistributionChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2: Bar Chart Giờ giảng theo môn học -->
+        <div class="chart-box">
+            <div class="chart-title">
+                <i class="fas fa-chart-bar" style="color:#d97706"></i> Giờ giảng dạy theo Môn học
+            </div>
+            <div style="position:relative; height:240px;">
+                <canvas id="topProjectsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Subjects Card -->
+    <div class="card" style="margin-bottom:24px;">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-list-ul" style="color:var(--primary); margin-right:6px;"></i> Môn học gần đây</h3>
+            <a href="/" class="btn btn-secondary btn-sm" style="font-size:0.82rem; padding:6px 12px;"><i class="fas fa-arrow-right"></i> Xem tất cả</a>
+        </div>
+        <div class="table-responsive">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:var(--bg); text-align:left;">
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">STT</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Tên môn học</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Mã môn</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Lớp</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Hệ đào tạo</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem;">Số giờ</th>
+                        <th style="padding:10px 14px; border-bottom:1px solid var(--border); font-size:0.85rem; text-align:center;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-projects-tbody">
+                    <tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">Đang tải danh sách...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Shortcuts Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-bolt" style="color:#eab308; margin-right:6px;"></i> Lối tắt thao tác nhanh</h3>
+        </div>
+        <div class="quick-actions">
+            <a href="/" class="btn btn-primary"><i class="fas fa-layer-group"></i> Quản lý Môn học</a>
+            <a href="/profile" class="btn btn-secondary"><i class="fas fa-user-circle"></i> Hồ sơ Cá nhân</a>
+            <a href="/settings" class="btn btn-secondary"><i class="fas fa-brain"></i> Cấu hình AI Gemini</a>
+            <a href="/settings" class="btn btn-secondary"><i class="fas fa-signature"></i> Chữ ký điện tử</a>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/layout.js"></script>
+    <script>
+        injectLayout('dashboard', 'Bảng điều khiển');
+
+        let distChart = null;
+        let barChart = null;
+
+        checkAuth().then(user => {
+            if(user) {
+                loadDashboardData();
+            }
+        });
+
+        function escapeHtml(s){ 
+            return String(s || "").replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); 
+        }
+
+        async function loadDashboardData() {
+            try {
+                const res = await fetch(API_URL + "/dashboard/stats", {
+                    headers: getHeaders()
+                });
+                if(!res.ok) throw new Error("Không thể tải số liệu thống kê");
+                const data = await res.json();
+
+                // 1. Cập nhật thông tin Hero
+                const fullName = data.user.full_name || data.user.username;
+                document.getElementById("hero-welcome").innerText = "Xin chào, " + fullName + " 👋";
+                document.getElementById("hero-sub").innerText = "Khoa/Bộ môn: " + data.user.department + " • Hệ thống Giáo án điện tử";
+
+                // 2. Cập nhật Badge Trạng thái
+                const geminiBadge = document.getElementById("badge-gemini");
+                const geminiText = document.getElementById("badge-gemini-text");
+                if (data.user.hasGeminiKey) {
+                    geminiText.innerText = "API Key riêng: Đã kích hoạt";
+                    geminiBadge.style.background = "rgba(16, 185, 129, 0.25)";
+                    geminiBadge.style.borderColor = "rgba(16, 185, 129, 0.5)";
+                } else {
+                    geminiText.innerText = "AI Gemini: Dùng chung hệ thống";
+                }
+
+                const sigBadge = document.getElementById("badge-signature");
+                const sigText = document.getElementById("badge-sig-text");
+                if (data.user.hasSignature) {
+                    sigText.innerText = "Chữ ký số: Đã tải lên";
+                    sigBadge.style.background = "rgba(16, 185, 129, 0.25)";
+                    sigBadge.style.borderColor = "rgba(16, 185, 129, 0.5)";
+                } else {
+                    sigText.innerText = "Chữ ký số: Chưa cài đặt";
+                    sigBadge.style.background = "rgba(245, 158, 11, 0.25)";
+                    sigBadge.style.borderColor = "rgba(245, 158, 11, 0.5)";
+                }
+
+                // 3. Cập nhật KPI
+                document.getElementById("stat-projects").innerText = data.stats.totalProjects || 0;
+                document.getElementById("stat-hours").innerText = data.stats.totalHours || 0;
+                document.getElementById("stat-schedules").innerText = data.stats.totalSchedules || 0;
+                document.getElementById("stat-lessons").innerText = data.stats.totalLessons || 0;
+
+                // 4. Vẽ Biểu đồ 1: Doughnut Phân bổ Hệ
+                renderSystemDoughnutChart(data.charts.systemDistribution);
+
+                // 5. Vẽ Biểu đồ 2: Bar Chart Giờ theo môn
+                renderProjectsBarChart(data.charts.topProjectsByHours);
+
+                // 6. Cập nhật Bảng Môn học gần đây
+                renderRecentProjects(data.recentProjects);
+
+            } catch (err) {
+                console.error(err);
+                showAlert(err.message || "Lỗi tải số liệu Dashboard", "error");
+            }
+        }
+
+        function renderSystemDoughnutChart(dist) {
+            const ctx = document.getElementById("systemDistributionChart").getContext("2d");
+            if (distChart) distChart.destroy();
+
+            const hasData = (dist.counts[0] + dist.counts[1]) > 0;
+            const dataCounts = hasData ? dist.counts : [1];
+            const dataLabels = hasData ? ["Cao đẳng (" + dist.counts[0] + ")", "Trung cấp (" + dist.counts[1] + ")"] : ["Chưa có dữ liệu"];
+            const bgColors = hasData ? ["#16469d", "#f59e0b"] : ["#cbd5e1"];
+
+            distChart = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: dataLabels,
+                    datasets: [{
+                        data: dataCounts,
+                        backgroundColor: bgColors,
+                        borderWidth: 2,
+                        borderColor: "#ffffff"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                boxWidth: 12,
+                                font: { family: "Be Vietnam Pro", size: 12 }
+                            }
+                        }
+                    },
+                    cutout: "68%"
+                }
+            });
+        }
+
+        function renderProjectsBarChart(projects) {
+            const ctx = document.getElementById("topProjectsChart").getContext("2d");
+            if (barChart) barChart.destroy();
+
+            const labels = projects.length ? projects.map(p => p.name.length > 18 ? p.name.substring(0, 18) + "..." : p.name) : ["Chưa có môn"];
+            const hours = projects.length ? projects.map(p => p.total_hours) : [0];
+
+            barChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Số giờ giảng",
+                        data: hours,
+                        backgroundColor: "#3b82f6",
+                        borderRadius: 6,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => {
+                                    const idx = items[0].dataIndex;
+                                    return projects[idx] ? projects[idx].name : "";
+                                },
+                                label: (item) => "Tổng số giờ: " + item.raw + " tiết"
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { font: { family: "Be Vietnam Pro", size: 11 } },
+                            grid: { color: "#f1f5f9" }
+                        },
+                        x: {
+                            ticks: { font: { family: "Be Vietnam Pro", size: 11 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRecentProjects(projects) {
+            const tbody = document.getElementById("recent-projects-tbody");
+            if(!projects || !projects.length) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">Bạn chưa có môn học nào. Bấm vào Quản lý Môn học để thêm môn mới nhé!</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = projects.map((p, idx) => {
+                return '<tr style="border-bottom:1px solid var(--border);">' +
+                    '<td style="padding:10px 14px; font-weight:700; color:var(--primary); font-size:0.88rem;">' + (idx + 1) + '</td>' +
+                    '<td style="padding:10px 14px; font-weight:600; color:#1e293b; font-size:0.88rem;">' + escapeHtml(p.name) + '</td>' +
+                    '<td style="padding:10px 14px; color:#64748b; font-size:0.85rem;">' + escapeHtml(p.course_code || "---") + '</td>' +
+                    '<td style="padding:10px 14px; color:#64748b; font-size:0.85rem;">' + escapeHtml(p.class_name || "---") + '</td>' +
+                    '<td style="padding:10px 14px;">' +
+                        '<span style="font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:4px; background:' + (p.system_type === "Cao đẳng" ? "#e0e7ff; color:#3730a3;" : "#fef3c7; color:#92400e;") + '">' +
+                            escapeHtml(p.system_type || "Trung cấp") +
+                        '</span>' +
+                    '</td>' +
+                    '<td style="padding:10px 14px; font-weight:700; color:#334155; font-size:0.88rem;">' + (p.total_hours || 0) + ' giờ</td>' +
+                    '<td style="padding:10px 14px; text-align:center;">' +
+                        '<button class="btn btn-primary btn-sm" onclick="window.location.href=\'/app?id=' + p.id + '\'" style="font-size:0.8rem; padding:4px 10px;">' +
+                            '<i class="fas fa-file-signature"></i> Soạn Giáo Án' +
+                        '</button>' +
+                    '</td>' +
+                '</tr>';
+            }).join('');
+        }
+    </script>
+</body>
+</html>
