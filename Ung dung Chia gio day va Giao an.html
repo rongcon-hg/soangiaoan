@@ -2667,6 +2667,39 @@ function buildPaper(){
   $(&quot;#paper&quot;).setAttribute(&quot;contenteditable&quot;,&quot;false&quot;);
   checkTime();
 }
+window.handleTimeInput = function(inp) {
+  if (!inp) return;
+  const raw = inp.value.trim();
+  if (raw === "") {
+    checkTime();
+    return;
+  }
+  const val = Number(raw);
+  if (isNaN(val)) return;
+
+  if (val > 15) {
+    alert("Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút.");
+    inp.value = 15;
+  } else if (val < 1 && raw !== "") {
+    alert("Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút (không được nhập số 0 hoặc nhỏ hơn 1).");
+    inp.value = 1;
+  }
+  checkTime();
+};
+
+window.handleTimeChange = function(inp) {
+  if (!inp) return;
+  const raw = inp.value.trim();
+  const val = Number(raw);
+  if (raw === "" || isNaN(val) || val < 1) {
+    alert("Thời gian cho mỗi hoạt động phải từ 1 đến 15 phút. Hệ thống tự động đặt về 1 phút.");
+    inp.value = 1;
+  } else if (val > 15) {
+    alert("Thời gian cho mỗi hoạt động chỉ được phép từ 1 đến 15 phút. Hệ thống tự động đặt về 15 phút.");
+    inp.value = 15;
+  }
+  checkTime();
+};
 window.checkTime=function(){
   const target=Number($(&quot;#periods&quot;).value)*45;
   const stabilize=Number($(&quot;#stabilizeTime&quot;)?.textContent)||0;
@@ -3091,10 +3124,10 @@ function runTimeCheck(){
 }
 
 function addRow(){
-  const tbody=$(&quot;#paper table.ga tbody&quot;); if(!tbody){alert(&quot;Hãy tạo giáo án trước.&quot;);return}
+  const tbody=$("#paper table.ga tbody"); if(!tbody){alert("Hãy tạo giáo án trước.");return}
   const i=tbody.children.length+1;
-  const tr=document.createElement(&quot;tr&quot;);
-  tr.innerHTML=`&lt;td class=&quot;tt&quot;&gt;${i}&lt;/td&gt;&lt;td class=&quot;content editable&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;Nội dung bổ sung&lt;/b&gt;&lt;br&gt;Mô tả chi tiết...&lt;/td&gt;&lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;Hướng dẫn.&lt;/td&gt;&lt;td class=&quot;activity editable&quot; contenteditable=&quot;true&quot;&gt;Thực hiện.&lt;/td&gt;&lt;td class=&quot;time&quot;&gt;&lt;input class=&quot;time-input&quot; type=&quot;number&quot; min=&quot;0&quot; value=&quot;5&quot; oninput=&quot;checkTime()&quot;&gt;&lt;/td&gt;`;
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td class="tt">${i}</td><td class="content editable" contenteditable="true"><b>Nội dung bổ sung</b><br>Mô tả chi tiết...</td><td class="activity editable" contenteditable="true">Hướng dẫn.</td><td class="activity editable" contenteditable="true">Thực hiện.</td><td class="time"><input class="time-input" type="number" min="1" max="15" value="5" oninput="handleTimeInput(this)" onchange="handleTimeChange(this)"></td>`;
   tbody.appendChild(tr);checkTime()
 }
 
