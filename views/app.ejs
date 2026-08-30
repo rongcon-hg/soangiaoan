@@ -832,10 +832,10 @@ function parseCourseInfo(text){
 }
 
 function parseDetailItems(text){
- let detail=String(text||"");
+ let detail=String(text||&quot;&quot;);
 
  const parts=detail.split(/2\.\s*Nội dung chi tiết\s*:/i);
- if(parts.length>1) detail=parts.slice(1).join(" ");
+ if(parts.length&gt;1) detail=parts.slice(1).join(&quot; &quot;);
 
  detail=detail.split(/\n\s*IV\.\s*/i)[0];
 
@@ -855,8 +855,8 @@ function parseDetailItems(text){
    const lm=line.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.*)$/i);
    if(lm){
      currentNo=romanToInt(lm[1]);
-     const titleRaw=line.replace(/\s*Thời gian\s*[:\-].*$/i,"").trim();
-     if(!map[currentNo]) map[currentNo]={title:titleRaw,items:[],objectives:[],objectivesText:""};
+     const titleRaw=line.replace(/\s*Thời gian\s*[:\-].*$/i,&quot;&quot;).trim();
+     if(!map[currentNo]) map[currentNo]={title:titleRaw,items:[],objectives:[],objectivesText:&quot;&quot;};
      else if(!map[currentNo].title) map[currentNo].title=titleRaw;
      if(!map[currentNo].objectives) map[currentNo].objectives=[];
      inContent=false;
@@ -897,20 +897,20 @@ function parseDetailItems(text){
      const it=numbered(line);
      if(!it) continue;
 
-     const body=it.raw.replace(/^(\d+(?:\.\d+)*)\.?\s+/,"");
+     const body=it.raw.replace(/^(\d+(?:\.\d+)*)\.?\s+/,&quot;&quot;);
      if(/^(Mục tiêu|Nội dung)/i.test(body.trim())) continue;
 
      const depth=(it.num.match(/\./g)||[]).length;
      const key=exactKey(it.raw);
-     if(!map[currentNo].items.some(x=>exactKey(x[1])===key)){
-       map[currentNo].items.push([depth>=1?"sub":"major", it.raw]);
+     if(!map[currentNo].items.some(x=&gt;exactKey(x[1])===key)){
+       map[currentNo].items.push([depth&gt;=1?&quot;sub&quot;:&quot;major&quot;, it.raw]);
      }
    }
  }
 
  for(const k of Object.keys(map)){
-   if(map[k].objectives && map[k].objectives.length){
-     map[k].objectivesText = map[k].objectives.join("\n");
+   if(map[k].objectives &amp;&amp; map[k].objectives.length){
+     map[k].objectivesText = map[k].objectives.join(&quot;\n&quot;);
    }
  }
 
@@ -3223,27 +3223,27 @@ function activityRows(type,items,total){
 }
 function formatObjectiveBlock(objText, lessonLabel) {
   if (!objText || !objText.trim()) return '';
-  const lines = objText.split('\n').map(l => l.trim()).filter(Boolean);
+  const lines = objText.split('\n').map(l =&gt; l.trim()).filter(Boolean);
   if (!lines.length) return '';
 
   let htmlLines = [];
-  lines.forEach(line => {
+  lines.forEach(line =&gt; {
     if (line.startsWith('+') || line.startsWith('•') || line.startsWith('*')) {
-      htmlLines.push('&nbsp;&nbsp;&nbsp;&nbsp;' + escapeHtml(line));
+      htmlLines.push('&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;' + escapeHtml(line));
     } else if (line.startsWith('-')) {
-      htmlLines.push('&nbsp;&nbsp;' + escapeHtml(line));
+      htmlLines.push('&amp;nbsp;&amp;nbsp;' + escapeHtml(line));
     } else {
       htmlLines.push(escapeHtml(line));
     }
   });
 
-  return htmlLines.join('<br>');
+  return htmlLines.join('&lt;br&gt;');
 }
 
 function objectives(type){
   const p=currentProgram(),l=currentLesson(),sec=currentSection();
   const schedulePayload = window._currentSchedulePayload || {};
-  const fullProg = (typeof receivedFullProgram !== 'undefined' && Array.isArray(receivedFullProgram)) 
+  const fullProg = (typeof receivedFullProgram !== 'undefined' &amp;&amp; Array.isArray(receivedFullProgram)) 
     ? receivedFullProgram 
     : (Array.isArray(schedulePayload.fullProgram) ? schedulePayload.fullProgram : (p?.fullProgram || []));
 
@@ -3251,9 +3251,9 @@ function objectives(type){
   let targetLessonNames = [];
   const groups = Array.isArray(p?.scheduleGroups) ? p.scheduleGroups : (Array.isArray(schedulePayload.lessonGroups) ? schedulePayload.lessonGroups : []);
   if (groups.length) {
-    targetLessonNames = groups.map(g => String(g.lesson || '').trim()).filter(Boolean);
-  } else if (Array.isArray(schedulePayload.lessons) && schedulePayload.lessons.length) {
-    targetLessonNames = schedulePayload.lessons.map(x => String(x || '').trim()).filter(Boolean);
+    targetLessonNames = groups.map(g =&gt; String(g.lesson || '').trim()).filter(Boolean);
+  } else if (Array.isArray(schedulePayload.lessons) &amp;&amp; schedulePayload.lessons.length) {
+    targetLessonNames = schedulePayload.lessons.map(x =&gt; String(x || '').trim()).filter(Boolean);
   } else if (l?.title) {
     targetLessonNames = [String(l.title).trim()];
   }
@@ -3269,19 +3269,19 @@ function objectives(type){
 
     let found = null;
     if (lessonNum !== null) {
-      found = fullProg.find(x => x.kind === 'lesson' && x.no === lessonNum);
+      found = fullProg.find(x =&gt; x.kind === 'lesson' &amp;&amp; x.no === lessonNum);
     }
     if (!found) {
       const cleanName = lessonName.toLowerCase().replace(/\s+/g, ' ');
-      found = fullProg.find(x => x.kind === 'lesson' && cleanName.includes(String(x.title || '').toLowerCase()));
+      found = fullProg.find(x =&gt; x.kind === 'lesson' &amp;&amp; cleanName.includes(String(x.title || '').toLowerCase()));
     }
     return found ? (found.objectivesText || (Array.isArray(found.objectives) ? found.objectives.join('\n') : '')) : null;
   }
 
   const collected = [];
-  targetLessonNames.forEach(name => {
+  targetLessonNames.forEach(name =&gt; {
     const obj = findObjectiveForLesson(name);
-    if (obj && obj.trim()) {
+    if (obj &amp;&amp; obj.trim()) {
       collected.push({ lessonName: name, objText: obj.trim() });
     }
   });
@@ -3289,19 +3289,19 @@ function objectives(type){
   if (collected.length === 1) {
     // 1 bài đơn lẻ: lấy trực tiếp mục tiêu của bài đó
     return formatObjectiveBlock(collected[0].objText, collected[0].lessonName);
-  } else if (collected.length > 1) {
+  } else if (collected.length &gt; 1) {
     // Ghép 2 hoặc nhiều bài trong cùng 1 giáo án: ghép các mục tiêu lại theo từng bài
-    return collected.map(item => {
+    return collected.map(item =&gt; {
       const shortName = item.lessonName.replace(/\s*Thời gian.*$/i, '').trim();
-      return `<b>* Mục tiêu của ${escapeHtml(shortName)}:</b><br>${formatObjectiveBlock(item.objText, item.lessonName)}`;
-    }).join('<br><br>');
+      return `&lt;b&gt;* Mục tiêu của ${escapeHtml(shortName)}:&lt;/b&gt;&lt;br&gt;${formatObjectiveBlock(item.objText, item.lessonName)}`;
+    }).join('&lt;br&gt;&lt;br&gt;');
   }
 
   // Fallback mặc định nếu chương trình không có mục tiêu
-  const base=`Sau khi học xong nội dung ${sec?.title||""}, người học có khả năng:`;
-  if(type==="theory")return `${base}<br>- Trình bày và giải thích được các kiến thức cốt lõi của nội dung học.<br>- Phân tích được ví dụ/tình huống liên quan và vận dụng kiến thức vào nhiệm vụ đơn giản.<br>- Chủ động học tập, trao đổi và tự đánh giá mức độ hiểu bài.`;
-  if(type==="practice")return `${base}<br>- Thực hiện đúng quy trình và thao tác kỹ thuật theo yêu cầu.<br>- Tạo được sản phẩm/kết quả đạt tiêu chí cơ bản; phát hiện và sửa được lỗi thường gặp.<br>- Rèn luyện tác phong cẩn thận, chủ động và chịu trách nhiệm với kết quả thực hành.`;
-  return `${base}<br>- Trình bày được kiến thức, nguyên tắc hoặc quy trình trực tiếp liên quan đến nhiệm vụ.<br>- Thực hiện được các thao tác và hoàn thiện sản phẩm theo yêu cầu.<br>- Tự kiểm tra, điều chỉnh và chịu trách nhiệm với kết quả học tập.`;
+  const base=`Sau khi học xong nội dung ${sec?.title||&quot;&quot;}, người học có khả năng:`;
+  if(type===&quot;theory&quot;)return `${base}&lt;br&gt;- Trình bày và giải thích được các kiến thức cốt lõi của nội dung học.&lt;br&gt;- Phân tích được ví dụ/tình huống liên quan và vận dụng kiến thức vào nhiệm vụ đơn giản.&lt;br&gt;- Chủ động học tập, trao đổi và tự đánh giá mức độ hiểu bài.`;
+  if(type===&quot;practice&quot;)return `${base}&lt;br&gt;- Thực hiện đúng quy trình và thao tác kỹ thuật theo yêu cầu.&lt;br&gt;- Tạo được sản phẩm/kết quả đạt tiêu chí cơ bản; phát hiện và sửa được lỗi thường gặp.&lt;br&gt;- Rèn luyện tác phong cẩn thận, chủ động và chịu trách nhiệm với kết quả thực hành.`;
+  return `${base}&lt;br&gt;- Trình bày được kiến thức, nguyên tắc hoặc quy trình trực tiếp liên quan đến nhiệm vụ.&lt;br&gt;- Thực hiện được các thao tác và hoàn thiện sản phẩm theo yêu cầu.&lt;br&gt;- Tự kiểm tra, điều chỉnh và chịu trách nhiệm với kết quả học tập.`;
 }
 function toDirectImageUrl(url) {
   if (!url || typeof url !== &quot;string&quot;) return &quot;&quot;;
