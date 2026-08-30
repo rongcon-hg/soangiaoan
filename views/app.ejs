@@ -4139,6 +4139,77 @@ function getCleanPaperClone(){
   return clone;
 }
 
+function getExportGiaoAnFilename(ext){
+  ext = ext || "doc";
+  // 1. Số giáo án (GA02)
+  let so = window.currentScheduleTT || ($("#gaNumber") ? $("#gaNumber").value : "");
+  if (!so) {
+    const paperText = document.getElementById("paper") ? document.getElementById("paper").innerText : "";
+    const m = paperText.match(/GIÁO ÁN SỐ:\s*(\d+)/i);
+    if (m) so = m[1];
+  }
+  const soNum = String(so || "1").replace(/\D/g, "") || "1";
+  const gaPrefix = "GA" + String(soNum).padStart(2, "0");
+
+  // 2. Tên môn (An-toan-lao-dong)
+  let mon = (currentProgram && currentProgram()) ? currentProgram().name : (window._currentSchedulePayload ? window._currentSchedulePayload.courseName : "");
+  if (!mon) {
+    const sel = document.getElementById("subject");
+    if (sel && sel.selectedIndex >= 0) mon = sel.options[sel.selectedIndex].text;
+  }
+  mon = String(mon || "").split("–")[0].split("-")[0].trim();
+  let monSlug = "Mon-hoc";
+  if (mon) {
+    let norm = mon.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    norm = norm.replace(/đ/g, "d").replace(/Đ/g, "D");
+    const words = norm.split(/[^a-zA-Z0-9]+/).filter(Boolean);
+    if (words.length) {
+      words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+      monSlug = words.join("-");
+    }
+  }
+
+  // 3. Tên lớp (TC26-CNKTCK)
+  let lop = ($("#gaNumber") && $("#gaNumber").dataset) ? $("#gaNumber").dataset.className : (window._currentSchedulePayload ? window._currentSchedulePayload.className : "");
+  if (!lop) {
+    const paperText = document.getElementById("paper") ? document.getElementById("paper").innerText : "";
+    const mLop = paperText.match(/Lớp:\s*([^\n\r]+)/i);
+    if (mLop) lop = mLop[1].trim();
+  }
+  lop = String(lop || "").trim().replace(/\s+/g, "-").replace(/[^a-zA-Z0-9_-]/g, "");
+
+  // 4. Ngày lịch dạy (04092026)
+  let dateVal = ($("#gaNumber") && $("#gaNumber").dataset) ? $("#gaNumber").dataset.date : (window._currentSchedulePayload ? window._currentSchedulePayload.date : "");
+  if (!dateVal) {
+    const paperText = document.getElementById("paper") ? document.getElementById("paper").innerText : "";
+    const mDate = paperText.match(/Thực hiện ngày\s*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/i);
+    if (mDate) dateVal = mDate[1].padStart(2, "0") + "/" + mDate[2].padStart(2, "0") + "/" + mDate[3];
+  }
+  let dateClean = "";
+  if (dateVal && dateVal.includes("/")) {
+    const parts = dateVal.split("/");
+    if (parts.length === 3) {
+      dateClean = parts[0].padStart(2, "0") + parts[1].padStart(2, "0") + parts[2];
+    }
+  } else if (dateVal && dateVal.includes("-")) {
+    const parts = dateVal.split("-");
+    if (parts.length === 3) {
+      if (parts[0].length === 4) dateClean = parts[2].padStart(2, "0") + parts[1].padStart(2, "0") + parts[0];
+      else dateClean = parts[0].padStart(2, "0") + parts[1].padStart(2, "0") + parts[2];
+    }
+  }
+  if (!dateClean) {
+    const now = new Date();
+    dateClean = String(now.getDate()).padStart(2, "0") + String(now.getMonth() + 1).padStart(2, "0") + now.getFullYear();
+  }
+
+  const parts = [gaPrefix, monSlug];
+  if (lop && lop !== "---") parts.push(lop);
+  parts.push(dateClean);
+
+  return parts.join("_") + "." + ext;
+}
+
 function exportWord(){
   const clone=getCleanPaperClone();
   if(!clone){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
@@ -4647,6 +4718,7 @@ async function receiveScheduleSession(data){
   }
 
   window.currentScheduleTT = pld.scheduleTT;
+  window._currentSchedulePayload = pld;
   if(pld.userSignature !== undefined) window.USER_SIGNATURE = pld.userSignature;
   if(pld.userName !== undefined) window.USER_NAME = pld.userName;
   $(&quot;#btnSaveLesson&quot;).style.display = &quot;inline-block&quot;;
