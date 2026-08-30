@@ -273,7 +273,7 @@ window.customConfirm = async function(msg) {
 
                 <div class="form-group" style="max-width: 800px;">
                     <label style="font-weight: 600;">Google Client ID</label>
-                    <input type="text" id="cfg-google-client-id" class="form-control" placeholder="788727332950-ghddu60j1kqja9v2k1bp215c5bf97to7.apps.googleusercontent.com">
+                    <input type="text" id="cfg-google-client-id" class="form-control" placeholder="Nhập Google Client ID...">
                 </div>
 
                 <div class="form-group" style="max-width: 800px;">
@@ -346,11 +346,19 @@ window.customConfirm = async function(msg) {
         checkAuth().then(user => {
             if(user) {
                 if(user.role === 'Admin') {
-                    document.getElementById('tab-smtp').style.display = 'block';
-                    document.getElementById('tab-gdrive').style.display = 'block';
+                    const tabSmtp = document.getElementById('tab-smtp');
+                    if (tabSmtp) tabSmtp.style.display = 'inline-flex';
+                    const tabGoogle = document.getElementById('tab-google');
+                    if (tabGoogle) tabGoogle.style.display = 'inline-flex';
+                    const tabGdrive = document.getElementById('tab-gdrive');
+                    if (tabGdrive) tabGdrive.style.display = 'inline-flex';
                 } else {
-                    document.getElementById('panel-smtp').remove();
-                    document.getElementById('panel-gdrive').remove();
+                    document.getElementById('tab-smtp')?.remove();
+                    document.getElementById('tab-google')?.remove();
+                    document.getElementById('tab-gdrive')?.remove();
+                    document.getElementById('panel-smtp')?.remove();
+                    document.getElementById('panel-google')?.remove();
+                    document.getElementById('panel-gdrive')?.remove();
                 }
                 // Đổ dữ liệu
                 document.getElementById('cfg-gemini-key').value = user.gemini_api_key || '';
@@ -361,7 +369,28 @@ window.customConfirm = async function(msg) {
                 renderCurrentSignature();
 
                 if (user.settings) {
-                    userSettings = user.settings;
+                    userSettings = typeof user.settings === 'string' ? JSON.parse(user.settings) : user.settings;
+                } else {
+                    userSettings = {};
+                }
+
+                // Google OAuth
+                const googleEnabled = document.getElementById('cfg-google-enabled');
+                if (googleEnabled) {
+                    googleEnabled.checked = userSettings.google_login_enabled !== undefined ? (userSettings.google_login_enabled === true || userSettings.google_login_enabled === 'true') : true;
+                }
+                const googleClientId = document.getElementById('cfg-google-client-id');
+                if (googleClientId) {
+                    googleClientId.value = userSettings.google_client_id || "";
+                }
+                const googleClientSecret = document.getElementById('cfg-google-client-secret');
+                if (googleClientSecret) {
+                    googleClientSecret.value = userSettings.google_client_secret || "";
+                }
+                const callbackDisplay = document.getElementById('google-callback-url-display');
+                if (callbackDisplay) {
+                    callbackDisplay.textContent = window.location.origin + '/api/auth/google/callback';
+                }
                     
                     // SMTP
                     const smtpHost = document.getElementById('cfg-smtp-host');
@@ -383,8 +412,7 @@ window.customConfirm = async function(msg) {
                     const driveFolder = document.getElementById('cfg-drive-folder');
                     if (driveFolder) driveFolder.value = userSettings.drive_folder || '';
                 }
-            }
-        });
+            });
 
         function handleSignatureSelect(event) {
             const file = event.target.files[0];

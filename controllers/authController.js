@@ -338,13 +338,17 @@ async function getGoogleOAuthConfig() {
             settings = typeof adminRes.rows[0].settings === 'string' ? JSON.parse(adminRes.rows[0].settings) : adminRes.rows[0].settings;
         }
         return {
-            enabled: settings.google_login_enabled === true || settings.google_login_enabled === 'true' || settings.google_login_enabled === '1',
+            enabled: settings.google_login_enabled !== undefined ? (settings.google_login_enabled === true || settings.google_login_enabled === 'true' || settings.google_login_enabled === '1') : false,
             clientId: settings.google_client_id || process.env.GOOGLE_CLIENT_ID || '',
             clientSecret: settings.google_client_secret || process.env.GOOGLE_CLIENT_SECRET || ''
         };
     } catch(e) {
         console.error('Error fetching Google config:', e);
-        return { enabled: false, clientId: '', clientSecret: '' };
+        return {
+            enabled: false,
+            clientId: process.env.GOOGLE_CLIENT_ID || '',
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET || ''
+        };
     }
 }
 
