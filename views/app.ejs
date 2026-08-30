@@ -681,7 +681,22 @@ window.addEventListener(&quot;message&quot;, e => {
             if (payload.class_name) course.className = payload.class_name;
         }
         if (payload.syllabus) lessons = payload.syllabus;
-        if (payload.programSequence) programSequence = payload.programSequence;
+        if (payload.programSequence && payload.programSequence.length > 0) {
+            programSequence = payload.programSequence;
+        } else if (payload.syllabus && payload.syllabus.length > 0) {
+            programSequence = payload.syllabus.map((l, i) => ({
+                kind: "lesson",
+                no: l.no || (i + 1),
+                title: l.title || "",
+                ltHours: l.ltHours || 0,
+                thHours: l.thHours || 0,
+                ltPeriods: l.ltPeriods || 0,
+                thPeriods: l.thPeriods || 0,
+                items: l.items || [],
+                objectives: l.objectives || [],
+                objectivesText: l.objectivesText || ""
+            }));
+        }
         if (payload.rawCurriculumText || (payload.courseInfo && payload.courseInfo.rawCurriculumText)) {
             const rawCurText = payload.rawCurriculumText || payload.courseInfo.rawCurriculumText;
             const reDetailMap = parseDetailItems(rawCurText);
