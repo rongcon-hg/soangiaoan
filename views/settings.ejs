@@ -71,6 +71,7 @@ window.customConfirm = async function(msg) {
     <div class="card">
         <div class="settings-tabs">
             <div class="s-tab active" onclick="switchSettingsTab('gemini', this)"><i class="fas fa-brain"></i> AI (Gemini)</div>
+            <div class="s-tab" onclick="switchSettingsTab('signature', this)"><i class="fas fa-signature"></i> Chữ ký điện tử</div>
             <div class="s-tab" id="tab-smtp" style="display:none" onclick="switchSettingsTab('smtp', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
             <div class="s-tab" id="tab-gdrive" style="display:none" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
         </div>
@@ -84,6 +85,59 @@ window.customConfirm = async function(msg) {
                 <div class="form-group" style="max-width:600px">
                     <label>Gemini API Key</label>
                     <input type="text" id="cfg-gemini-key" class="form-control" placeholder="AIzaSy...">
+                </div>
+            </div>
+
+            <!-- PANEL: SIGNATURE -->
+            <div id="panel-signature" class="s-panel">
+                <h3 style="margin-bottom: 12px; color: var(--primary);">Cấu hình chữ ký cá nhân</h3>
+                <p class="panel-desc">Chữ ký điện tử sẽ được tự động chèn vào phần ký tên giảng viên ở cuối mỗi giáo án cùng với Họ và tên của bạn.</p>
+
+                <div class="grid grid-cols-2" style="gap: 24px; align-items: start;">
+                    <!-- Cột 1: Chữ ký hiện tại -->
+                    <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 18px;">
+                        <h4 style="margin: 0 0 14px; font-size: 15px; color: #1e293b; font-weight: 700;">Chữ ký hiện tại của bạn</h4>
+                        <div id="sig-current-container" style="min-height: 140px; border: 2px dashed #cbd5e1; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 12px; margin-bottom: 10px; text-align: center;">
+                            <img id="sig-current-img" src="" style="max-height: 110px; max-width: 100%; object-fit: contain; display: none;" alt="Chữ ký cá nhân">
+                            <span id="sig-current-empty" style="color: #94a3b8; font-size: 14px;">Chưa có chữ ký cá nhân nào được tải lên.</span>
+                        </div>
+                        <div id="sig-filename-display" style="font-size: 12px; color: #64748b; word-break: break-all; margin-bottom: 10px; min-height: 18px;"></div>
+                        <button type="button" id="btn-delete-sig" onclick="deleteSignature()" class="btn btn-secondary" style="font-size: 13px; padding: 6px 12px; display: none; background: #ef4444; color: #fff;">
+                            <i class="fas fa-trash-alt"></i> Gỡ bỏ chữ ký
+                        </button>
+                    </div>
+
+                    <!-- Cột 2: Cập nhật chữ ký mới -->
+                    <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 18px;">
+                        <h4 style="margin: 0 0 14px; font-size: 15px; color: #1e293b; font-weight: 700;">Cập nhật chữ ký mới</h4>
+                        
+                        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; font-size: 13px; color: #1e40af; line-height: 1.6;">
+                            <b style="color: #1e3a8a; display: block; margin-bottom: 4px;">Khuyến nghị:</b>
+                            <ul style="margin: 0; padding-left: 18px;">
+                                <li>Sử dụng ảnh định dạng <b>PNG có nền trong suốt</b>.</li>
+                                <li>Tỷ lệ ảnh phù hợp (khoảng 3:1 hoặc 2:1), không chứa quá nhiều khoảng trống thừa xung quanh chữ ký.</li>
+                                <li>Dung lượng ảnh không vượt quá 5MB.</li>
+                            </ul>
+                        </div>
+
+                        <input type="file" id="sig-file-input" accept="image/png,image/jpeg,image/webp" style="display: none;" onchange="handleSignatureSelect(event)">
+                        
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('sig-file-input').click()" style="padding: 8px 14px; font-size: 13px; background: #fff; color: #334155; border: 1px solid #cbd5e1;">
+                                <i class="fas fa-upload"></i> Chọn file ảnh chữ ký
+                            </button>
+                            <span id="sig-selected-filename" style="font-size: 13px; color: #64748b;">Chưa chọn file mới</span>
+                        </div>
+
+                        <div id="sig-new-preview-box" style="display: none; margin-bottom: 14px; border: 1px solid #93c5fd; border-radius: 6px; padding: 8px; background: #fff; text-align: center;">
+                            <div style="font-size: 12px; color: #2563eb; margin-bottom: 4px; font-weight: 600;">Xem trước chữ ký mới:</div>
+                            <img id="sig-new-preview-img" style="max-height: 90px; max-width: 100%; object-fit: contain;">
+                        </div>
+
+                        <button type="button" id="btn-save-sig" onclick="saveSignatureOnly()" class="btn btn-primary" style="font-size: 13px; padding: 8px 16px;" disabled>
+                            <i class="fas fa-save"></i> Lưu chữ ký
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -148,9 +202,13 @@ window.customConfirm = async function(msg) {
     <script src="/js/layout.js"></script>
     <script>
         let userSettings = {};
+        let currentSignatureData = '';
+        let currentSignatureFilename = '';
+        let newSignatureBase64 = '';
+        let newSignatureFilename = '';
 
         injectLayout('settings', 'Cấu hình Hệ thống');
-                checkAuth().then(user => {
+        checkAuth().then(user => {
             if(user) {
                 if(user.role === 'Admin') {
                     document.getElementById('tab-smtp').style.display = 'block';
@@ -162,23 +220,148 @@ window.customConfirm = async function(msg) {
                 // Đổ dữ liệu
                 document.getElementById('cfg-gemini-key').value = user.gemini_api_key || '';
                 
+                // Signature
+                currentSignatureData = user.signature || '';
+                currentSignatureFilename = user.signature_filename || '';
+                renderCurrentSignature();
+
                 if (user.settings) {
                     userSettings = user.settings;
                     
                     // SMTP
-                    document.getElementById('cfg-smtp-host').value = userSettings.smtp_host || 'smtp.gmail.com';
-                    document.getElementById('cfg-smtp-port').value = userSettings.smtp_port || '465';
-                    document.getElementById('cfg-smtp-name').value = userSettings.smtp_name || '';
-                    document.getElementById('cfg-smtp-user').value = userSettings.smtp_user || '';
-                    document.getElementById('cfg-smtp-pass').value = userSettings.smtp_pass || '';
+                    const smtpHost = document.getElementById('cfg-smtp-host');
+                    if (smtpHost) smtpHost.value = userSettings.smtp_host || 'smtp.gmail.com';
+                    const smtpPort = document.getElementById('cfg-smtp-port');
+                    if (smtpPort) smtpPort.value = userSettings.smtp_port || '465';
+                    const smtpName = document.getElementById('cfg-smtp-name');
+                    if (smtpName) smtpName.value = userSettings.smtp_name || '';
+                    const smtpUser = document.getElementById('cfg-smtp-user');
+                    if (smtpUser) smtpUser.value = userSettings.smtp_user || '';
+                    const smtpPass = document.getElementById('cfg-smtp-pass');
+                    if (smtpPass) smtpPass.value = userSettings.smtp_pass || '';
                     
                     // Drive
-                    document.getElementById('cfg-drive-email').value = userSettings.drive_email || '';
-                    document.getElementById('cfg-drive-key').value = userSettings.drive_key || '';
-                    document.getElementById('cfg-drive-folder').value = userSettings.drive_folder || '';
+                    const driveEmail = document.getElementById('cfg-drive-email');
+                    if (driveEmail) driveEmail.value = userSettings.drive_email || '';
+                    const driveKey = document.getElementById('cfg-drive-key');
+                    if (driveKey) driveKey.value = userSettings.drive_key || '';
+                    const driveFolder = document.getElementById('cfg-drive-folder');
+                    if (driveFolder) driveFolder.value = userSettings.drive_folder || '';
                 }
             }
         });
+
+        function handleSignatureSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Dung lượng ảnh vượt quá 5MB. Vui lòng chọn ảnh nhỏ hơn.');
+                event.target.value = '';
+                return;
+            }
+
+            newSignatureFilename = file.name;
+            document.getElementById('sig-selected-filename').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                newSignatureBase64 = e.target.result;
+                document.getElementById('sig-new-preview-img').src = newSignatureBase64;
+                document.getElementById('sig-new-preview-box').style.display = 'block';
+                document.getElementById('btn-save-sig').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function saveSignatureOnly() {
+            if (!newSignatureBase64) return;
+            const btn = document.getElementById('btn-save-sig');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+
+            try {
+                const res = await fetch(API_URL + '/auth/signature', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        signature: newSignatureBase64,
+                        signature_filename: newSignatureFilename
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Đã lưu chữ ký cá nhân thành công!');
+                    currentSignatureData = data.signature_url;
+                    currentSignatureFilename = data.signature_filename || newSignatureFilename;
+                    renderCurrentSignature();
+                    // Reset new upload
+                    newSignatureBase64 = '';
+                    newSignatureFilename = '';
+                    document.getElementById('sig-file-input').value = '';
+                    document.getElementById('sig-selected-filename').textContent = 'Chưa chọn file mới';
+                    document.getElementById('sig-new-preview-box').style.display = 'none';
+                } else {
+                    alert('Lỗi: ' + (data.message || 'Không thể lưu chữ ký'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Lưu chữ ký';
+            }
+        }
+
+        async function deleteSignature() {
+            const confirmed = await customConfirm('Bạn có chắc chắn muốn gỡ bỏ chữ ký cá nhân hiện tại không?');
+            if (!confirmed) return;
+
+            try {
+                const res = await fetch(API_URL + '/auth/signature', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({
+                        signature: null,
+                        signature_filename: null
+                    })
+                });
+
+                if (res.ok) {
+                    alert('Đã gỡ bỏ chữ ký thành công.');
+                    currentSignatureData = '';
+                    currentSignatureFilename = '';
+                    renderCurrentSignature();
+                } else {
+                    alert('Lỗi khi gỡ bỏ chữ ký.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi kết nối: ' + err.message);
+            }
+        }
+
+        function renderCurrentSignature() {
+            const img = document.getElementById('sig-current-img');
+            const empty = document.getElementById('sig-current-empty');
+            const fnDisplay = document.getElementById('sig-filename-display');
+            const btnDel = document.getElementById('btn-delete-sig');
+
+            if (currentSignatureData) {
+                img.src = currentSignatureData;
+                img.style.display = 'block';
+                empty.style.display = 'none';
+                fnDisplay.textContent = 'Tên file: ' + (currentSignatureFilename || 'signature.png');
+                btnDel.style.display = 'inline-block';
+            } else {
+                img.src = '';
+                img.style.display = 'none';
+                empty.style.display = 'inline-block';
+                fnDisplay.textContent = '';
+                btnDel.style.display = 'none';
+            }
+        }
 
         function switchSettingsTab(panelId, el) {
             document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));

@@ -140,7 +140,7 @@ exports.updateApiKey = async (req, res) => {
 
 exports.me = async (req, res) => {
     try {
-        const query = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, settings FROM users WHERE id = $1`;
+        const query = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, signature, signature_filename, settings FROM users WHERE id = $1`;
         const result = await pool.query(query, [req.user.id]);
         const user = result.rows[0];
 
@@ -194,6 +194,47 @@ exports.updateProfile = async (req, res) => {
         const query = `UPDATE users SET full_name = $1, department = $2, phone = $3, email = $4, avatar = $5 WHERE id = $6`;
         await pool.query(query, [full_name, department, phone, email, avatar, req.user.id]);
         res.json({ message: 'Profile updated successfully', avatar_url: avatar });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.updateSignature = async (req, res) => {
+    let { signature, signature_filename } = req.body;
+    try {
+        if (signature && signature.startsWith('data:image')) {
+            const adminQuery = `SELECT settings FROM users WHERE role = 'Admin' LIMIT 1`;
+            const adminRes = await pool.query(adminQuery);
+            let adminSettings = {};
+            if (adminRes.rows.length > 0 && adminRes.rows[0].settings) {
+                adminSettings = typeof adminRes.rows[0].settings === 'string' ? JSON.parse(adminRes.rows[0].settings) : adminRes.rows[0].settings;
+            }
+            
+            const driveEmail = adminSettings.drive_email;
+            const driveKey = adminSettings.drive_key;
+            const driveFolder = adminSettings.drive_folder;
+
+            if (driveEmail && driveKey && driveFolder) {
+                const driveUtil = require('../utils/drive');
+                const matches = signature.match(/^data:(.+);base64,(.+)$/);
+                if (matches && matches.length === 3) {
+                    const mimeType = matches[1];
+                    const base64Data = matches[2];
+                    const buffer = Buffer.from(base64Data, 'base64');
+                    const ext = mimeType.split('/')[1] || 'png';
+                    const safeName = (req.user.username || 'user').replace(/[^a-zA-Z0-9_-]/g, '_');
+                    const fileName = `signature_${req.user.id}_${safeName}_${Date.now()}.${ext}`;
+                    
+                    const driveUrl = await driveUtil.uploadToDrive(driveEmail, driveKey, driveFolder, buffer, fileName, mimeType, req.user.username);
+                    signature = driveUrl;
+                    if (!signature_filename) signature_filename = fileName;
+                }
+            }
+        }
+
+        const query = `UPDATE users SET signature = $1, signature_filename = $2 WHERE id = $3`;
+        await pool.query(query, [signature || null, signature_filename || null, req.user.id]);
+        res.json({ message: 'Signature updated successfully', signature_url: signature, signature_filename });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

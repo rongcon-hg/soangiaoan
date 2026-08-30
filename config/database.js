@@ -37,11 +37,16 @@ const initDb = async () => {
             )
         `);
 
-        // Đảm bảo cột role tồn tại (cho các database đã tạo)
+        // Đảm bảo các cột bổ sung tồn tại (cho các database đã tạo)
         try {
-            await client.query(`ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'User'`);
+            await client.query(`
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'User',
+                ADD COLUMN IF NOT EXISTS signature TEXT,
+                ADD COLUMN IF NOT EXISTS signature_filename TEXT;
+            `);
         } catch (e) {
-            // Cột đã tồn tại, bỏ qua lỗi
+            // Bỏ qua lỗi
         }
 
         // Tạo tài khoản superadmin mặc định

@@ -10,6 +10,7 @@ router.post('/forgot-password', authController.forgotPassword);
 router.get('/me', authenticateToken, authController.me);
 router.post('/apikey', authenticateToken, authController.updateApiKey);
 router.put('/profile', authenticateToken, authController.updateProfile);
+router.post('/signature', authenticateToken, authController.updateSignature);
 router.put('/settings', authenticateToken, authController.updateSettings);
 router.post('/test-drive', authenticateToken, authController.testDriveConnection);
 

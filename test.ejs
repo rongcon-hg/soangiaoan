@@ -2635,6 +2635,8 @@ function objectives(type){
   if(type===&quot;practice&quot;)return `${base}&lt;br&gt;- Thực hiện đúng quy trình và thao tác kỹ thuật theo yêu cầu.&lt;br&gt;- Tạo được sản phẩm/kết quả đạt tiêu chí cơ bản; phát hiện và sửa được lỗi thường gặp.&lt;br&gt;- Rèn luyện tác phong cẩn thận, chủ động và chịu trách nhiệm với kết quả thực hành.`;
   return `${base}&lt;br&gt;- Trình bày được kiến thức, nguyên tắc hoặc quy trình trực tiếp liên quan đến nhiệm vụ.&lt;br&gt;- Thực hiện được các thao tác và hoàn thiện sản phẩm theo yêu cầu.&lt;br&gt;- Tự kiểm tra, điều chỉnh và chịu trách nhiệm với kết quả học tập.`
 }
+function getUserSignature(){ return window.USER_SIGNATURE || (window.parent && window.parent.USER_SIGNATURE) || localStorage.getItem(&quot;giaoan_user_signature&quot;) || &quot;&quot;; }
+function getUserName(){ return window.USER_NAME || (window.parent && window.parent.USER_NAME) || localStorage.getItem(&quot;giaoan_user_name&quot;) || &quot;&quot;; }
 function buildPaper(){
   const type=$(&quot;#type&quot;).value,p=currentProgram(),l=currentLesson(),sec=currentSection(),items=selectedContent();
   if(!p||!l||!sec){alert(&quot;Vui lòng chọn đủ môn, bài/chương và nội dung.&quot;);return}
@@ -3701,6 +3703,8 @@ async function receiveScheduleSession(data){
   }
 
   window.currentScheduleTT = pld.scheduleTT;
+  if(pld.userSignature !== undefined) window.USER_SIGNATURE = pld.userSignature;
+  if(pld.userName !== undefined) window.USER_NAME = pld.userName;
   $(&quot;#btnSaveLesson&quot;).style.display = &quot;inline-block&quot;;
   const ltCount=Number(pld.lt)||0;
   const thCount=Number(pld.th)||0;
