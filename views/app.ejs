@@ -106,7 +106,24 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 window._originalAlert = window.alert;
 window.alert = function(msg) {
     if(typeof Swal !== 'undefined') {
-        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
+        const clean = String(msg || '').replace(/\\n/g, '\n');
+        const lines = clean.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length > 1 && lines[0].length < 40) {
+            Swal.fire({
+                title: lines[0],
+                html: `<div style="font-size:14.5px; line-height:1.6; color:#334155; text-align:center;">${lines.slice(1).join('<br>')}</div>`,
+                icon: 'info',
+                confirmButtonColor: '#16469d',
+                confirmButtonText: 'Đã hiểu'
+            });
+        } else {
+            Swal.fire({
+                html: `<div style="font-size:14.5px; line-height:1.6; color:#334155; text-align:center;">${clean.replace(/\n/g, '<br>')}</div>`,
+                icon: 'info',
+                confirmButtonColor: '#16469d',
+                confirmButtonText: 'Đã hiểu'
+            });
+        }
     } else {
         window._originalAlert(msg);
     }
@@ -4058,12 +4075,20 @@ function runTimeCheck(){
   const status=$(&quot;#timeStatus&quot;);
   status.scrollIntoView({behavior:&quot;smooth&quot;,block:&quot;center&quot;});
   const msg=status.textContent.trim();
-  if(status.classList.contains(&quot;bad&quot;)){
-    alert(&quot;KIỂM TRA THỜI GIAN\\n\\n&quot;+msg);
-  }else if(status.classList.contains(&quot;warn&quot;)){
-    alert(&quot;KIỂM TRA THỜI GIAN\\n\\n&quot;+msg);
-  }else{
-    alert(&quot;KIỂM TRA THỜI GIAN\\n\\n&quot;+msg);
+  const isBad = status.classList.contains(&quot;bad&quot;);
+  const isWarn = status.classList.contains(&quot;warn&quot;);
+  const iconType = isBad ? &quot;error&quot; : (isWarn ? &quot;warning&quot; : &quot;success&quot;);
+
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      title: &quot;KIỂM TRA THỜI GIAN&quot;,
+      html: `&lt;div style=&quot;font-size:15px; line-height:1.6; color:#334155; text-align:center;&quot;&gt;${escapeHtml(msg)}&lt;/div&gt;`,
+      icon: iconType,
+      confirmButtonColor: &quot;#16469d&quot;,
+      confirmButtonText: &quot;Đã hiểu&quot;
+    });
+  } else {
+    alert(&quot;KIỂM TRA THỜI GIAN:\n\n&quot; + msg);
   }
 }
 
