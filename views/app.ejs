@@ -5,6 +5,31 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Quản lý Sổ đầu bài & Soạn giáo án</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }</style>
+<script>
+window._originalAlert = window.alert;
+window.alert = function(msg) {
+    if(typeof Swal !== 'undefined') {
+        Swal.fire({ text: msg, icon: 'info', confirmButtonColor: '#16469d' });
+    } else {
+        window._originalAlert(msg);
+    }
+};
+window.customConfirm = async function(msg) {
+    if(typeof Swal === 'undefined') return window.confirm(msg);
+    const result = await Swal.fire({
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16469d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+    return result.isConfirmed;
+};
+</script>
 <style>
 body{margin:0;background:#eef3f9;font-family:"Be Vietnam Pro", sans-serif;color:#172033}
 .shell{/*max-width:1540px;margin:0 auto;padding:16px*/}
@@ -5275,11 +5300,42 @@ window.addEventListener("message", async e => {
               headers: getHeaders(),
               body: JSON.stringify({ lesson_data: e.data.payload.data })
           });
-          if(res.ok) alert("Đã lưu giáo án thành công vào CSDL!");
-          else alert("Lỗi khi lưu giáo án.");
+          if(res.ok) {
+              if(typeof Swal !== 'undefined') {
+                  Swal.fire({
+                      title: 'Đã lưu thành công!',
+                      text: 'Giáo án đã được lưu thành công vào cơ sở dữ liệu!',
+                      icon: 'success',
+                      confirmButtonColor: '#16469d',
+                      confirmButtonText: 'Đã hiểu'
+                  });
+              } else {
+                  alert("Đã lưu giáo án thành công vào CSDL!");
+              }
+          } else {
+              if(typeof Swal !== 'undefined') {
+                  Swal.fire({
+                      title: 'Lỗi lưu giáo án',
+                      text: 'Không thể lưu giáo án vào hệ thống.',
+                      icon: 'error',
+                      confirmButtonColor: '#16469d'
+                  });
+              } else {
+                  alert("Lỗi khi lưu giáo án.");
+              }
+          }
       } catch(err) {
           console.error(err);
-          alert("Lỗi mạng khi lưu giáo án.");
+          if(typeof Swal !== 'undefined') {
+              Swal.fire({
+                  title: 'Lỗi kết nối',
+                  text: 'Lỗi mạng khi lưu giáo án: ' + err.message,
+                  icon: 'error',
+                  confirmButtonColor: '#16469d'
+              });
+          } else {
+              alert("Lỗi mạng khi lưu giáo án.");
+          }
       }
   }
 });
