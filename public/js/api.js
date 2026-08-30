@@ -31,6 +31,15 @@ async function checkAuth(redirectIfNotAuth = true) {
         const data = await res.json();
         currentUser = data.user;
         
+        if (currentUser) {
+            if (currentUser.signature) {
+                localStorage.setItem('giaoan_user_signature', currentUser.signature);
+            } else {
+                localStorage.removeItem('giaoan_user_signature');
+            }
+            localStorage.setItem('giaoan_user_name', currentUser.full_name || currentUser.username || '');
+        }
+
         // Cập nhật thông tin UI nếu có
         const nameEl = document.getElementById('topbar-username');
         if(nameEl) nameEl.textContent = currentUser.full_name || currentUser.username;

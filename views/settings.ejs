@@ -295,6 +295,9 @@ window.customConfirm = async function(msg) {
                     alert('Đã lưu chữ ký cá nhân thành công!');
                     currentSignatureData = data.signature_url;
                     currentSignatureFilename = data.signature_filename || newSignatureFilename;
+                    try {
+                        localStorage.setItem('giaoan_user_signature', currentSignatureData);
+                    } catch(e) {}
                     renderCurrentSignature();
                     // Reset new upload
                     newSignatureBase64 = '';
@@ -332,6 +335,9 @@ window.customConfirm = async function(msg) {
                     alert('Đã gỡ bỏ chữ ký thành công.');
                     currentSignatureData = '';
                     currentSignatureFilename = '';
+                    try {
+                        localStorage.removeItem('giaoan_user_signature');
+                    } catch(e) {}
                     renderCurrentSignature();
                 } else {
                     alert('Lỗi khi gỡ bỏ chữ ký.');
