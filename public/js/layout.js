@@ -28,15 +28,18 @@ const sidebarHTML = `
         <a href="/profile" class="nav-item" id="nav-profile" title="Thông tin cá nhân">
             <i class="fas fa-user"></i> <span class="nav-item-text">Thông tin cá nhân</span>
         </a>
-        <a href="/settings" class="nav-item" id="nav-settings" title="Cấu hình hệ thống">
-            <i class="fas fa-cog"></i> <span class="nav-item-text">Cấu hình hệ thống</span>
-        </a>
-        <a href="/users" class="nav-item" id="nav-users" style="display:none" title="Quản lý Người dùng">
-            <i class="fas fa-users"></i> <span class="nav-item-text">Quản lý Người dùng</span>
-        </a>
-        <a href="#" class="nav-item" onclick="logout()" style="margin-top:auto; border-top:1px solid #e2e8f0; color:var(--danger);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="Đăng xuất">
-            <i class="fas fa-sign-out-alt" style="color:var(--danger);"></i> <span class="nav-item-text">Đăng xuất</span>
-        </a>
+
+        <div class="nav-menu-bottom" style="margin-top:auto; padding-top:10px; border-top:1px solid var(--border, #e2e8f0); display:flex; flex-direction:column;">
+            <a href="/users" class="nav-item" id="nav-users" style="display:none" title="Quản lý Người dùng">
+                <i class="fas fa-users"></i> <span class="nav-item-text">Quản lý Người dùng</span>
+            </a>
+            <a href="/settings" class="nav-item" id="nav-settings" title="Cấu hình hệ thống">
+                <i class="fas fa-cog"></i> <span class="nav-item-text">Cấu hình hệ thống</span>
+            </a>
+            <a href="#" class="nav-item" onclick="logout()" style="color:var(--danger);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="Đăng xuất">
+                <i class="fas fa-sign-out-alt" style="color:var(--danger);"></i> <span class="nav-item-text">Đăng xuất</span>
+            </a>
+        </div>
     </div>
 </div>
 `;
