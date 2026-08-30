@@ -5238,6 +5238,19 @@ document.addEventListener("DOMContentLoaded", () => {
                                 system_type: currentProject.system_type,
                                 class_name: currentProject.class_name
                             });
+                            
+                            // Fallback courseInfo if missing or empty
+                            if (!pdata.courseInfo) {
+                                pdata.courseInfo = {
+                                    name: currentProject.name,
+                                    code: currentProject.course_code,
+                                    total: currentProject.total_hours
+                                };
+                            } else {
+                                if (!pdata.courseInfo.name) pdata.courseInfo.name = currentProject.name;
+                                if (!pdata.courseInfo.code) pdata.courseInfo.code = currentProject.course_code;
+                                if (!pdata.courseInfo.total) pdata.courseInfo.total = currentProject.total_hours;
+                            }
                             iframe.contentWindow.postMessage({
                                 type: "LOAD_PROJECT_STATE",
                                 payload: pdata
