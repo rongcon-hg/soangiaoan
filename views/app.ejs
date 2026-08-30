@@ -136,14 +136,14 @@ window.alert = function(msg) {
         if (lines.length > 1 && lines[0].length < 40) {
             Swal.fire({
                 title: lines[0],
-                html: `<div style="font-size:14.5px; line-height:1.6; color:#334155; text-align:center;">${lines.slice(1).join('<br>')}</div>`,
+                html: `<div style='font-size:14.5px; line-height:1.6; color:#334155; text-align:center;'>${lines.slice(1).join('<br>')}</div>`,
                 icon: 'info',
                 confirmButtonColor: '#16469d',
                 confirmButtonText: 'Đã hiểu'
             });
         } else {
             Swal.fire({
-                html: `<div style="font-size:14.5px; line-height:1.6; color:#334155; text-align:center;">${clean.replace(/\n/g, '<br>')}</div>`,
+                html: `<div style='font-size:14.5px; line-height:1.6; color:#334155; text-align:center;'>${clean.replace(/\n/g, '<br>')}</div>`,
                 icon: 'info',
                 confirmButtonColor: '#16469d',
                 confirmButtonText: 'Đã hiểu'
