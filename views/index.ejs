@@ -37,9 +37,50 @@ window.customConfirm = async function(msg) {
 
 </head>
 <body>
-    <div id="alert-box"></div>
+    <style>
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--text);
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.88rem;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+        }
+        .page-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .page-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .page-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .filter-tag {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
 
-    <div class="card">
+    <div class="card" id="main-card">
         <div class="card-header">
             <h3 class="card-title">Danh sách Môn học / Lịch giảng</h3>
             <button class="btn btn-primary" onclick="openNewProjectForm()"><i class="fas fa-plus"></i> Thêm Môn học</button>
@@ -120,8 +161,71 @@ window.customConfirm = async function(msg) {
             </div>
         </div>
 
+        <!-- Toolbar: Tìm kiếm thông minh & Bộ lọc -->
+        <div class="filter-toolbar" style="background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:20px; display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+                <!-- Ô tìm kiếm thông minh -->
+                <div style="flex:1; min-width:260px; position:relative;">
+                    <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8;"></i>
+                    <input type="text" id="search-input" class="form-control" style="padding-left:36px; padding-right:32px; height:42px; background:#fff;" placeholder="Tìm kiếm theo tên môn, mã môn, lớp học..." oninput="handleSearchInput()">
+                    <button type="button" id="btn-clear-search" onclick="clearSearch()" style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:14px;" title="Xóa tìm kiếm">
+                        <i class="fas fa-times-circle"></i>
+                    </button>
+                </div>
+
+                <!-- Bộ lọc Hệ đào tạo -->
+                <div style="min-width:160px;">
+                    <select id="filter-system" class="form-control" style="height:42px; background:#fff;" onchange="applyFilters()">
+                        <option value="">-- Tất cả hệ đào tạo --</option>
+                        <option value="Trung cấp">Trung cấp</option>
+                        <option value="Cao đẳng">Cao đẳng</option>
+                    </select>
+                </div>
+
+                <!-- Bộ lọc Lớp học -->
+                <div style="min-width:160px;">
+                    <select id="filter-class" class="form-control" style="height:42px; background:#fff;" onchange="applyFilters()">
+                        <option value="">-- Tất cả lớp --</option>
+                    </select>
+                </div>
+
+                <!-- Bộ lọc Sắp xếp -->
+                <div style="min-width:170px;">
+                    <select id="filter-sort" class="form-control" style="height:42px; background:#fff;" onchange="applyFilters()">
+                        <option value="newest">Mới nhất</option>
+                        <option value="oldest">Cũ nhất</option>
+                        <option value="name_asc">Tên môn: A → Z</option>
+                        <option value="name_desc">Tên môn: Z → A</option>
+                        <option value="hours_desc">Số giờ: Nhiều nhất</option>
+                        <option value="hours_asc">Số giờ: Ít nhất</option>
+                    </select>
+                </div>
+
+                <!-- Nút đặt lại -->
+                <button type="button" class="btn btn-secondary" onclick="resetFilters()" style="height:42px; padding:0 14px; background:#fff; border:1px solid var(--border); color:#64748b;" title="Đặt lại bộ lọc">
+                    <i class="fas fa-undo"></i> Đặt lại
+                </button>
+            </div>
+
+            <!-- Dòng đếm kết quả -->
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem; color:#64748b; padding-top:4px;">
+                <span id="filter-result-count">Đang tải danh sách môn học...</span>
+                <span id="filter-active-tags" style="display:flex; gap:6px; flex-wrap:wrap;"></span>
+            </div>
+        </div>
+
         <div id="projects-grid" class="grid grid-cols-2">
             <!-- Render projects here -->
+        </div>
+
+        <!-- Thanh Phân Trang (Tự động hiển thị khi > 12 môn) -->
+        <div id="pagination-container" style="display:none; margin-top:24px; padding-top:16px; border-top:1px solid var(--border); justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div id="pagination-info" style="font-size:0.9rem; color:#64748b;">
+                Hiển thị <b>1</b> - <b>12</b> trong tổng số <b>0</b> môn học
+            </div>
+            <div id="pagination-controls" style="display:flex; gap:6px; align-items:center;">
+                <!-- Render page buttons -->
+            </div>
         </div>
     </div>
 
@@ -129,7 +233,12 @@ window.customConfirm = async function(msg) {
     <script src="/js/layout.js"></script>
     <script>
         injectLayout('projects', 'Quản lý Môn học');
-        let currentProjectsList = [];
+        
+        const PAGE_SIZE = 12; // Yêu cầu: Vượt quá 12 môn sẽ tự động phân trang
+        let allProjectsList = [];
+        let filteredProjectsList = [];
+        let currentPage = 1;
+        let searchDebounceTimer = null;
 
         checkAuth().then(user => {
             if(user) {
@@ -137,46 +246,240 @@ window.customConfirm = async function(msg) {
             }
         });
 
+        function removeVietnameseTones(str) {
+            str = String(str || '');
+            str = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            str = str.replace(/đ/g, 'd').replace(/Đ/g, 'D');
+            return str.toLowerCase().trim();
+        }
+
+        function escapeHtml(s){ 
+            return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); 
+        }
+
         async function loadProjects() {
             try {
                 const res = await fetch(API_URL + '/projects', { headers: getHeaders() });
                 const projects = await res.json();
-                currentProjectsList = projects;
+                allProjectsList = Array.isArray(projects) ? projects : [];
                 
-                const grid = document.getElementById('projects-grid');
-                if(projects.length === 0) {
-                    grid.innerHTML = '<div style="grid-column: span 2; text-align:center; padding: 40px; color: var(--text-light)">Chưa có môn học nào. Nhấn "Thêm Môn học" để bắt đầu.</div>';
-                    return;
-                }
-
-                grid.innerHTML = projects.map(p => `
-                    <div class="project-card">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                            <div class="project-title" style="margin-bottom:0;">${escapeHtml(p.name)}</div>
-                            <span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:6px; background:${p.system_type === 'Cao đẳng' ? '#e0e7ff; color:#3730a3;' : '#fef3c7; color:#92400e;'}">${escapeHtml(p.system_type || 'Trung cấp')}</span>
-                        </div>
-                        <div class="project-meta">
-                            Mã: <b>${escapeHtml(p.course_code || '---')}</b> &bull; Lớp: <b>${escapeHtml(p.class_name || '---')}</b> &bull; Tổng giờ: <b>${p.total_hours || 0}</b>
-                        </div>
-                        <div style="display:flex; gap:10px; margin-top:16px;">
-                            <button class="btn btn-primary" onclick="openApp(${p.id})"><i class="fas fa-file-signature"></i> Soạn Giáo Án</button>
-                            <button class="btn btn-secondary" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;" title="Chỉnh sửa thông tin môn học" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger" title="Xóa môn học" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                `).join('');
+                populateClassFilterOptions();
+                applyFilters();
             } catch (err) {
                 showAlert('Lỗi tải danh sách môn học');
             }
         }
 
-        function escapeHtml(s){ return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }
+        function populateClassFilterOptions() {
+            const classSelect = document.getElementById('filter-class');
+            if(!classSelect) return;
+            
+            const currentVal = classSelect.value;
+            const classes = [...new Set(allProjectsList.map(p => (p.class_name || '').trim()).filter(Boolean))].sort();
+            
+            let html = '<option value="">-- Tất cả lớp --</option>';
+            classes.forEach(c => {
+                html += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+            });
+            classSelect.innerHTML = html;
+            if(classes.includes(currentVal)) {
+                classSelect.value = currentVal;
+            }
+        }
+
+        function handleSearchInput() {
+            const searchVal = document.getElementById('search-input').value;
+            document.getElementById('btn-clear-search').style.display = searchVal ? 'block' : 'none';
+            
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                applyFilters();
+            }, 200);
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.value = '';
+            document.getElementById('btn-clear-search').style.display = 'none';
+            applyFilters();
+            searchInput.focus();
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('btn-clear-search').style.display = 'none';
+            document.getElementById('filter-system').value = '';
+            document.getElementById('filter-class').value = '';
+            document.getElementById('filter-sort').value = 'newest';
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchRaw = document.getElementById('search-input').value.trim();
+            const searchNorm = removeVietnameseTones(searchRaw);
+            const systemFilter = document.getElementById('filter-system').value;
+            const classFilter = document.getElementById('filter-class').value;
+            const sortFilter = document.getElementById('filter-sort').value;
+
+            // 1. Lọc theo từ khóa tìm kiếm
+            let result = allProjectsList.filter(p => {
+                if(searchNorm) {
+                    const nameNorm = removeVietnameseTones(p.name);
+                    const codeNorm = removeVietnameseTones(p.course_code);
+                    const classNorm = removeVietnameseTones(p.class_name);
+                    const sysNorm = removeVietnameseTones(p.system_type);
+                    
+                    const match = nameNorm.includes(searchNorm) || 
+                                  codeNorm.includes(searchNorm) || 
+                                  classNorm.includes(searchNorm) || 
+                                  sysNorm.includes(searchNorm);
+                    if(!match) return false;
+                }
+
+                // 2. Lọc theo hệ đào tạo
+                if(systemFilter && (p.system_type || 'Trung cấp') !== systemFilter) {
+                    return false;
+                }
+
+                // 3. Lọc theo lớp
+                if(classFilter && (p.class_name || '').trim() !== classFilter) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            // 4. Sắp xếp
+            result.sort((a, b) => {
+                if(sortFilter === 'newest') return (b.id || 0) - (a.id || 0);
+                if(sortFilter === 'oldest') return (a.id || 0) - (b.id || 0);
+                if(sortFilter === 'name_asc') return (a.name || '').localeCompare(b.name || '', 'vi');
+                if(sortFilter === 'name_desc') return (b.name || '').localeCompare(a.name || '', 'vi');
+                if(sortFilter === 'hours_desc') return (Number(b.total_hours) || 0) - (Number(a.total_hours) || 0);
+                if(sortFilter === 'hours_asc') return (Number(a.total_hours) || 0) - (Number(b.total_hours) || 0);
+                return 0;
+            });
+
+            filteredProjectsList = result;
+            currentPage = 1;
+            renderProjects();
+        }
+
+        function renderProjects() {
+            const grid = document.getElementById('projects-grid');
+            const total = filteredProjectsList.length;
+            const totalPages = Math.ceil(total / PAGE_SIZE) || 1;
+
+            if(currentPage > totalPages) currentPage = totalPages;
+            if(currentPage < 1) currentPage = 1;
+
+            // Cập nhật thông tin đếm kết quả
+            const countEl = document.getElementById('filter-result-count');
+            if(allProjectsList.length === 0) {
+                countEl.textContent = 'Chưa có môn học nào trong hệ thống.';
+            } else if(total === allProjectsList.length) {
+                countEl.innerHTML = `Tổng số: <b>${total}</b> môn học`;
+            } else {
+                countEl.innerHTML = `Tìm thấy: <b>${total}</b> / ${allProjectsList.length} môn học phù hợp`;
+            }
+
+            // Render danh sách rỗng
+            if(total === 0) {
+                if(allProjectsList.length === 0) {
+                    grid.innerHTML = '<div style="grid-column: span 2; text-align:center; padding: 40px; color: var(--text-light)">Chưa có môn học nào. Nhấn "Thêm Môn học" để bắt đầu.</div>';
+                } else {
+                    grid.innerHTML = `
+                        <div style="grid-column: span 2; text-align:center; padding: 40px; color: var(--text-light); background:#f8fafc; border-radius:8px; border:1px dashed var(--border);">
+                            <i class="fas fa-search" style="font-size:2rem; color:#cbd5e1; margin-bottom:10px; display:block;"></i>
+                            Không tìm thấy môn học nào phù hợp với bộ lọc.<br>
+                            <button class="btn btn-secondary" onclick="resetFilters()" style="margin-top:12px; font-size:0.85rem;"><i class="fas fa-undo"></i> Xóa bộ lọc</button>
+                        </div>
+                    `;
+                }
+                document.getElementById('pagination-container').style.display = 'none';
+                return;
+            }
+
+            // Phân trang: Cắt danh sách
+            const startIndex = (currentPage - 1) * PAGE_SIZE;
+            const endIndex = Math.min(startIndex + PAGE_SIZE, total);
+            const pageItems = filteredProjectsList.slice(startIndex, endIndex);
+
+            grid.innerHTML = pageItems.map(p => `
+                <div class="project-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                        <div class="project-title" style="margin-bottom:0;">${escapeHtml(p.name)}</div>
+                        <span style="font-size:0.75rem; font-weight:700; padding:3px 8px; border-radius:6px; background:${p.system_type === 'Cao đẳng' ? '#e0e7ff; color:#3730a3;' : '#fef3c7; color:#92400e;'}">${escapeHtml(p.system_type || 'Trung cấp')}</span>
+                    </div>
+                    <div class="project-meta">
+                        Mã: <b>${escapeHtml(p.course_code || '---')}</b> &bull; Lớp: <b>${escapeHtml(p.class_name || '---')}</b> &bull; Tổng giờ: <b>${p.total_hours || 0}</b>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:16px;">
+                        <button class="btn btn-primary" onclick="openApp(${p.id})"><i class="fas fa-file-signature"></i> Soạn Giáo Án</button>
+                        <button class="btn btn-secondary" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1;" title="Chỉnh sửa thông tin môn học" onclick="openEditModal(${p.id})"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger" title="Xóa môn học" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Hiển thị / Ẩn thanh phân trang nếu > 12 môn
+            const paginationContainer = document.getElementById('pagination-container');
+            if(total > PAGE_SIZE) {
+                paginationContainer.style.display = 'flex';
+                document.getElementById('pagination-info').innerHTML = `Hiển thị <b>${startIndex + 1}</b> - <b>${endIndex}</b> trong tổng số <b>${total}</b> môn học (Trang ${currentPage}/${totalPages})`;
+                renderPaginationControls(totalPages);
+            } else {
+                paginationContainer.style.display = 'none';
+            }
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('pagination-controls');
+            let html = '';
+
+            // Nút Đầu & Trước
+            html += `<button class="page-btn" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''} title="Trang đầu"><i class="fas fa-angle-double-left"></i></button>`;
+            html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước"><i class="fas fa-angle-left"></i></button>`;
+
+            // Tính toán danh sách số trang hiển thị
+            let pages = [];
+            const delta = 2; // Số trang lân cận hiển thị
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+                    pages.push(i);
+                }
+            }
+
+            let lastPage = 0;
+            pages.forEach(p => {
+                if (lastPage && p - lastPage > 1) {
+                    html += `<span style="padding: 0 4px; color: #94a3b8;">...</span>`;
+                }
+                html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="goToPage(${p})">${p}</button>`;
+                lastPage = p;
+            });
+
+            // Nút Tiếp & Cuối
+            html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang tiếp"><i class="fas fa-angle-right"></i></button>`;
+            html += `<button class="page-btn" onclick="goToPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang cuối"><i class="fas fa-angle-double-right"></i></button>`;
+
+            controls.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderProjects();
+            const mainCard = document.getElementById('main-card');
+            if(mainCard) {
+                mainCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
 
         function openNewProjectForm() { document.getElementById('new-project-form').style.display = 'block'; }
         function closeNewProjectForm() { document.getElementById('new-project-form').style.display = 'none'; }
 
         function openEditModal(id) {
-            const p = currentProjectsList.find(x => x.id === id);
+            const p = allProjectsList.find(x => x.id === id);
             if(!p) return;
             document.getElementById('edit-project-id').value = p.id;
             document.getElementById('edit-project-name').value = p.name || '';
