@@ -99,7 +99,54 @@
         gap: 5px;
     }
 
+    /* Filter Controls */
+    .filter-controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .filter-status-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
     @media (max-width: 768px) {
+        .filter-bar {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            padding: 12px !important;
+            gap: 10px !important;
+        }
+        .search-box {
+            width: 100% !important;
+            min-width: 100% !important;
+        }
+        .filter-controls {
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 10px !important;
+        }
+        .filter-controls select#filter-role {
+            width: 100% !important;
+            min-width: 100% !important;
+        }
+        .filter-status-group {
+            width: 100% !important;
+            display: flex !important;
+            gap: 8px !important;
+        }
+        .filter-status-group select#filter-status {
+            flex: 1 !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        .filter-status-group button {
+            flex-shrink: 0 !important;
+            padding: 10px 16px !important;
+        }
+        
         .btn-action {
             padding: 6px 9px;
             font-size: 0.85rem;
@@ -224,20 +271,22 @@ window.customConfirm = async function(msg) {
                 <i class="fas fa-search"></i>
                 <input type="text" id="user-search-input" class="form-control" placeholder="Tìm theo tên đăng nhập, họ tên, email..." oninput="filterUsers()">
             </div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                <select id="filter-role" class="form-control" style="width:auto; min-width:145px;" onchange="filterUsers()">
+            <div class="filter-controls">
+                <select id="filter-role" class="form-control" onchange="filterUsers()">
                     <option value="">Tất cả vai trò</option>
                     <option value="Admin">Quản trị viên (Admin)</option>
                     <option value="User">Giáo viên (User)</option>
                 </select>
-                <select id="filter-status" class="form-control" style="width:auto; min-width:150px;" onchange="filterUsers()">
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="verified">Đã xác thực</option>
-                    <option value="unverified">Chờ xác thực</option>
-                </select>
-                <button class="btn btn-secondary" onclick="resetFilters()" title="Đặt lại bộ lọc" style="padding:10px 14px;">
-                    <i class="fas fa-redo"></i>
-                </button>
+                <div class="filter-status-group">
+                    <select id="filter-status" class="form-control" onchange="filterUsers()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="verified">Đã xác thực</option>
+                        <option value="unverified">Chờ xác thực</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="resetFilters()" title="Đặt lại bộ lọc" style="padding:10px 14px;">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
