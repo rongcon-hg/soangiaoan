@@ -2782,7 +2782,7 @@ function renderLessons(){
 }
 function currentLesson(){const p=currentProgram();return p?.lessons?.[Number($(&quot;#lesson&quot;).value)]}
 function renderSections(){
-  const l=currentLesson();$(&quot;#section&quot;).innerHTML=(l?.sections||[]).map((s,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;\${s.title || &quot;Nội dung từ Sổ đầu bài&quot;}&lt;/option&gt;`).join(&quot;&quot;);
+  const l=currentLesson();$(&quot;#section&quot;).innerHTML=(l?.sections||[]).map((s,i)=&gt;`&lt;option value=&quot;${i}&quot;&gt;${s.title || &quot;Nội dung từ Sổ đầu bài&quot;}&lt;/option&gt;`).join(&quot;&quot;);
   renderSubitems()
 }
 function currentSection(){return currentLesson()?.sections?.[Number($(&quot;#section&quot;).value)]}
@@ -3313,44 +3313,62 @@ function objectives(type){
     ? receivedFullProgram 
     : (Array.isArray(schedulePayload.fullProgram) ? schedulePayload.fullProgram : (p?.fullProgram || []));
 
-  // Xác định danh sách các bài/chương có trong giáo án buổi này
-  let targetLessonNames = [];
   const groups = Array.isArray(p?.scheduleGroups) ? p.scheduleGroups : (Array.isArray(schedulePayload.lessonGroups) ? schedulePayload.lessonGroups : []);
-  if (groups.length) {
-    targetLessonNames = groups.map(g =&gt; String(g.lesson || '').trim()).filter(Boolean);
-  } else if (Array.isArray(schedulePayload.lessons) &amp;&amp; schedulePayload.lessons.length) {
-    targetLessonNames = schedulePayload.lessons.map(x =&gt; String(x || '').trim()).filter(Boolean);
-  } else if (l?.title) {
-    targetLessonNames = [String(l.title).trim()];
-  }
-
-  // Khử trùng lặp tên bài
-  targetLessonNames = [...new Set(targetLessonNames)];
-
-  // Hàm tìm mục tiêu của bài học trong fullProg
-  function findObjectiveForLesson(lessonName) {
-    if (!lessonName) return null;
-    const numMatch = lessonName.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i);
-    const lessonNum = numMatch ? romanToInt(numMatch[1]) : null;
-
-    let found = null;
-    if (lessonNum !== null) {
-      found = fullProg.find(x =&gt; x.kind === 'lesson' &amp;&amp; x.no === lessonNum);
-    }
-    if (!found) {
-      const cleanName = lessonName.toLowerCase().replace(/\s+/g, ' ');
-      found = fullProg.find(x =&gt; x.kind === 'lesson' &amp;&amp; cleanName.includes(String(x.title || '').toLowerCase()));
-    }
-    return found ? (found.objectivesText || (Array.isArray(found.objectives) ? found.objectives.join('\n') : '')) : null;
-  }
-
   const collected = [];
-  targetLessonNames.forEach(name =&gt; {
-    const obj = findObjectiveForLesson(name);
-    if (obj &amp;&amp; obj.trim()) {
-      collected.push({ lessonName: name, objText: obj.trim() });
+
+  if (groups.length) {
+    groups.forEach(g =&gt; {
+      const name = String(g.lesson || '').trim();
+      let objText = String(g.objectivesText || (Array.isArray(g.objectives) ? g.objectives.join('\n') : '')).trim();
+      
+      if (!objText &amp;&amp; fullProg.length) {
+        const numMatch = name.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i);
+        const lessonNum = numMatch ? romanToInt(numMatch[1]) : null;
+        let found = null;
+        if (lessonNum !== null) {
+          found = fullProg.find(x =&gt; x.kind === 'lesson' &amp;&amp; x.no === lessonNum);
+        }
+        if (!found) {
+          const cleanName = name.toLowerCase().replace(/\s+/g, ' ');
+          found = fullProg.find(x =&gt; x.kind === 'lesson' &amp;&amp; cleanName.includes(String(x.title || '').toLowerCase()));
+        }
+        if (found) {
+          objText = String(found.objectivesText || (Array.isArray(found.objectives) ? found.objectives.join('\n') : '')).trim();
+        }
+      }
+
+      if (objText) {
+        collected.push({ lessonName: name, objText: objText });
+      }
+    });
+  } else {
+    let targetLessonNames = [];
+    if (Array.isArray(schedulePayload.lessons) &amp;&amp; schedulePayload.lessons.length) {
+      targetLessonNames = schedulePayload.lessons.map(x =&gt; String(x || '').trim()).filter(Boolean);
+    } else if (l?.title) {
+      targetLessonNames = [String(l.title).trim()];
     }
-  });
+    targetLessonNames = [...new Set(targetLessonNames)];
+
+    targetLessonNames.forEach(name =&gt; {
+      const numMatch = name.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i);
+      const lessonNum = numMatch ? romanToInt(numMatch[1]) : null;
+      let found = null;
+      if (lessonNum !== null) {
+        found = fullProg.find(x =&gt; x.kind === 'lesson' &amp;&amp; x.no === lessonNum);
+      }
+      if (!found) {
+        const cleanName = name.toLowerCase().replace(/\s+/g, ' ');
+        found = fullProg.find(x =&gt; x.kind === 'lesson' &amp;&amp; cleanName.includes(String(x.title || '').toLowerCase()));
+      }
+      if (found) {
+        const objText = String(found.objectivesText || (Array.isArray(found.objectives) ? found.objectives.join('\n') : '')).trim();
+        if (objText) {
+          collected.push({ lessonName: name, objText: objText });
+        }
+      }
+    });
+  }
 
   if (collected.length === 1) {
     // 1 bài đơn lẻ: lấy trực tiếp mục tiêu của bài đó
