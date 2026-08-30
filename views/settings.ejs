@@ -62,6 +62,21 @@
             margin-bottom: 20px;
             font-size: 0.95rem;
         }
+        .action-btn-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 20px;
+            max-width: 480px;
+        }
+        .action-btn-row .btn {
+            flex: 1;
+            justify-content: center;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 0.88rem;
+            padding: 9px 12px;
+        }
         @media (max-width: 768px) {
             .s-tab {
                 padding: 10px 14px;
@@ -70,6 +85,16 @@
             .grid-cols-2 > div {
                 max-width: 100% !important;
                 grid-column: span 1 !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .action-btn-row {
+                gap: 6px;
+            }
+            .action-btn-row .btn {
+                font-size: 0.78rem;
+                padding: 8px 4px;
+                gap: 4px;
             }
         }
     </style>
@@ -131,12 +156,12 @@ window.customConfirm = async function(msg) {
                     </small>
                 </div>
 
-                <div style="margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" id="btn-save-gemini-only" onclick="saveGeminiKeyOnly()" class="btn btn-primary" style="font-size: 13px; padding: 8px 18px;">
-                        <i class="fas fa-save"></i> Lưu mã API Key này
+                <div class="action-btn-row">
+                    <button type="button" id="btn-save-gemini-only" onclick="saveGeminiKeyOnly()" class="btn btn-primary">
+                        <i class="fas fa-save"></i> <span>Lưu API Key</span>
                     </button>
-                    <button type="button" onclick="testGeminiConnectionOnly()" class="btn btn-secondary" style="font-size: 13px; padding: 8px 16px;">
-                        <i class="fas fa-bolt"></i> Kiểm tra mã API Key
+                    <button type="button" onclick="testGeminiConnectionOnly()" class="btn btn-secondary">
+                        <i class="fas fa-bolt"></i> <span>Kiểm tra Key</span>
                     </button>
                 </div>
             </div>
@@ -222,12 +247,12 @@ window.customConfirm = async function(msg) {
                     </div>
                 </div>
 
-                <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" id="btn-save-smtp-only" onclick="saveSmtpSettingsOnly()" class="btn btn-primary" style="font-size: 13px; padding: 8px 18px;">
-                        <i class="fas fa-save"></i> Lưu cấu hình SMTP
+                <div class="action-btn-row">
+                    <button type="button" id="btn-save-smtp-only" onclick="saveSmtpSettingsOnly()" class="btn btn-primary">
+                        <i class="fas fa-save"></i> <span>Lưu SMTP</span>
                     </button>
-                    <button type="button" onclick="testSmtpConnectionOnly()" class="btn btn-secondary" style="font-size: 13px; padding: 8px 16px;">
-                        <i class="fas fa-bolt"></i> Kiểm tra kết nối SMTP
+                    <button type="button" onclick="testSmtpConnectionOnly()" class="btn btn-secondary">
+                        <i class="fas fa-bolt"></i> <span>Kiểm tra SMTP</span>
                     </button>
                 </div>
             </div>
@@ -250,12 +275,12 @@ window.customConfirm = async function(msg) {
                     <input type="text" id="cfg-drive-folder" class="form-control" placeholder="1dDKXJyt8du7UimS8mRtS-7ymjtjKFMWN">
                 </div>
 
-                <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" id="btn-save-drive-only" onclick="saveDriveSettingsOnly()" class="btn btn-primary" style="font-size: 13px; padding: 8px 18px;">
-                        <i class="fas fa-save"></i> Lưu cấu hình Google Drive
+                <div class="action-btn-row">
+                    <button type="button" id="btn-save-drive-only" onclick="saveDriveSettingsOnly()" class="btn btn-primary">
+                        <i class="fas fa-save"></i> <span>Lưu Drive</span>
                     </button>
-                    <button type="button" onclick="testDriveConnectionOnly()" class="btn btn-secondary" style="font-size: 13px; padding: 8px 16px;">
-                        <i class="fas fa-bolt"></i> Kiểm tra kết nối Drive
+                    <button type="button" onclick="testDriveConnectionOnly()" class="btn btn-secondary">
+                        <i class="fas fa-bolt"></i> <span>Kiểm tra Drive</span>
                     </button>
                 </div>
             </div>
