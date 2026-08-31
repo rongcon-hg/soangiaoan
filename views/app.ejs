@@ -4138,10 +4138,10 @@ window.runRowAI=async function(btn,action){
 }
 function formatAIHTML(txt) {
   return escapeHtml(txt)
-    .replace(/\n/g, "&lt;br&gt;")
-    .replace(/&amp;lt;br\/?&amp;gt;/gi, "&lt;br&gt;") // Khôi phục thẻ <br> do AI sinh ra
-    .replace(/\*\*([^*]+?)\*\*/g, "&lt;b&gt;$1&lt;/b&gt;") // Chuyển **bold** thành <b>bold</b>
-    .replace(/(^|[^\*])\*([^\*]+?)\*([^\*]|$)/g, "$1&lt;i&gt;$2&lt;/i&gt;$3"); // Chuyển *italic* thành <i>italic</i>
+    .replace(/\n/g, &quot;&lt;br&gt;&quot;)
+    .replace(/&amp;lt;br\/?&amp;gt;/gi, &quot;&lt;br&gt;&quot;) // Khôi phục thẻ &lt;br&gt; do AI sinh ra
+    .replace(/\*\*([^*]+?)\*\*/g, &quot;&lt;b&gt;$1&lt;/b&gt;&quot;) // Chuyển **bold** thành &lt;b&gt;bold&lt;/b&gt;
+    .replace(/(^|[^\*])\*([^\*]+?)\*([^\*]|$)/g, &quot;$1&lt;i&gt;$2&lt;/i&gt;$3&quot;); // Chuyển *italic* thành &lt;i&gt;italic&lt;/i&gt;
 }
 
 function showAICompare(cell,oldText,newText){
