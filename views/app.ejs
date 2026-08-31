@@ -3209,9 +3209,9 @@ function activityRows(type,items,total){
     if(type===&quot;practice&quot;){
       return {
         label:&quot;&quot;,
-        content:`Thực hiện ${item} theo đúng quy trình: chuẩn bị dữ liệu/công cụ, thao tác theo thứ tự, kiểm tra kết quả sau từng bước và lưu kết quả đúng yêu cầu.`,
-        gv:&quot;Thao tác mẫu; hướng dẫn.&quot;,
-        sv:&quot;Quan sát; thực hành.&quot;
+        content:`Thực hành độc lập hoặc theo nhóm nội dung: ${item}. Tuân thủ bản vẽ/quy trình kỹ thuật, đảm bảo an toàn và vệ sinh công nghiệp.`,
+        gv:&quot;Tuần tự kiểm tra, giám sát an toàn; can thiệp sửa sai và nghiệm thu trung gian.&quot;,
+        sv:&quot;Tiến hành thực hành, rút kinh nghiệm và sửa sai.&quot;
       };
     }
     return {
@@ -3262,27 +3262,42 @@ function activityRows(type,items,total){
       &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,self);
 
   }else if(type===&quot;practice&quot;){
-    const lead=5,initial=10,endTime=8,self=5;
-    const remain=Math.max(0,total-lead-initial-endTime-self);
+    // Note: 'total' here is actually lessonTotal (i.e., grandTotal - stabilize)
+    const stabilize = total >= 85 ? 5 : 3; 
+    const grandTotal = total + stabilize;
+    
+    // 5% for Mở đầu (Ổn định + Dẫn nhập)
+    const calculatedLead = Math.max(2, Math.round(grandTotal * 0.05) - stabilize);
+    
+    // 15% for Hướng dẫn ban đầu
+    const calculatedInitial = Math.max(5, Math.round(grandTotal * 0.15));
+    
+    // 10% for Tổng kết (Hướng dẫn kết thúc + Tự rèn luyện)
+    const calculatedEndTotal = Math.max(5, Math.round(grandTotal * 0.10));
+    const calculatedSelf = Math.max(2, Math.round(calculatedEndTotal * 0.3));
+    const calculatedEndTime = Math.max(3, calculatedEndTotal - calculatedSelf);
+    
+    // 70% for Hướng dẫn thường xuyên (remain). Subtract from total (lessonTotal)
+    const remain = Math.max(0, total - calculatedLead - calculatedInitial - calculatedEndTime - calculatedSelf);
 
     push(&quot;A. DẪN NHẬP&quot;,
-      &quot;Nêu nhiệm vụ thực hành, sản phẩm/kết quả cần đạt, yêu cầu kỹ thuật và tiêu chí đánh giá.&quot;,
-      &quot;Nêu yêu cầu.&quot;,&quot;Lắng nghe; xác định nhiệm vụ.&quot;,lead);
+      &quot;Kiểm tra bài cũ hoặc sự chuẩn bị kiến thức nền tảng. Phổ biến mục tiêu, yêu cầu kỹ thuật và công nghệ của bài thực hành.&quot;,
+      &quot;Kiểm tra bài cũ, phổ biến mục tiêu.&quot;,&quot;Lắng nghe, trả lời câu hỏi.&quot;,calculatedLead);
 
     push(&quot;B. HƯỚNG DẪN BAN ĐẦU&quot;,
-      &quot;Kiểm tra điều kiện thực hành; giới thiệu quy trình tổng quát, dữ liệu/công cụ cần dùng và các điểm an toàn hoặc lưu ý trước khi thao tác.&quot;,
-      &quot;Hướng dẫn; kiểm tra chuẩn bị.&quot;,&quot;Quan sát; chuẩn bị.&quot;,initial);
+      &quot;Phân tích quy trình công nghệ/sơ đồ thực hành. Làm mẫu thao tác (bình thường và chậm kèm giải thích). Gọi học sinh làm thử để uốn nắn. Phân chia vị trí, thiết bị.&quot;,
+      &quot;Phân tích, làm mẫu, hướng dẫn làm thử, phân công.&quot;,&quot;Quan sát, làm thử, nhận vị trí và vật tư.&quot;,calculatedInitial);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;practice&quot;, i === 0));
 
     push(&quot;D. HƯỚNG DẪN KẾT THÚC&quot;,
-      &quot;Nhận xét kết quả thực hành; tổng hợp các lỗi thực tế đã xuất hiện trong buổi học và hướng dẫn cách khắc phục tương ứng.&quot;,
-      &quot;Nhận xét; tổng kết.&quot;,&quot;Lắng nghe; sửa lỗi.&quot;,endTime);
+      &quot;Đo đạc, đánh giá chất lượng sản phẩm. Tổ chức đánh giá chéo. Nhận xét ưu/nhược điểm về ý thức kỷ luật, an toàn. Thu dọn dụng cụ, vệ sinh nhà xưởng.&quot;,
+      &quot;Đánh giá, nhận xét, tổ chức thu dọn.&quot;,&quot;Tự đánh giá, rút kinh nghiệm, vệ sinh vị trí.&quot;,calculatedEndTime);
 
     push(&quot;E. HƯỚNG DẪN TỰ RÈN LUYỆN&quot;,
-      &quot;Giao nhiệm vụ luyện tập tiếp theo với dữ liệu khác để củng cố kỹ năng; yêu cầu tự đối chiếu bằng checklist hoặc tiêu chí đã học.&quot;,
-      &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,self);
+      &quot;Giao bài tập, hướng dẫn viết báo cáo thực hành (nếu có) và yêu cầu chuẩn bị cho bài học tiếp theo.&quot;,
+      &quot;Giao bài tập, dặn dò.&quot;,&quot;Ghi chép yêu cầu, nhận nhiệm vụ.&quot;,calculatedSelf);
 
   }else{
     const lead=5,intro=8,endTime=8,self=5;
