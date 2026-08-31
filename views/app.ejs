@@ -3246,7 +3246,7 @@ function activityRows(type,items,total){
         let rowTitle = c.label ? `${item} – ${c.label}` : item;
         if (isFirstOfGroup) {
             if (type === &quot;practice&quot;) rowTitle = &quot;C. HƯỚNG DẪN THƯỜNG XUYÊN\n&quot; + rowTitle;
-            if (type === &quot;integrated&quot;) rowTitle = &quot;C. GIẢI QUYẾT VẤN ĐỀ\n&quot; + rowTitle;
+            if (type === &quot;integrated&quot;) rowTitle = &quot;D. HỌC SINH THỰC HÀNH\n&quot; + rowTitle;
             if (type === &quot;theory&quot;) rowTitle = &quot;B. TRÌNH BÀY NỘI DUNG\n&quot; + rowTitle;
         }
         push(rowTitle,c.content,c.gv,c.sv,t);
@@ -3315,27 +3315,49 @@ function activityRows(type,items,total){
       &quot;Giao bài tập, dặn dò.&quot;,&quot;Ghi chép yêu cầu, nhận nhiệm vụ.&quot;,calculatedSelf);
 
   }else{
-    const lead=5,intro=8,endTime=8,self=5;
-    const remain=Math.max(0,total-lead-intro-endTime-self);
+    const stabilize = total >= 85 ? 5 : 3;
+    const grandTotal = total + stabilize;
+    
+    // 5% cho Ổn định & Dẫn nhập (trừ stabilize)
+    const calculatedLead = Math.max(2, Math.round(grandTotal * 0.05) - stabilize);
+    
+    // 15% cho Lý thuyết liên quan
+    const calculatedTheory = Math.max(5, Math.round(grandTotal * 0.15));
+    
+    // 10% cho Trình tự & Thao tác mẫu
+    const calculatedDemo = Math.max(5, Math.round(grandTotal * 0.10));
+    
+    // 5% cho Đánh giá & Tổng kết
+    const calculatedEval = Math.max(2, Math.round(grandTotal * 0.05));
+    
+    // 5% cho Vệ sinh công nghiệp & Tự rèn luyện
+    const calculatedClean = Math.max(2, Math.round(grandTotal * 0.05));
+    
+    // 60% cho Học sinh thực hành (remain)
+    const remain = Math.max(0, total - calculatedLead - calculatedTheory - calculatedDemo - calculatedEval - calculatedClean);
 
     push(&quot;A. DẪN NHẬP&quot;,
-      &quot;Tạo tình huống thực tế gắn với nội dung; nêu vấn đề cần giải quyết, mục tiêu kiến thức – kỹ năng và sản phẩm/kết quả người học cần đạt.&quot;,
-      &quot;Nêu vấn đề; đặt câu hỏi.&quot;,&quot;Lắng nghe; trả lời.&quot;,lead);
+      &quot;Kiểm tra an toàn bảo hộ, tạo tâm thế học tập, kích thích sự tò mò của học sinh qua tình huống thực tế hoặc sản phẩm mẫu.&quot;,
+      &quot;Kiểm tra; nêu vấn đề; gợi mở.&quot;, &quot;Lắng nghe; suy nghĩ; trả lời.&quot;, calculatedLead);
 
-    push(&quot;B. GIỚI THIỆU CHỦ ĐỀ&quot;,
-      &quot;Giới thiệu phạm vi nhiệm vụ, yêu cầu kỹ thuật, dữ liệu/công cụ cần chuẩn bị và tiêu chí đánh giá kết quả.&quot;,
-      &quot;Giải thích; minh họa.&quot;,&quot;Quan sát; ghi chép.&quot;,intro);
+    push(&quot;B. LÝ THUYẾT LIÊN QUAN&quot;,
+      &quot;Cung cấp kiến thức nền tảng (công thức, thông số, quy trình công nghệ, đọc bản vẽ...) phục vụ cho phần thực hành.&quot;,
+      &quot;Giảng giải; trình bày bản vẽ/thông số.&quot;, &quot;Lắng nghe; ghi chép.&quot;, calculatedTheory);
+
+    push(&quot;C. TRÌNH TỰ VÀ THAO TÁC MẪU&quot;,
+      &quot;Làm mẫu trực tiếp trên thiết bị, phân tích điểm dừng kỹ thuật, cảnh báo an toàn. Tổ chức cho học sinh làm thử.&quot;,
+      &quot;Làm mẫu; giải thích; hướng dẫn làm thử.&quot;, &quot;Quan sát; làm thử thao tác.&quot;, calculatedDemo);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;integrated&quot;, i === 0));
 
-    push(&quot;D. KẾT THÚC VẤN ĐỀ&quot;,
-      &quot;Đối chiếu kết quả cuối buổi với mục tiêu; chốt kiến thức, kỹ năng đã hình thành và các điểm cần cải thiện.&quot;,
-      &quot;Tổng kết; nhận xét.&quot;,&quot;Hệ thống hóa; sửa lỗi.&quot;,endTime);
+    push(&quot;E. ĐÁNH GIÁ VÀ TỔNG KẾT&quot;,
+      &quot;Học sinh tự đo đạc, đánh giá sản phẩm. Giáo viên chấm điểm, phân tích sản phẩm đạt/lỗi trực quan trước lớp.&quot;,
+      &quot;Đánh giá; nhận xét; phân tích lỗi.&quot;, &quot;Tự đo đạc; đối chiếu; rút kinh nghiệm.&quot;, calculatedEval);
 
-    push(&quot;5. Hướng dẫn tự học&quot;,
-      &quot;Giao nhiệm vụ mở rộng hoặc hoàn thiện sản phẩm bằng dữ liệu khác; yêu cầu chuẩn bị nội dung cho buổi sau.&quot;,
-      &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,self);
+    push(&quot;F. VỆ SINH CÔNG NGHIỆP VÀ TỰ HỌC&quot;,
+      &quot;Tắt điện, lau chùi thiết bị, tra dầu bảo dưỡng, quét dọn phoi/vật liệu. Giao bài tập chuẩn bị cho buổi sau.&quot;,
+      &quot;Kiểm tra vệ sinh; giao bài tập.&quot;, &quot;Vệ sinh thiết bị/vị trí; nhận nhiệm vụ.&quot;, calculatedClean);
   }
 
   const seen=new Set();
