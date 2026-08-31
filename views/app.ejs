@@ -5124,7 +5124,7 @@ async function receiveScheduleSession(data){
   $(&quot;#prevLesson&quot;).dataset.items=JSON.stringify(pld.previousLessonItems||[]);
   $(&quot;#gaNumber&quot;).dataset.date=String(pld.date||&quot;&quot;).trim();
   $(&quot;#gaNumber&quot;).dataset.className=String(pld.className||&quot;&quot;).trim();
-  $(&quot;#gaNumber&quot;).value=&quot;&quot;;
+  $(&quot;#gaNumber&quot;).value=pld.scheduleTT ? String(pld.scheduleTT).padStart(2, &quot;0&quot;) : &quot;&quot;;
   $(&quot;#btnGenerate&quot;).disabled=false;
   $(&quot;#btnGenerate&quot;).classList.add(&quot;primary&quot;);
   $(&quot;#btnGenerate&quot;).title=&quot;Tạo giáo án từ đúng dữ liệu buổi học đã chọn ở Sổ đầu bài.&quot;;
