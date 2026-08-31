@@ -3247,7 +3247,7 @@ function activityRows(type,items,total){
         if (isFirstOfGroup) {
             if (type === &quot;practice&quot;) rowTitle = &quot;C. HƯỚNG DẪN THƯỜNG XUYÊN\n&quot; + rowTitle;
             if (type === &quot;integrated&quot;) rowTitle = &quot;D. HỌC SINH THỰC HÀNH\n&quot; + rowTitle;
-            if (type === &quot;theory&quot;) rowTitle = &quot;B. TRÌNH BÀY NỘI DUNG\n&quot; + rowTitle;
+            if (type === &quot;theory&quot;) rowTitle = &quot;B. GIẢNG BÀI MỚI\n&quot; + rowTitle;
         }
         push(rowTitle,c.content,c.gv,c.sv,t);
       }else{
@@ -3258,23 +3258,35 @@ function activityRows(type,items,total){
   }
 
   if(type===&quot;theory&quot;){
-    const lead=5,endTime=8,self=5;
-    const remain=Math.max(0,total-lead-endTime-self);
+    const stabilize = total >= 85 ? 5 : 3;
+    const grandTotal = total + stabilize;
+    
+    // 10% cho Ổn định & Kiểm tra bài cũ (trừ stabilize)
+    const calculatedLead = Math.max(2, Math.round(grandTotal * 0.10) - stabilize);
+    
+    // 15% cho Củng cố & Đánh giá
+    const calculatedEndTime = Math.max(5, Math.round(grandTotal * 0.15));
+    
+    // 5% cho Hướng dẫn tự học & Giao nhiệm vụ
+    const calculatedSelf = Math.max(2, Math.round(grandTotal * 0.05));
+    
+    // 70% cho Giảng bài mới (remain)
+    const remain = Math.max(0, total - calculatedLead - calculatedEndTime - calculatedSelf);
 
-    push(&quot;A. DẪN NHẬP&quot;,
-      &quot;Gợi mở tình huống hoặc kiến thức có liên quan trực tiếp đến bài; nêu vấn đề cần giải quyết và mục tiêu học tập để người học xác định trọng tâm.&quot;,
-      &quot;Nêu vấn đề; đặt câu hỏi.&quot;,&quot;Lắng nghe; trả lời.&quot;,lead);
+    push(&quot;A. DẪN NHẬP VÀ KIỂM TRA BÀI CŨ&quot;,
+      &quot;Chuẩn bị tâm thế, tái hiện kiến thức cũ để làm nền tảng tiếp thu kiến thức mới. Nêu mục tiêu bài học.&quot;,
+      &quot;Kiểm tra bài cũ; dẫn dắt vào bài.&quot;,&quot;Trả lời; nhận thức mục tiêu.&quot;, calculatedLead);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;theory&quot;, i === 0));
 
-    push(&quot;C. CỦNG CỐ KIẾN THỨC VÀ KẾT THÚC BÀI&quot;,
-      &quot;Hệ thống hóa các điểm cốt lõi của toàn bài; kiểm tra nhanh mức độ đạt mục tiêu và nhấn mạnh những nội dung cần ghi nhớ.&quot;,
-      &quot;Tổng kết; kiểm tra; nhận xét.&quot;,&quot;Trả lời; hệ thống hóa.&quot;,endTime);
+    push(&quot;C. CỦNG CỐ KIẾN THỨC VÀ ĐÁNH GIÁ&quot;,
+      &quot;Kiểm tra ngay mức độ tiếp thu bài của học sinh tại lớp để kịp thời điều chỉnh; hệ thống hóa kiến thức trọng tâm.&quot;,
+      &quot;Tổng kết; kiểm tra nhanh; đánh giá.&quot;,&quot;Trả lời; ghi nhớ kiến thức.&quot;,calculatedEndTime);
 
-    push(&quot;D. HƯỚNG DẪN TỰ HỌC&quot;,
-      &quot;Giao nhiệm vụ tự học có liên hệ trực tiếp với nội dung vừa học; yêu cầu chuẩn bị dữ liệu/tài liệu cho buổi tiếp theo.&quot;,
-      &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,self);
+    push(&quot;D. HƯỚNG DẪN TỰ HỌC VÀ GIAO NHIỆM VỤ&quot;,
+      &quot;Định hướng học sinh ôn tập, giao bài tập tự học và yêu cầu chuẩn bị cho bài học tiếp theo.&quot;,
+      &quot;Giao nhiệm vụ; hướng dẫn tài liệu.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,calculatedSelf);
 
   }else if(type===&quot;practice&quot;){
     // Note: 'total' here is actually lessonTotal (i.e., grandTotal - stabilize)
