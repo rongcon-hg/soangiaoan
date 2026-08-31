@@ -3230,9 +3230,9 @@ function activityRows(type,items,total){
         const c=coreStage(type,item,i);
         let rowTitle = c.label ? `${item} – ${c.label}` : item;
         if (isFirstOfGroup) {
-            if (type === &quot;practice&quot;) rowTitle = &quot;C. Hướng dẫn thường xuyên: &quot; + rowTitle;
-            if (type === &quot;integrated&quot;) rowTitle = &quot;C. Giải quyết vấn đề: &quot; + rowTitle;
-            if (type === &quot;theory&quot;) rowTitle = &quot;B. Trình bày nội dung: &quot; + rowTitle;
+            if (type === &quot;practice&quot;) rowTitle = &quot;C. HƯỚNG DẪN THƯỜNG XUYÊN: &quot; + rowTitle;
+            if (type === &quot;integrated&quot;) rowTitle = &quot;C. GIẢI QUYẾT VẤN ĐỀ: &quot; + rowTitle;
+            if (type === &quot;theory&quot;) rowTitle = &quot;B. TRÌNH BÀY NỘI DUNG: &quot; + rowTitle;
         }
         push(rowTitle,c.content,c.gv,c.sv,t);
       }else{
@@ -3246,18 +3246,18 @@ function activityRows(type,items,total){
     const lead=5,endTime=8,self=5;
     const remain=Math.max(0,total-lead-endTime-self);
 
-    push(&quot;A. Dẫn nhập&quot;,
+    push(&quot;A. DẪN NHẬP&quot;,
       &quot;Gợi mở tình huống hoặc kiến thức có liên quan trực tiếp đến bài; nêu vấn đề cần giải quyết và mục tiêu học tập để người học xác định trọng tâm.&quot;,
       &quot;Nêu vấn đề; đặt câu hỏi.&quot;,&quot;Lắng nghe; trả lời.&quot;,lead);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;theory&quot;, i === 0));
 
-    push(&quot;C. Củng cố kiến thức và kết thúc bài&quot;,
+    push(&quot;C. CỦNG CỐ KIẾN THỨC VÀ KẾT THÚC BÀI&quot;,
       &quot;Hệ thống hóa các điểm cốt lõi của toàn bài; kiểm tra nhanh mức độ đạt mục tiêu và nhấn mạnh những nội dung cần ghi nhớ.&quot;,
       &quot;Tổng kết; kiểm tra; nhận xét.&quot;,&quot;Trả lời; hệ thống hóa.&quot;,endTime);
 
-    push(&quot;D. Hướng dẫn tự học&quot;,
+    push(&quot;D. HƯỚNG DẪN TỰ HỌC&quot;,
       &quot;Giao nhiệm vụ tự học có liên hệ trực tiếp với nội dung vừa học; yêu cầu chuẩn bị dữ liệu/tài liệu cho buổi tiếp theo.&quot;,
       &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,self);
 
@@ -3265,22 +3265,22 @@ function activityRows(type,items,total){
     const lead=5,initial=10,endTime=8,self=5;
     const remain=Math.max(0,total-lead-initial-endTime-self);
 
-    push(&quot;A. Dẫn nhập&quot;,
+    push(&quot;A. DẪN NHẬP&quot;,
       &quot;Nêu nhiệm vụ thực hành, sản phẩm/kết quả cần đạt, yêu cầu kỹ thuật và tiêu chí đánh giá.&quot;,
       &quot;Nêu yêu cầu.&quot;,&quot;Lắng nghe; xác định nhiệm vụ.&quot;,lead);
 
-    push(&quot;B. Hướng dẫn ban đầu&quot;,
+    push(&quot;B. HƯỚNG DẪN BAN ĐẦU&quot;,
       &quot;Kiểm tra điều kiện thực hành; giới thiệu quy trình tổng quát, dữ liệu/công cụ cần dùng và các điểm an toàn hoặc lưu ý trước khi thao tác.&quot;,
       &quot;Hướng dẫn; kiểm tra chuẩn bị.&quot;,&quot;Quan sát; chuẩn bị.&quot;,initial);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;practice&quot;, i === 0));
 
-    push(&quot;D. Hướng dẫn kết thúc&quot;,
+    push(&quot;D. HƯỚNG DẪN KẾT THÚC&quot;,
       &quot;Nhận xét kết quả thực hành; tổng hợp các lỗi thực tế đã xuất hiện trong buổi học và hướng dẫn cách khắc phục tương ứng.&quot;,
       &quot;Nhận xét; tổng kết.&quot;,&quot;Lắng nghe; sửa lỗi.&quot;,endTime);
 
-    push(&quot;E. Hướng dẫn tự rèn luyện&quot;,
+    push(&quot;E. HƯỚNG DẪN TỰ RÈN LUYỆN&quot;,
       &quot;Giao nhiệm vụ luyện tập tiếp theo với dữ liệu khác để củng cố kỹ năng; yêu cầu tự đối chiếu bằng checklist hoặc tiêu chí đã học.&quot;,
       &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,self);
 
@@ -3288,18 +3288,18 @@ function activityRows(type,items,total){
     const lead=5,intro=8,endTime=8,self=5;
     const remain=Math.max(0,total-lead-intro-endTime-self);
 
-    push(&quot;A. Dẫn nhập&quot;,
+    push(&quot;A. DẪN NHẬP&quot;,
       &quot;Tạo tình huống thực tế gắn với nội dung; nêu vấn đề cần giải quyết, mục tiêu kiến thức – kỹ năng và sản phẩm/kết quả người học cần đạt.&quot;,
       &quot;Nêu vấn đề; đặt câu hỏi.&quot;,&quot;Lắng nghe; trả lời.&quot;,lead);
 
-    push(&quot;B. Giới thiệu chủ đề&quot;,
+    push(&quot;B. GIỚI THIỆU CHỦ ĐỀ&quot;,
       &quot;Giới thiệu phạm vi nhiệm vụ, yêu cầu kỹ thuật, dữ liệu/công cụ cần chuẩn bị và tiêu chí đánh giá kết quả.&quot;,
       &quot;Giải thích; minh họa.&quot;,&quot;Quan sát; ghi chép.&quot;,intro);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;integrated&quot;, i === 0));
 
-    push(&quot;D. Kết thúc vấn đề&quot;,
+    push(&quot;D. KẾT THÚC VẤN ĐỀ&quot;,
       &quot;Đối chiếu kết quả cuối buổi với mục tiêu; chốt kiến thức, kỹ năng đã hình thành và các điểm cần cải thiện.&quot;,
       &quot;Tổng kết; nhận xét.&quot;,&quot;Hệ thống hóa; sửa lỗi.&quot;,endTime);
 
