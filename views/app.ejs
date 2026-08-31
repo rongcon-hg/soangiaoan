@@ -3230,9 +3230,9 @@ function activityRows(type,items,total){
         const c=coreStage(type,item,i);
         let rowTitle = c.label ? `${item} – ${c.label}` : item;
         if (isFirstOfGroup) {
-            if (type === &quot;practice&quot;) rowTitle = &quot;C. HƯỚNG DẪN THƯỜNG XUYÊN: &quot; + rowTitle;
-            if (type === &quot;integrated&quot;) rowTitle = &quot;C. GIẢI QUYẾT VẤN ĐỀ: &quot; + rowTitle;
-            if (type === &quot;theory&quot;) rowTitle = &quot;B. TRÌNH BÀY NỘI DUNG: &quot; + rowTitle;
+            if (type === &quot;practice&quot;) rowTitle = &quot;C. HƯỚNG DẪN THƯỜNG XUYÊN\n&quot; + rowTitle;
+            if (type === &quot;integrated&quot;) rowTitle = &quot;C. GIẢI QUYẾT VẤN ĐỀ\n&quot; + rowTitle;
+            if (type === &quot;theory&quot;) rowTitle = &quot;B. TRÌNH BÀY NỘI DUNG\n&quot; + rowTitle;
         }
         push(rowTitle,c.content,c.gv,c.sv,t);
       }else{
@@ -3613,7 +3613,7 @@ function buildPaper(){
     if (isSelfStudy) {
       return `&lt;tr&gt;
         &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
-        &lt;td colspan=&quot;3&quot; class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title)}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
+        &lt;td colspan=&quot;3&quot; class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title).replace(/\n/g, '&lt;br&gt;')}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
           &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
             &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
             &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'expand')&quot;&gt;✨ Triển khai bằng AI&lt;/button&gt;
@@ -3629,7 +3629,7 @@ function buildPaper(){
     }
     return `&lt;tr&gt;
       &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
-      &lt;td class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title)}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
+      &lt;td class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title).replace(/\n/g, '&lt;br&gt;')}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
         &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
           &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
           &lt;button class=&quot;ai-btn&quot; onclick=&quot;runRowAI(this,'expand')&quot;&gt;✨ Triển khai bằng AI&lt;/button&gt;
