@@ -3796,6 +3796,7 @@ function buildPaper(){
   `;
   $(&quot;#paper&quot;).setAttribute(&quot;contenteditable&quot;,&quot;false&quot;);
   checkTime();
+  updatePaperSignature();
 }
 window.handleTimeInput = function(inp) {
   if (!inp) return;
