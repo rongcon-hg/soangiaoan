@@ -4136,24 +4136,38 @@ window.runRowAI=async function(btn,action){
     btn.disabled=false;
   }
 }
+function formatAIHTML(txt) {
+  return escapeHtml(txt)
+    .replace(/\n/g, "&lt;br&gt;")
+    .replace(/&amp;lt;br\/?&amp;gt;/gi, "&lt;br&gt;") // Khôi phục thẻ <br> do AI sinh ra
+    .replace(/\*\*([^*]+?)\*\*/g, "&lt;b&gt;$1&lt;/b&gt;") // Chuyển **bold** thành <b>bold</b>
+    .replace(/(^|[^\*])\*([^\*]+?)\*([^\*]|$)/g, "$1&lt;i&gt;$2&lt;/i&gt;$3"); // Chuyển *italic* thành <i>italic</i>
+}
+
 function showAICompare(cell,oldText,newText){
+  
   showModal(&quot;Gemini đề xuất chỉnh sửa&quot;,`
     &lt;div class=&quot;row2&quot;&gt;
-      &lt;div&gt;&lt;label&gt;Nội dung hiện tại&lt;/label&gt;&lt;textarea id=&quot;aiOld&quot; style=&quot;min-height:300px&quot;&gt;${escapeHtml(oldText)}&lt;/textarea&gt;&lt;/div&gt;
-      &lt;div&gt;&lt;label&gt;Gemini đề xuất&lt;/label&gt;&lt;textarea id=&quot;aiNew&quot; style=&quot;min-height:300px&quot;&gt;${escapeHtml(newText)}&lt;/textarea&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;label&gt;Nội dung hiện tại&lt;/label&gt;
+        &lt;div id=&quot;aiOld&quot; contenteditable=&quot;true&quot; style=&quot;min-height:300px; border:1px solid #ccc; padding:8px; border-radius:4px; overflow-y:auto; background:#fff;&quot;&gt;${formatAIHTML(oldText)}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div&gt;&lt;label&gt;Gemini đề xuất&lt;/label&gt;
+        &lt;div id=&quot;aiNew&quot; contenteditable=&quot;true&quot; style=&quot;min-height:300px; border:1px solid #ccc; padding:8px; border-radius:4px; overflow-y:auto; background:#fff;&quot;&gt;${formatAIHTML(newText)}&lt;/div&gt;
+      &lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;toolbar&quot; style=&quot;margin-top:12px&quot;&gt;
       &lt;button class=&quot;btn primary&quot; id=&quot;aiReplace&quot;&gt;Thay thế&lt;/button&gt;
       &lt;button class=&quot;btn&quot; id=&quot;aiAppend&quot;&gt;Chèn thêm&lt;/button&gt;
       &lt;button class=&quot;btn&quot; id=&quot;aiCancel&quot;&gt;Hủy&lt;/button&gt;
     &lt;/div&gt;`);
+    
   $(&quot;#aiReplace&quot;).onclick=()=&gt;{
-    cell.querySelector(&quot;.ai-text&quot;).innerText=$(&quot;#aiNew&quot;).value.trim();
+    cell.querySelector(&quot;.ai-text&quot;).innerHTML=$(&quot;#aiNew&quot;).innerHTML.trim();
     closeModal();
   };
   $(&quot;#aiAppend&quot;).onclick=()=&gt;{
-    const current=cell.querySelector(&quot;.ai-text&quot;).innerText.trim();
-    cell.querySelector(&quot;.ai-text&quot;).innerText=current+&quot;\n&quot;+$(&quot;#aiNew&quot;).value.trim();
+    const current=cell.querySelector(&quot;.ai-text&quot;).innerHTML.trim();
+    cell.querySelector(&quot;.ai-text&quot;).innerHTML=current+&quot;&lt;br&gt;&quot;+$(&quot;#aiNew&quot;).innerHTML.trim();
     closeModal();
   };
   $(&quot;#aiCancel&quot;).onclick=closeModal;
@@ -4941,8 +4955,12 @@ window.runRowTextbook = function(btn) {
 
   showModal('Trích xuất từ Giáo trình (' + escapeHtml(currentTextbookData.fileName || 'Giáo trình') + ')', `
     &lt;div class=&quot;row2&quot;&gt;
-      &lt;div&gt;&lt;label&gt;Nội dung hiện tại&lt;/label&gt;&lt;textarea id=&quot;aiOld&quot; style=&quot;min-height:300px&quot;&gt;${escapeHtml(oldText)}&lt;/textarea&gt;&lt;/div&gt;
-      &lt;div&gt;&lt;label&gt;Nội dung trích xuất từ Giáo trình&lt;/label&gt;&lt;textarea id=&quot;aiNew&quot; style=&quot;min-height:300px&quot;&gt;${escapeHtml(snippet)}&lt;/textarea&gt;&lt;/div&gt;
+      &lt;div&gt;&lt;label&gt;Nội dung hiện tại&lt;/label&gt;
+        &lt;div id=&quot;aiOld&quot; contenteditable=&quot;true&quot; style=&quot;min-height:300px; border:1px solid #ccc; padding:8px; border-radius:4px; overflow-y:auto; background:#fff;&quot;&gt;${formatAIHTML(oldText)}&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div&gt;&lt;label&gt;Nội dung trích xuất từ Giáo trình&lt;/label&gt;
+        &lt;div id=&quot;aiNew&quot; contenteditable=&quot;true&quot; style=&quot;min-height:300px; border:1px solid #ccc; padding:8px; border-radius:4px; overflow-y:auto; background:#fff;&quot;&gt;${formatAIHTML(snippet)}&lt;/div&gt;
+      &lt;/div&gt;
     &lt;/div&gt;
     &lt;div class=&quot;toolbar&quot; style=&quot;margin-top:12px&quot;&gt;
       &lt;button class=&quot;btn primary&quot; id=&quot;aiReplace&quot;&gt;Thay thế&lt;/button&gt;
@@ -4951,12 +4969,12 @@ window.runRowTextbook = function(btn) {
     &lt;/div&gt;`);
 
   document.getElementById('aiReplace').onclick = () => {
-    cell.querySelector('.ai-text').innerText = document.getElementById('aiNew').value.trim();
+    cell.querySelector('.ai-text').innerHTML = document.getElementById('aiNew').innerHTML.trim();
     closeModal();
   };
   document.getElementById('aiAppend').onclick = () => {
-    const current = cell.querySelector('.ai-text').innerText.trim();
-    cell.querySelector('.ai-text').innerText = current + '\n' + document.getElementById('aiNew').value.trim();
+    const current = cell.querySelector('.ai-text').innerHTML.trim();
+    cell.querySelector('.ai-text').innerHTML = current + '&lt;br&gt;' + document.getElementById('aiNew').innerHTML.trim();
     closeModal();
   };
   document.getElementById('aiCancel').onclick = closeModal;
