@@ -3940,7 +3940,7 @@ BẮT BUỘC BÁM SÁT SKILL SOẠN GIÁO ÁN:
 - Đúng cấu trúc riêng của loại giáo án; tuyệt đối không trộn Lý thuyết/Thực hành/Tích hợp.
 - 01 tiết = 45 phút; tổng thời gian phải chính xác.
 - Mỗi nội dung/tiểu hoạt động ưu tiên 5–12 phút; hạn chế tối đa 15 phút; không để lý thuyết/hướng dẫn thao tác vượt 15 phút.
-- Cột NỘI DUNG phải CỰC KỲ CHI TIẾT, BÁM SÁT VÀO THUẬT NGỮ CHUYÊN MÔN CỦA ĐÚNG NGÀNH NGHỀ. Đủ để giảng viên nhìn vào là triển khai được ngay. Tuyệt đối không viết kiểu "Trình bày lý thuyết", "Thực hiện thao tác".
+- Cột NỘI DUNG phải CỰC KỲ CHI TIẾT, BÁM SÁT VÀO THUẬT NGỮ CHUYÊN MÔN CỦA ĐÚNG NGÀNH NGHỀ. Đủ để giảng viên nhìn vào là triển khai được ngay. Tuyệt đối không viết kiểu &quot;Trình bày lý thuyết&quot;, &quot;Thực hiện thao tác&quot;.
 - Nếu là lý thuyết, khi phù hợp phải có: Gạch đầu dòng rõ ràng, công thức/thông số/tiêu chuẩn kỹ thuật (nếu có), khái niệm cốt lõi, nguyên tắc, trường hợp áp dụng, câu hỏi kiểm tra nhanh.
 - Nếu là thực hành/tích hợp, bắt buộc trình bày chi tiết theo các bước thực tế (VD: Bước 1: ... Bước 2: ...), nêu rõ thông số cài đặt/yêu cầu thao tác, cảnh báo an toàn, tiêu chuẩn kỹ thuật, lỗi thường gặp và cách khắc phục.
 - Khi chương trình ghi ngắn nhưng thời lượng lớn, phải phát triển thêm nội dung chuyên môn có giá trị; không lặp câu chữ, không kéo dài cơ học, không lan man, không bịa kiến thức.
@@ -4197,9 +4197,9 @@ Hãy rà soát toàn bộ và trả về CHỈ một JSON array hợp lệ, mỗ
 Yêu cầu:
 - Giữ nguyên số lượng dòng và index.
 - Không thay đổi thời gian.
-- PHÂN TÍCH CHUYÊN MÔN: Cột "content" KHÔNG ĐƯỢC viết chung chung kiểu "Trình bày khái niệm". Phải MÔ PHỎNG CHI TIẾT nội dung chuyên môn (VD: thay vì "Các bước hàn", phải ghi rõ "Bước 1: Làm sạch bề mặt bằng bàn chải sắt. Bước 2: Chỉnh dòng điện 100-120A...").
+- PHÂN TÍCH CHUYÊN MÔN: Cột &quot;content&quot; KHÔNG ĐƯỢC viết chung chung kiểu &quot;Trình bày khái niệm&quot;. Phải MÔ PHỎNG CHI TIẾT nội dung chuyên môn (VD: thay vì &quot;Các bước hàn&quot;, phải ghi rõ &quot;Bước 1: Làm sạch bề mặt bằng bàn chải sắt. Bước 2: Chỉnh dòng điện 100-120A...&quot;).
 - BÁM SÁT THỰC TẾ: Đặt mình vào vị trí một Giảng viên Cao cấp ngành Giáo dục Nghề nghiệp, sử dụng ĐÚNG thuật ngữ kỹ thuật, công nghệ của môn học và bài học hiện tại.
-- HÀNH ĐỘNG SƯ PHẠM: Cột "gv" và "sv" bắt buộc phải dùng các Động từ Sư phạm chuyên nghiệp, ngắn gọn (VD: gv: "Thuyết trình, làm mẫu, uốn nắn sai sót"; sv: "Lắng nghe, quan sát, thao tác lại"). Không viết thành câu dài.
+- HÀNH ĐỘNG SƯ PHẠM: Cột &quot;gv&quot; và &quot;sv&quot; bắt buộc phải dùng các Động từ Sư phạm chuyên nghiệp, ngắn gọn (VD: gv: &quot;Thuyết trình, làm mẫu, uốn nắn sai sót&quot;; sv: &quot;Lắng nghe, quan sát, thao tác lại&quot;). Không viết thành câu dài.
 - Không thêm markdown, không bao JSON bằng code fence.
 `;
     const raw=cleanAIText(await callOpenAI(prompt));
