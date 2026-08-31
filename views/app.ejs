@@ -3246,7 +3246,7 @@ function activityRows(type,items,total){
         let rowTitle = c.label ? `${item} – ${c.label}` : item;
         if (isFirstOfGroup) {
             if (type === &quot;practice&quot;) rowTitle = &quot;C. HƯỚNG DẪN THƯỜNG XUYÊN\n&quot; + rowTitle;
-            if (type === &quot;integrated&quot;) rowTitle = &quot;D. HỌC SINH THỰC HÀNH\n&quot; + rowTitle;
+            if (type === &quot;integrated&quot;) rowTitle = &quot;C. GIẢI QUYẾT VẤN ĐỀ\n&quot; + rowTitle;
             if (type === &quot;theory&quot;) rowTitle = &quot;B. GIẢNG BÀI MỚI\n&quot; + rowTitle;
         }
         push(rowTitle,c.content,c.gv,c.sv,t);
@@ -3273,20 +3273,20 @@ function activityRows(type,items,total){
     // 70% cho Giảng bài mới (remain)
     const remain = Math.max(0, total - calculatedLead - calculatedEndTime - calculatedSelf);
 
-    push(&quot;A. DẪN NHẬP VÀ KIỂM TRA BÀI CŨ&quot;,
-      &quot;Chuẩn bị tâm thế, tái hiện kiến thức cũ để làm nền tảng tiếp thu kiến thức mới. Nêu mục tiêu bài học.&quot;,
-      &quot;Kiểm tra bài cũ; dẫn dắt vào bài.&quot;,&quot;Trả lời; nhận thức mục tiêu.&quot;, calculatedLead);
+    push(&quot;A. DẪN NHẬP&quot;,
+      &quot;Gợi mở tình huống hoặc kiến thức có liên quan trực tiếp đến bài; nêu vấn đề cần giải quyết và mục tiêu học tập để người học xác định trọng tâm.&quot;,
+      &quot;Nêu vấn đề; đặt câu hỏi.&quot;,&quot;Lắng nghe; trả lời.&quot;, calculatedLead);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;theory&quot;, i === 0));
 
-    push(&quot;C. CỦNG CỐ KIẾN THỨC VÀ ĐÁNH GIÁ&quot;,
-      &quot;Kiểm tra ngay mức độ tiếp thu bài của học sinh tại lớp để kịp thời điều chỉnh; hệ thống hóa kiến thức trọng tâm.&quot;,
-      &quot;Tổng kết; kiểm tra nhanh; đánh giá.&quot;,&quot;Trả lời; ghi nhớ kiến thức.&quot;,calculatedEndTime);
+    push(&quot;C. CỦNG CỐ KIẾN THỨC VÀ KẾT THÚC BÀI&quot;,
+      &quot;Hệ thống hóa các điểm cốt lõi của toàn bài; kiểm tra nhanh mức độ đạt mục tiêu và nhấn mạnh những nội dung cần ghi nhớ.&quot;,
+      &quot;Tổng kết; kiểm tra; nhận xét.&quot;,&quot;Trả lời; hệ thống hóa.&quot;,calculatedEndTime);
 
     push(&quot;D. HƯỚNG DẪN TỰ HỌC / TỰ RÈN LUYỆN&quot;,
-      &quot;Định hướng học sinh ôn tập, giao bài tập tự học và yêu cầu chuẩn bị cho bài học tiếp theo.&quot;,
-      &quot;Giao nhiệm vụ; hướng dẫn tài liệu.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,calculatedSelf);
+      &quot;Giao nhiệm vụ tự học có liên hệ trực tiếp với nội dung vừa học; yêu cầu chuẩn bị dữ liệu/tài liệu cho buổi tiếp theo.&quot;,
+      &quot;Giao nhiệm vụ.&quot;,&quot;Ghi nhận nhiệm vụ.&quot;,calculatedSelf);
 
   }else if(type===&quot;practice&quot;){
     // Note: 'total' here is actually lessonTotal (i.e., grandTotal - stabilize)
@@ -3312,14 +3312,14 @@ function activityRows(type,items,total){
       &quot;Kiểm tra bài cũ, phổ biến mục tiêu.&quot;,&quot;Lắng nghe, trả lời câu hỏi.&quot;,calculatedLead);
 
     push(&quot;B. HƯỚNG DẪN BAN ĐẦU&quot;,
-      &quot;Phân tích quy trình công nghệ/sơ đồ thực hành. Làm mẫu thao tác (bình thường và chậm kèm giải thích). Gọi học sinh làm thử để uốn nắn. Phân chia vị trí, thiết bị.&quot;,
+      &quot;Phân tích quy trình/sơ đồ thực hành. Làm mẫu thao tác (bình thường và chậm kèm giải thích). Gọi học sinh làm thử để uốn nắn. Phân công vị trí và thiết bị thực hành.&quot;,
       &quot;Phân tích, làm mẫu, hướng dẫn làm thử, phân công.&quot;,&quot;Quan sát, làm thử, nhận vị trí và vật tư.&quot;,calculatedInitial);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;practice&quot;, i === 0));
 
     push(&quot;D. HƯỚNG DẪN KẾT THÚC&quot;,
-      &quot;Đo đạc, đánh giá chất lượng sản phẩm. Tổ chức đánh giá chéo. Nhận xét ưu/nhược điểm về ý thức kỷ luật, an toàn. Thu dọn dụng cụ, vệ sinh nhà xưởng.&quot;,
+      &quot;Nghiệm thu, đánh giá kết quả/sản phẩm thực hành. Tổ chức đánh giá chéo. Nhận xét ưu/nhược điểm về ý thức kỷ luật, an toàn. Thu dọn dụng cụ, vệ sinh khu vực thực hành.&quot;,
       &quot;Đánh giá, nhận xét, tổ chức thu dọn.&quot;,&quot;Tự đánh giá, rút kinh nghiệm, vệ sinh vị trí.&quot;,calculatedEndTime);
 
     push(&quot;E. HƯỚNG DẪN TỰ HỌC / TỰ RÈN LUYỆN&quot;,
@@ -3349,27 +3349,23 @@ function activityRows(type,items,total){
     const remain = Math.max(0, total - calculatedLead - calculatedTheory - calculatedDemo - calculatedEval - calculatedClean);
 
     push(&quot;A. DẪN NHẬP&quot;,
-      &quot;Kiểm tra an toàn bảo hộ, tạo tâm thế học tập, kích thích sự tò mò của học sinh qua tình huống thực tế hoặc sản phẩm mẫu.&quot;,
-      &quot;Kiểm tra; nêu vấn đề; gợi mở.&quot;, &quot;Lắng nghe; suy nghĩ; trả lời.&quot;, calculatedLead);
+      &quot;Tạo tình huống thực tế gắn với nội dung; nêu vấn đề cần giải quyết, mục tiêu kiến thức – kỹ năng và sản phẩm/kết quả người học cần đạt.&quot;,
+      &quot;Nêu vấn đề; đặt câu hỏi.&quot;, &quot;Lắng nghe; suy nghĩ; trả lời.&quot;, calculatedLead);
 
-    push(&quot;B. LÝ THUYẾT LIÊN QUAN&quot;,
-      &quot;Cung cấp kiến thức nền tảng (công thức, thông số, quy trình công nghệ, đọc bản vẽ...) phục vụ cho phần thực hành.&quot;,
-      &quot;Giảng giải; trình bày bản vẽ/thông số.&quot;, &quot;Lắng nghe; ghi chép.&quot;, calculatedTheory);
-
-    push(&quot;C. TRÌNH TỰ VÀ THAO TÁC MẪU&quot;,
-      &quot;Làm mẫu trực tiếp trên thiết bị, phân tích điểm dừng kỹ thuật, cảnh báo an toàn. Tổ chức cho học sinh làm thử.&quot;,
-      &quot;Làm mẫu; giải thích; hướng dẫn làm thử.&quot;, &quot;Quan sát; làm thử thao tác.&quot;, calculatedDemo);
+    push(&quot;B. GIỚI THIỆU CHỦ ĐỀ&quot;,
+      &quot;Giới thiệu phạm vi nhiệm vụ, yêu cầu kỹ thuật, dữ liệu/công cụ cần chuẩn bị. Cung cấp kiến thức nền tảng và trình bày thao tác mẫu.&quot;,
+      &quot;Giảng giải; minh họa; làm mẫu.&quot;, &quot;Quan sát; ghi chép; làm thử.&quot;, calculatedTheory + calculatedDemo);
 
     const blocks=distribute(remain,contentItems.length);
     contentItems.forEach((x,i)=&gt;addItemRows(cleanLabel(x),blocks[i],&quot;integrated&quot;, i === 0));
 
-    push(&quot;E. ĐÁNH GIÁ VÀ TỔNG KẾT&quot;,
-      &quot;Học sinh tự đo đạc, đánh giá sản phẩm. Giáo viên chấm điểm, phân tích sản phẩm đạt/lỗi trực quan trước lớp.&quot;,
-      &quot;Đánh giá; nhận xét; phân tích lỗi.&quot;, &quot;Tự đo đạc; đối chiếu; rút kinh nghiệm.&quot;, calculatedEval);
+    push(&quot;D. KẾT THÚC VẤN ĐỀ&quot;,
+      &quot;Đối chiếu kết quả cuối buổi với mục tiêu. Chấm điểm, phân tích sản phẩm đạt/lỗi trực quan trước lớp.&quot;,
+      &quot;Đánh giá; tổng kết; nhận xét.&quot;, &quot;Hệ thống hóa; sửa lỗi.&quot;, calculatedEval);
 
-    push(&quot;F. VỆ SINH CÔNG NGHIỆP VÀ HƯỚNG DẪN TỰ HỌC / TỰ RÈN LUYỆN&quot;,
-      &quot;Tắt điện, lau chùi thiết bị, tra dầu bảo dưỡng, quét dọn phoi/vật liệu. Giao bài tập chuẩn bị cho buổi sau.&quot;,
-      &quot;Kiểm tra vệ sinh; giao bài tập.&quot;, &quot;Vệ sinh thiết bị/vị trí; nhận nhiệm vụ.&quot;, calculatedClean);
+    push(&quot;E. HƯỚNG DẪN TỰ HỌC / TỰ RÈN LUYỆN&quot;,
+      &quot;Giao nhiệm vụ mở rộng hoặc hoàn thiện sản phẩm bằng dữ liệu khác; yêu cầu chuẩn bị nội dung cho buổi sau.&quot;,
+      &quot;Giao nhiệm vụ.&quot;, &quot;Ghi nhận nhiệm vụ.&quot;, calculatedClean);
   }
 
   const seen=new Set();
@@ -4197,7 +4193,7 @@ Hãy rà soát toàn bộ và trả về CHỈ một JSON array hợp lệ, mỗ
 Yêu cầu:
 - Giữ nguyên số lượng dòng và index.
 - Không thay đổi thời gian.
-- PHÂN TÍCH CHUYÊN MÔN: Cột &quot;content&quot; KHÔNG ĐƯỢC viết chung chung kiểu &quot;Trình bày khái niệm&quot;. Phải MÔ PHỎNG CHI TIẾT nội dung chuyên môn (VD: thay vì &quot;Các bước hàn&quot;, phải ghi rõ &quot;Bước 1: Làm sạch bề mặt bằng bàn chải sắt. Bước 2: Chỉnh dòng điện 100-120A...&quot;).
+- PHÂN TÍCH CHUYÊN MÔN: Cột &quot;content&quot; KHÔNG ĐƯỢC viết chung chung kiểu &quot;Trình bày khái niệm&quot;. Phải MÔ PHỎNG CHI TIẾT nội dung chuyên môn (VD: Thay vì viết chung chung &quot;Các bước thực hiện&quot;, hãy liệt kê rõ từng bước thao tác cụ thể kèm thông số/lệnh/công cụ tương ứng của đúng chuyên ngành đó).
 - BÁM SÁT THỰC TẾ: Đặt mình vào vị trí một Giảng viên Cao cấp ngành Giáo dục Nghề nghiệp, sử dụng ĐÚNG thuật ngữ kỹ thuật, công nghệ của môn học và bài học hiện tại.
 - HÀNH ĐỘNG SƯ PHẠM: Cột &quot;gv&quot; và &quot;sv&quot; bắt buộc phải dùng các Động từ Sư phạm chuyên nghiệp, ngắn gọn (VD: gv: &quot;Thuyết trình, làm mẫu, uốn nắn sai sót&quot;; sv: &quot;Lắng nghe, quan sát, thao tác lại&quot;). Không viết thành câu dài.
 - Không thêm markdown, không bao JSON bằng code fence.
