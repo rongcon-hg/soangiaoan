@@ -8,6 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <style>
+        .auth-wrapper { flex-direction: column; min-height: 100vh; height: auto; padding: 40px 20px; box-sizing: border-box; }
+        .login-footer { position: relative; margin-top: 30px; width: 100%; text-align: center; color: rgba(255,255,255,0.8); font-size: 13px; line-height: 1.6; }
         .password-container { position: relative; }
         .password-container input { padding-right: 40px; }
         .password-container > i { position: absolute; right: 10px; top: 38px; cursor: pointer; color: var(--text-light); }
@@ -45,7 +47,7 @@ window.customConfirm = async function(msg) {
     <div class="auth-wrapper">
         <div class="auth-card">
             <h2 style="display:flex; flex-direction:column; align-items:center; gap:10px;"><i class="fas fa-book-open" style="font-size:36px;"></i>Giáo án điện tử</h2>
-            <p style="text-align: center; color: var(--text-light); margin-top: -15px; margin-bottom: 25px; font-size: 14px; line-height: 1.4;">Phần hỗ trợ tạo giáo án điện tử và lịch giảng dạy bằng AI</p>
+            <p style="text-align: center; color: var(--text-light); margin-top: -15px; margin-bottom: 25px; font-size: 14px; line-height: 1.4;">Phần mềm hỗ trợ tạo giáo án điện tử và lịch giảng dạy bằng AI</p>
             <div class="auth-tabs" id="auth-tabs">
                 <div class="auth-tab active" onclick="setAuthMode('login')" id="tab-login">Đăng nhập</div>
                 <div class="auth-tab" onclick="setAuthMode('register')" id="tab-register">Đăng ký</div>
@@ -111,6 +113,10 @@ window.customConfirm = async function(msg) {
                 <button type="submit" class="btn btn-primary" style="width:100%; padding:10px; display:flex; justify-content:center; align-items:center;"><i class="fas fa-paper-plane" style="margin-right:6px"></i> Gửi mật khẩu mới</button>
                 <button type="button" class="btn btn-secondary" style="width:100%; margin-top:10px; padding:10px; display:flex; justify-content:center; align-items:center;" onclick="cancelForgot()"><i class="fas fa-arrow-left" style="margin-right:6px"></i> Quay lại</button>
             </form>
+        </div>
+        <div class="login-footer">
+            Bản quyền năm &copy; 2026 - Khoa Công nghệ thông tin - Kỹ thuật điện<br>
+            Hỗ trợ: nguyenluyen@nsg.edu.vn - 0917.919.522
         </div>
     </div>
 
@@ -343,10 +349,7 @@ window.customConfirm = async function(msg) {
         }
     </script>
 
-    <div style="position: absolute; bottom: 20px; width: 100%; text-align: center; color: rgba(255,255,255,0.8); font-size: 13px; line-height: 1.6;">
-        Bản quyền năm &copy; 2026 - Khoa Công nghệ thông tin - Kỹ thuật điện<br>
-        Hỗ trợ: nguyenluyen@nsg.edu.vn - 0917.919.522
-    </div>
+
 
 </body>
 </html>
