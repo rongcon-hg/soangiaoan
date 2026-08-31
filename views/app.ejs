@@ -3661,7 +3661,7 @@ function buildPaper(){
         &lt;td colspan=&quot;4&quot; class=&quot;content editable&quot; contenteditable=&quot;true&quot; style=&quot;text-align:center; background-color:#f8fafc; color:#0f172a;&quot;&gt;&lt;b&gt;${escapeHtml(r.title).toUpperCase()}&lt;/b&gt;&lt;/td&gt;
       &lt;/tr&gt;`;
     }
-    const isSelfStudy = type === &quot;theory&quot; && (String(r.title||&quot;&quot;).includes(&quot;Hướng dẫn tự học&quot;) || String(r.title||&quot;&quot;).includes(&quot;4. Hướng dẫn tự học&quot;));
+    const isSelfStudy = String(r.title||&quot;&quot;).toUpperCase().includes(&quot;TỰ HỌC&quot;) || String(r.title||&quot;&quot;).toUpperCase().includes(&quot;TỰ RÈN LUYỆN&quot;);
     if (isSelfStudy) {
       ttCounter++;
       return `&lt;tr&gt;
