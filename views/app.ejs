@@ -2937,9 +2937,19 @@ function activityRows(type,items,total){
   const rows=[];
   let globalStageIndex=0;
 
-  function push(title,content,gv,sv,time){
-    if(time&lt;=0) return;
-    rows.push({title,content,gv,sv,time});
+  const p = typeof currentProgram === 'function' ? currentProgram() : null;
+  const groups = Array.isArray(p?.scheduleGroups) ? p.scheduleGroups : [];
+  const itemToLesson = {};
+  groups.forEach(g => {
+    (g.items || []).forEach(it => {
+       itemToLesson[String(it||'').replace(/\s+/g,' ').trim()] = String(g.lesson||'').trim();
+    });
+  });
+  let currentLessonTracker = null;
+
+  function push(title,content,gv,sv,time, isLessonHeader = false){
+    if(time&lt;=0 && !isLessonHeader) return;
+    rows.push({title,content,gv,sv,time, isLessonHeader});
   }
 
   const contentItems=(items&amp;&amp;items.length)?items:[currentSection()?.title||&quot;Nội dung bài học&quot;];
@@ -3223,6 +3233,11 @@ function activityRows(type,items,total){
   }
 
   function addItemRows(item,block,type, isFirstOfGroup){
+    const lesson = itemToLesson[item];
+    if (lesson && lesson !== currentLessonTracker) {
+        currentLessonTracker = lesson;
+        push(lesson, '', '', '', 0, true);
+    }
     const times=segmentTimes(block);
 
     times.forEach((t,i)=&gt;{
@@ -3608,11 +3623,19 @@ function buildPaper(){
       : `Tên bài học trước: ${escapeHtml(prevValue||&quot;................................................&quot;)}`;
   }
 
+  let ttCounter = 0;
   const rowHtml=rows.map((r,i)=&gt;{
+    if (r.isLessonHeader) {
+      return `&lt;tr&gt;
+        &lt;td class=&quot;tt&quot;&gt;&lt;/td&gt;
+        &lt;td colspan=&quot;4&quot; class=&quot;content editable&quot; contenteditable=&quot;true&quot; style=&quot;text-align:center; background-color:#f8fafc; color:#0f172a;&quot;&gt;&lt;b&gt;${escapeHtml(r.title).toUpperCase()}&lt;/b&gt;&lt;/td&gt;
+      &lt;/tr&gt;`;
+    }
     const isSelfStudy = type === &quot;theory&quot; && (String(r.title||&quot;&quot;).includes(&quot;Hướng dẫn tự học&quot;) || String(r.title||&quot;&quot;).includes(&quot;4. Hướng dẫn tự học&quot;));
     if (isSelfStudy) {
+      ttCounter++;
       return `&lt;tr&gt;
-        &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
+        &lt;td class=&quot;tt&quot;&gt;${ttCounter}&lt;/td&gt;
         &lt;td colspan=&quot;3&quot; class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title).replace(/\n/g, '&lt;br&gt;')}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
           &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
             &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
@@ -3627,8 +3650,9 @@ function buildPaper(){
         &lt;td class=&quot;time&quot;&gt;&lt;input class=&quot;time-input&quot; type=&quot;number&quot; min=&quot;0&quot; value=&quot;${r.time}&quot; oninput=&quot;checkTime()&quot;&gt;&lt;/td&gt;
       &lt;/tr&gt;`;
     }
+    ttCounter++;
     return `&lt;tr&gt;
-      &lt;td class=&quot;tt&quot;&gt;${i+1}&lt;/td&gt;
+      &lt;td class=&quot;tt&quot;&gt;${ttCounter}&lt;/td&gt;
       &lt;td class=&quot;content editable ai-content-cell&quot; contenteditable=&quot;true&quot;&gt;&lt;b&gt;${escapeHtml(r.title).replace(/\n/g, '&lt;br&gt;')}&lt;/b&gt;&lt;br&gt;&lt;span class=&quot;ai-text&quot;&gt;${escapeHtml(r.content)}&lt;/span&gt;
         &lt;div class=&quot;ai-tools no-print&quot; contenteditable=&quot;false&quot;&gt;
           &lt;button class=&quot;ai-btn&quot; style=&quot;background:#0284c7;color:#fff;&quot; onclick=&quot;runRowTextbook(this)&quot;&gt;📖 Triển khai từ Giáo trình&lt;/button&gt;
