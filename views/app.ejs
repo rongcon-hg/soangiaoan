@@ -4189,8 +4189,8 @@ async function runWholeAI(){
     const payload=rows.map((tr,i)=&gt;({
       index:i+1,
       content:tr.querySelector(&quot;.ai-text&quot;)?.innerText.trim()||&quot;&quot;,
-      gv:tr.children[2]?.innerText.trim()||&quot;&quot;,
-      sv:tr.children[3]?.innerText.trim()||&quot;&quot;,
+      gv:tr.children.length &gt; 3 ? (tr.children[2]?.innerText.trim()||&quot;&quot;) : &quot;&quot;,
+      sv:tr.children.length &gt; 3 ? (tr.children[3]?.innerText.trim()||&quot;&quot;) : &quot;&quot;,
       time:Number(tr.querySelector(&quot;.time-input&quot;)?.value)||0
     }));
     const prompt=`
@@ -4226,9 +4226,13 @@ Yêu cầu:
     $(&quot;#applyWholeAI&quot;).onclick=()=&gt;{
       arr.forEach(x=&gt;{
         const tr=rows[Number(x.index)-1]; if(!tr)return;
-        const aiText=tr.querySelector(&quot;.ai-text&quot;); if(aiText&amp;&amp;x.content)aiText.innerText=x.content;
-        if(tr.children[2]&amp;&amp;x.gv)tr.children[2].innerText=x.gv;
-        if(tr.children[3]&amp;&amp;x.sv)tr.children[3].innerText=x.sv;
+        const aiText=tr.querySelector(&quot;.ai-text&quot;); 
+        if(aiText&amp;&amp;x.content) aiText.innerHTML=formatAIHTML(x.content);
+        
+        if (tr.children.length &gt; 3) {
+          if(tr.children[2]&amp;&amp;x.gv) tr.children[2].innerHTML=formatAIHTML(x.gv);
+          if(tr.children[3]&amp;&amp;x.sv) tr.children[3].innerHTML=formatAIHTML(x.sv);
+        }
       });
       closeModal();checkTime();
       $(&quot;#aiStatus&quot;).className=&quot;status ok&quot;;
