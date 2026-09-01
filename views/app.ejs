@@ -3633,7 +3633,20 @@ function buildPaper(){
   if(scheduleDate){
     const dParts = scheduleDate.split(&quot;/&quot;);
     if(dParts.length === 3){
-      signDateText = `Ngày ${dParts[0]} tháng ${dParts[1]} năm ${dParts[2]}`;
+      const day = parseInt(dParts[0], 10);
+      const month = parseInt(dParts[1], 10) - 1; // JS months are 0-11
+      const year = parseInt(dParts[2], 10);
+      
+      const dObj = new Date(year, month, day);
+      if (!isNaN(dObj.getTime())) {
+        dObj.setDate(dObj.getDate() - 7); // Lùi lại 7 ngày cho ngày soạn
+        const newDay = String(dObj.getDate()).padStart(2, '0');
+        const newMonth = String(dObj.getMonth() + 1).padStart(2, '0');
+        const newYear = dObj.getFullYear();
+        signDateText = `Ngày ${newDay} tháng ${newMonth} năm ${newYear}`;
+      } else {
+        signDateText = `Ngày ${dParts[0]} tháng ${dParts[1]} năm ${dParts[2]}`;
+      }
     }
   }
   const prevValue=String($(&quot;#prevLesson&quot;).value||&quot;&quot;).trim();
