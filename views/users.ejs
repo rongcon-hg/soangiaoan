@@ -346,13 +346,14 @@ window.customConfirm = async function(msg) {
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Họ tên</th>
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Email</th>
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Vai trò</th>
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Đơn vị</th>
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Trạng thái</th>
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Hạn sử dụng</th>
                         <th class="sticky-action" style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem; text-align:center; width:100px;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody id="users-table-body">
-                    <tr><td colspan="7" style="text-align:center; padding:24px; color:#94a3b8;">Đang tải danh sách người dùng...</td></tr>
+                    <tr><td colspan="8" style="text-align:center; padding:24px; color:#94a3b8;">Đang tải danh sách người dùng...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -558,7 +559,7 @@ window.customConfirm = async function(msg) {
 
             const tbody = document.getElementById('users-table-body');
             if (!users || !users.length) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:36px 20px; color:#94a3b8;"><i class="fas fa-user-slash" style="font-size:2rem; margin-bottom:8px; display:block; color:#cbd5e1;"></i> Không tìm thấy người dùng nào phù hợp với điều kiện tìm kiếm.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:36px 20px; color:#94a3b8;"><i class="fas fa-user-slash" style="font-size:2rem; margin-bottom:8px; display:block; color:#cbd5e1;"></i> Không tìm thấy người dùng nào phù hợp với điều kiện tìm kiếm.</td></tr>';
                 return;
             }
 
@@ -599,6 +600,7 @@ window.customConfirm = async function(msg) {
                     <td style="padding:12px; font-weight:600; color:#1e293b;">${u.full_name || '<span style="color:#94a3b8; font-weight:normal;">-</span>'}</td>
                     <td style="padding:12px; color:#475569;">${u.email || '<span style="color:#94a3b8;">-</span>'}</td>
                     <td style="padding:12px;"><span style="background:${u.role==='Admin'?'var(--primary)':'#475569'}; color:white; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600;"><i class="fas ${u.role==='Admin'?'fa-user-shield':'fa-user'}"></i> ${u.role}</span></td>
+                    <td style="padding:12px; font-weight:500; color:#334155;">${escapeHtml(u.department_name || '') || '<span style="color:#94a3b8; font-weight:normal;">-</span>'}</td>
                     <td style="padding:12px;">${u.is_verified ? '<span style="color:var(--success); font-weight:600; font-size:0.88rem;"><i class="fas fa-check-circle"></i> Đã xác thực</span>' : '<span style="color:var(--text-light); font-size:0.88rem;"><i class="fas fa-clock"></i> Chờ xác thực</span>'}</td>
                     <td style="padding:12px;">${expiryBadge}</td>
                     <td class="sticky-action" style="padding:12px; text-align:center; white-space:nowrap;">

@@ -18,7 +18,10 @@ router.get('/', authenticateToken, isAdmin, async (req, res) => {
         
         let result;
         try {
-            const query = `SELECT id, username, role, full_name, email, is_verified, expires_at, department, phone, avatar, settings FROM users ORDER BY id ASC`;
+            const query = `SELECT u.id, u.username, u.role, u.full_name, u.email, u.is_verified, u.expires_at, d.name AS department_name, u.department_id, u.phone, u.avatar, u.settings 
+                           FROM users u 
+                           LEFT JOIN departments d ON u.department_id = d.id 
+                           ORDER BY u.id ASC`;
             result = await pool.query(query);
         } catch (colErr) {
             const fallbackQuery = `SELECT id, username, role, full_name, email, is_verified FROM users ORDER BY id ASC`;
