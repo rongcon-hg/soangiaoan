@@ -442,3 +442,33 @@ table {
 .table tbody tr:hover {
     background-color: #f1f5f9;
 }
+
+
+/* Responsive Tables & Sticky Actions */
+.sticky-action {
+    position: sticky;
+    right: 0;
+    z-index: 5;
+    background: #ffffff !important;
+    box-shadow: -3px 0 8px rgba(0, 0, 0, 0.05);
+}
+thead th.sticky-action {
+    background: #f8fafc !important;
+    z-index: 6;
+    border-left: 1px solid #e2e8f0;
+}
+tbody td.sticky-action {
+    border-left: 1px solid #e2e8f0;
+}
+tr:hover td.sticky-action {
+    background: #f1f5f9 !important;
+}
+
+@media (max-width: 768px) {
+    .hide-text-mobile {
+        display: none !important;
+    }
+    .sticky-action .btn {
+        padding: 6px 10px;
+    }
+}
