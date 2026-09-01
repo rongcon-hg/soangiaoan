@@ -591,7 +591,7 @@ exports.requestRenewal = async (req, res) => {
 
 // ================= BACKUP & RESTORE =================
 
-const backupUtil = require('../utils/backup');
+// Lazy load backupUtil inside routes to save CPU
 
 exports.getBackupConfig = async (req, res) => {
     if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
@@ -631,7 +631,7 @@ exports.listBackups = async (req, res) => {
     try {
         const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
         const settings = typeof userRes.rows[0].settings === 'string' ? JSON.parse(userRes.rows[0].settings) : (userRes.rows[0].settings || {});
-        const list = await backupUtil.listBackups(settings);
+        const list = await require('../utils/backup').listBackups(settings);
         res.json({ backups: list });
     } catch(err) {
         res.status(500).json({ error: err.message });
@@ -643,7 +643,7 @@ exports.manualBackup = async (req, res) => {
     try {
         const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
         const settings = typeof userRes.rows[0].settings === 'string' ? JSON.parse(userRes.rows[0].settings) : (userRes.rows[0].settings || {});
-        await backupUtil.runBackup(settings);
+        await require('../utils/backup').runBackup(settings);
         res.json({ message: 'Tạo bản sao lưu thành công!' });
     } catch(err) {
         res.status(500).json({ error: err.message });
@@ -659,7 +659,7 @@ exports.restoreBackup = async (req, res) => {
         const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
         const settings = typeof userRes.rows[0].settings === 'string' ? JSON.parse(userRes.rows[0].settings) : (userRes.rows[0].settings || {});
         
-        await backupUtil.restoreBackup(fileId, settings);
+        await require('../utils/backup').restoreBackup(fileId, settings);
         res.json({ message: 'Khôi phục dữ liệu thành công!' });
     } catch(err) {
         res.status(500).json({ error: err.message });

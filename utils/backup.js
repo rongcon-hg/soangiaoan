@@ -1,8 +1,16 @@
 const fs = require('fs');
+
+let _google;
+function getGoogle() {
+    if (!_google) {
+        _google = require('googleapis').google;
+    }
+    return _google;
+}
+
 const path = require('path');
 const { Readable } = require('stream');
 const pool = require('../config/database');
-const { google } = require('googleapis');
 
 async function getDriveClient(email, key) {
     let actualKey = key;
@@ -14,14 +22,14 @@ async function getDriveClient(email, key) {
     }
     const formattedKey = actualKey.replace(/\\n/g, '\n');
 
-    const auth = new google.auth.JWT({
+    const auth = new getGoogle().auth.JWT({
         email: email,
         key: formattedKey,
         scopes: ['https://www.googleapis.com/auth/drive']
     });
 
     await auth.authorize();
-    const drive = google.drive({ version: 'v3', auth });
+    const drive = getGoogle().drive({ version: 'v3', auth });
     return drive;
 }
 

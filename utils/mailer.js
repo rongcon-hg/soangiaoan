@@ -1,4 +1,3 @@
-const nodemailer = require('nodemailer');
 const ejs = require('ejs');
 const path = require('path');
 const pool = require('../config/database');
@@ -30,6 +29,7 @@ exports.sendMail = async (to, subject, templateName, templateData) => {
     try {
         const config = await getSmtpConfig();
         
+        const nodemailer = require('nodemailer');
         const transporter = nodemailer.createTransport({
             host: config.host,
             port: config.port,
