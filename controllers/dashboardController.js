@@ -101,7 +101,20 @@ exports.getStats = async (req, res) => {
             const allProjectsCount = await pool.query(`SELECT COUNT(*) as c FROM projects`);
             const allSchedulesCount = await pool.query(`SELECT COUNT(*) as c FROM schedules`);
             const allLessonsCount = await pool.query(`SELECT COUNT(*) as c FROM lessons`);
+            
+            // Bổ sung dữ liệu cho biểu đồ Admin (6 tháng gần nhất)
+            const monthlyStatsRes = await pool.query(`
+                SELECT TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*) as count 
+                FROM projects 
+                WHERE created_at >= CURRENT_DATE - INTERVAL '5 months' 
+                GROUP BY month ORDER BY month ASC
+            `);
+            
             systemStats = {
+                monthlyStats: {
+                    labels: monthlyStatsRes.rows.map(r => r.month),
+                    data: monthlyStatsRes.rows.map(r => parseInt(r.count))
+                },
                 totalUsers: parseInt(allUsersCount.rows[0]?.c || 0),
                 totalProjects: parseInt(allProjectsCount.rows[0]?.c || 0),
                 totalSchedules: parseInt(allSchedulesCount.rows[0]?.c || 0),

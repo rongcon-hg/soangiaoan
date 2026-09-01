@@ -97,6 +97,29 @@ const initDb = async () => {
             )
         `);
 
+        // Tạo bảng notifications (V2)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS notifications (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                message TEXT NOT NULL,
+                type VARCHAR(50) DEFAULT 'info',
+                is_read BOOLEAN DEFAULT false,
+                link TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Tạo bảng templates (V2)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS templates (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                content TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
         // Tạo bảng lessons
         await client.query(`
             CREATE TABLE IF NOT EXISTS lessons (
@@ -130,6 +153,11 @@ pool.on('connect', async (client) => {
                 ALTER TABLE projects 
                 ADD COLUMN IF NOT EXISTS system_type VARCHAR(50) DEFAULT 'Trung cấp',
                 ADD COLUMN IF NOT EXISTS class_name VARCHAR(100);
+                
+                ALTER TABLE lessons 
+                ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'DRAFT',
+                ADD COLUMN IF NOT EXISTS reviewer_comment TEXT,
+                ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT false;
             `);
         } catch(e) {
             console.error('Auto migration warning:', e.message);

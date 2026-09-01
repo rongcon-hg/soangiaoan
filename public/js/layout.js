@@ -61,7 +61,22 @@ function injectLayout(pageId, pageTitle) {
                 <button type="button" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Thu gọn / Mở rộng menu"><i class="fas fa-bars"></i></button>
                 <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
             </div>
-            <div>
+            <div style="display:flex; align-items:center; gap:20px;">
+                <!-- V2: Notification Bell -->
+                <div class="notification-wrapper" style="position:relative; cursor:pointer;" onclick="toggleNotifications()">
+                    <i class="fas fa-bell" style="font-size: 1.2rem; color: #64748b; transition: color 0.2s;"></i>
+                    <span id="notif-badge" style="display:none; position:absolute; top:-6px; right:-6px; background:#ef4444; color:white; font-size:10px; padding:2px 5px; border-radius:10px; font-weight:bold; line-height:1;">0</span>
+                    <div id="notif-dropdown" class="notif-dropdown" style="display:none; position:absolute; top:35px; right:-10px; width:320px; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:9999;">
+                        <div style="padding:12px 15px; font-weight:bold; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:14px; color:#1e293b;">Thông báo</span>
+                            <span style="font-size:12px; color:#3b82f6; cursor:pointer;" onclick="markAllNotificationsRead(event)">Đánh dấu đã đọc</span>
+                        </div>
+                        <div id="notif-list" style="max-height:300px; overflow-y:auto; padding:0;">
+                            <div style="text-align:center; padding:20px 10px; color:#94a3b8; font-size:13px;">Chưa có thông báo nào</div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="user-greeting">
                     <span class="hello-text">Xin chào,</span> 
                     <a href="/profile" style="text-decoration:none; color:inherit;" title="Xem thông tin cá nhân">
@@ -368,3 +383,82 @@ function updateExpiryUI(user) {
         if (sbBadge) { sbBadge.innerHTML = sbBadgeHtml; sbBadge.style.display = 'block'; }
     }
 }
+
+// ================= V2: NOTIFICATION LOGIC =================
+function toggleNotifications() {
+    const dropdown = document.getElementById('notif-dropdown');
+    if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// Đóng dropdown khi click ra ngoài
+document.addEventListener('click', (e) => {
+    const wrapper = document.querySelector('.notification-wrapper');
+    const dropdown = document.getElementById('notif-dropdown');
+    if (dropdown && dropdown.style.display === 'block' && wrapper && !wrapper.contains(e.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+async function loadNotifications() {
+    try {
+        const res = await fetch(API_URL + '/users/notifications', { headers: getHeaders() });
+        if (!res.ok) return;
+        const notifs = await res.json();
+        
+        const list = document.getElementById('notif-list');
+        const badge = document.getElementById('notif-badge');
+        
+        if (!notifs || notifs.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding:20px 10px; color:#94a3b8; font-size:13px;">Chưa có thông báo nào</div>';
+            badge.style.display = 'none';
+            return;
+        }
+
+        const unreadCount = notifs.filter(n => !n.is_read).length;
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+
+        let html = '';
+        notifs.forEach(n => {
+            const bg = n.is_read ? 'transparent' : '#f0f9ff';
+            const icon = n.type === 'success' ? '<i class="fas fa-check-circle" style="color:#22c55e;"></i>' : 
+                         n.type === 'error' ? '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i>' : 
+                         '<i class="fas fa-info-circle" style="color:#3b82f6;"></i>';
+            html += `
+                <div style="padding:12px 15px; border-bottom:1px solid #f1f5f9; background:${bg}; display:flex; gap:12px; align-items:flex-start; font-size:13px; line-height:1.4;">
+                    <div style="margin-top:2px;">${icon}</div>
+                    <div>
+                        <div style="color:#334155; margin-bottom:4px;">${n.message}</div>
+                        <div style="font-size:11px; color:#94a3b8;">${new Date(n.created_at).toLocaleString('vi-VN')}</div>
+                    </div>
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+
+    } catch (e) {
+        console.error('Lỗi tải thông báo', e);
+    }
+}
+
+async function markAllNotificationsRead(e) {
+    if (e) e.stopPropagation();
+    try {
+        await fetch(API_URL + '/users/notifications/read', { method: 'POST', headers: getHeaders() });
+        loadNotifications();
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+// Tự động load thông báo
+window.addEventListener('DOMContentLoaded', () => {
+    // Đợi token check
+    setTimeout(loadNotifications, 1000);
+});

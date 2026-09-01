@@ -116,4 +116,30 @@ router.delete('/:id', authenticateToken, isAdmin, async (req, res) => {
     }
 });
 
+
+// Lấy danh sách thông báo của user (Phase 1)
+router.get('/notifications', authenticateToken, async (req, res) => {
+    try {
+        const pool = require('../config/database');
+        const notifRes = await pool.query(
+            'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20',
+            [req.user.id]
+        );
+        res.json(notifRes.rows);
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Đánh dấu đã đọc thông báo (Phase 1)
+router.post('/notifications/read', authenticateToken, async (req, res) => {
+    try {
+        const pool = require('../config/database');
+        await pool.query('UPDATE notifications SET is_read = true WHERE user_id = $1', [req.user.id]);
+        res.json({ success: true });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

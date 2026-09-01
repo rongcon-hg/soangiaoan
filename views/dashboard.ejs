@@ -324,6 +324,43 @@
             return String(s || "").replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); 
         }
 
+        
+        // ================= V2: Thống kê & Biểu đồ =================
+        let adminChartInstance = null;
+        function renderAdminChart(monthlyStats) {
+            if (!monthlyStats || !monthlyStats.labels || monthlyStats.labels.length === 0) return;
+            const ctx = document.getElementById('adminMonthlyChart').getContext('2d');
+            if (adminChartInstance) adminChartInstance.destroy();
+            adminChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthlyStats.labels.map(l => {
+                        const parts = l.split('-');
+                        return `Tháng ${parts[1]}/${parts[0]}`;
+                    }),
+                    datasets: [{
+                        label: 'Số lượng môn học/giáo trình mới',
+                        data: monthlyStats.data,
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgb(37, 99, 235)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }
+        
+        function exportAdminStats() {
+            alert("Tính năng Xuất Báo Cáo Excel sẽ được kích hoạt ở Phase 5!");
+        }
+
         async function loadDashboardData() {
             try {
                 const res = await fetch(API_URL + "/dashboard/stats", {

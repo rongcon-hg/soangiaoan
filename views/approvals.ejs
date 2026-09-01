@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phê duyệt Giáo án - Hệ thống Giáo án điện tử</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div id="alert-box"></div>
+
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; color:var(--primary);"><i class="fas fa-check-double"></i> Danh sách Giáo án Chờ Duyệt</h3>
+            <button class="btn btn-secondary" onclick="loadPendingLessons()"><i class="fas fa-sync-alt"></i> Làm mới</button>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table class="table" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th>Người gửi</th>
+                        <th>Môn học</th>
+                        <th>Bài số</th>
+                        <th>Thời gian gửi</th>
+                        <th style="text-align:right;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="pending-list">
+                    <tr><td colspan="5" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div id="review-modal" class="modal">
+        <div class="modal-content" style="max-width:500px;">
+            <div class="modal-header">
+                <h2>Phê duyệt Giáo án</h2>
+                <span class="close" onclick="closeReviewModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="review-lesson-id">
+                <div class="form-group">
+                    <label>Quyết định phê duyệt:</label>
+                    <select id="review-status" class="form-control" onchange="toggleComment()">
+                        <option value="APPROVED">Đồng ý phê duyệt</option>
+                        <option value="REJECTED">Từ chối (Yêu cầu làm lại)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="comment-group" style="display:none;">
+                    <label>Lý do từ chối (Nhận xét):</label>
+                    <textarea id="review-comment" class="form-control" rows="3" placeholder="Nhập lý do tại sao giáo án bị từ chối..."></textarea>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="submitReview()" style="width:100%;">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/layout.js"></script>
+    <script>
+        injectLayout('approvals', 'Phê duyệt Giáo án');
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuth(true).then(user => {
+                if(user && user.role !== 'Admin' && user.role !== 'Manager') {
+                    window.location.href = '/dashboard';
+                } else {
+                    loadPendingLessons();
+                }
+            });
+        });
+
+        async function loadPendingLessons() {
+            const tbody = document.getElementById('pending-list');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Đang tải...</td></tr>';
+            try {
+                const res = await fetch(API_URL + '/approvals/pending', { headers: getHeaders() });
+                if (!res.ok) throw new Error('Không thể tải danh sách');
+                const data = await res.json();
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#64748b;">Không có giáo án nào đang chờ duyệt.</td></tr>';
+                    return;
+                }
+
+                let html = '';
+                data.forEach(item => {
+                    const dateStr = new Date(item.updated_at).toLocaleString('vi-VN');
+                    html += `
+                        <tr>
+                            <td><b>${escapeHtml(item.author_name || item.username)}</b></td>
+                            <td>${escapeHtml(item.project_name)}</td>
+                            <td>Bài ${item.schedule_tt}</td>
+                            <td>${dateStr}</td>
+                            <td style="text-align:right;">
+                                <a href="/app?id=${item.project_id}&tt=${item.schedule_tt}" target="_blank" class="btn btn-secondary btn-sm" title="Xem giáo án"><i class="fas fa-eye"></i></a>
+                                <button class="btn btn-primary btn-sm" onclick="openReviewModal('${item.lesson_id}')"><i class="fas fa-gavel"></i> Duyệt</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">${e.message}</td></tr>`;
+            }
+        }
+
+        function openReviewModal(lessonId) {
+            document.getElementById('review-lesson-id').value = lessonId;
+            document.getElementById('review-status').value = 'APPROVED';
+            document.getElementById('review-comment').value = '';
+            toggleComment();
+            document.getElementById('review-modal').style.display = 'block';
+        }
+
+        function closeReviewModal() {
+            document.getElementById('review-modal').style.display = 'none';
+        }
+
+        function toggleComment() {
+            const status = document.getElementById('review-status').value;
+            document.getElementById('comment-group').style.display = status === 'REJECTED' ? 'block' : 'none';
+        }
+
+        async function submitReview() {
+            const lessonId = document.getElementById('review-lesson-id').value;
+            const status = document.getElementById('review-status').value;
+            const comment = document.getElementById('review-comment').value;
+
+            if (status === 'REJECTED' && !comment.trim()) {
+                return showAlert('Vui lòng nhập lý do từ chối!', 'error');
+            }
+
+            try {
+                const res = await fetch(API_URL + '/approvals/' + lessonId + '/review', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ status, comment })
+                });
+                if (!res.ok) throw new Error('Có lỗi xảy ra');
+                showAlert('Đã xử lý giáo án thành công!', 'success');
+                closeReviewModal();
+                loadPendingLessons();
+            } catch(e) {
+                showAlert(e.message, 'error');
+            }
+        }
+
+        function escapeHtml(s) { return (s || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    </script>
+</body>
+</html>
