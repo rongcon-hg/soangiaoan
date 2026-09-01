@@ -1009,7 +1009,7 @@ function parseProgramTable(htmlText, detailMap){
    const txt=t.textContent||&quot;&quot;;
    const rowCount = t.querySelectorAll(&quot;tr&quot;).length;
    if(rowCount &gt; maxRows) { maxRows = rowCount; biggestTable = t; }
-   if(/Tên chương/phần|Tên các bài/phần|Tên bài|Nội dung/i.test(txt) &amp;&amp; (/Lý thuyết|LT|Số tiết|Thời gian/i.test(txt))){
+   if(/Tên chương|Tên phần|Tên các bài|Tên các phần|Tên bài|Nội dung/i.test(txt) &amp;&amp; (/Lý thuyết|LT|Số tiết|Thời gian/i.test(txt))){
      table=t; break;
    }
  }
