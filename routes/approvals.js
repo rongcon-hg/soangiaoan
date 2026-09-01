@@ -25,13 +25,19 @@ router.post('/submit', authenticateToken, async (req, res) => {
         
         if (updateRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy giáo án' });
         
-        // Gửi thông báo cho Manager
-        await pool.query(`
-            INSERT INTO notifications (user_id, type, message, link)
-            SELECT u.id, 'info', $1, '/approvals'
-            FROM users u
-            WHERE u.role = 'Manager' AND u.department_id = $2
-        `, [`Giáo viên ${req.user.username} vừa gửi giáo án chờ duyệt.`, req.user.department_id]);
+        // Fetch author's department_id
+        const userRes = await pool.query('SELECT department_id FROM users WHERE id = $1', [req.user.id]);
+        const authorDept = userRes.rows[0]?.department_id;
+        
+        if (authorDept) {
+            // Gửi thông báo cho Manager cùng Khoa
+            await pool.query(`
+                INSERT INTO notifications (user_id, type, message, link)
+                SELECT u.id, 'info', $1, '/approvals'
+                FROM users u
+                WHERE u.role = 'Manager' AND u.department_id = $2
+            `, [`Giáo viên ${req.user.username} vừa gửi giáo án chờ duyệt.`, authorDept]);
+        }
         
         res.json({ message: 'Đã gửi duyệt thành công' });
     } catch (err) {
