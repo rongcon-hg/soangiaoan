@@ -61,9 +61,12 @@ exports.runBackup = async (adminSettings) => {
         const drive = await getDriveClient(adminSettings.drive_email, adminSettings.drive_key);
         const backupFolderId = await ensureBackupFolder(drive, adminSettings.drive_folder);
 
+        const bufferStream = new require('stream').PassThrough();
+        bufferStream.end(Buffer.from(jsonString, 'utf-8'));
+        
         const res = await drive.files.create({
             resource: { name: fileName, parents: [backupFolderId] },
-            media: { mimeType: 'application/json', body: Readable.from(jsonString) },
+            media: { mimeType: 'application/json', body: bufferStream },
             fields: 'id, name, createdTime, size',
             supportsAllDrives: true
         });
