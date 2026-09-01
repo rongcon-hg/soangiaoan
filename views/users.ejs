@@ -368,6 +368,7 @@ window.customConfirm = async function(msg) {
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
     <script>
@@ -403,6 +404,55 @@ window.customConfirm = async function(msg) {
                 loadDeptsForUsers().then(() => loadUsers());
             }
         });
+
+        async function handleExcelImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data);
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                if (jsonData.length === 0) throw new Error('File Excel trống');
+                
+                // Map data
+                const usersToImport = jsonData.map(row => ({
+                    username: row['Tên đăng nhập'] || row['Username'] || row['username'],
+                    password: String(row['Mật khẩu'] || row['Password'] || row['password'] || 'Nsg@2026'),
+                    full_name: row['Họ và tên'] || row['Fullname'] || row['full_name'] || '',
+                    email: row['Email'] || row['email'] || '',
+                    phone: String(row['Số điện thoại'] || row['Phone'] || row['phone'] || ''),
+                    role: row['Quyền hạn'] || row['Role'] || row['role'] || 'User',
+                    department: row['Đơn vị'] || row['Khoa'] || row['department'] || ''
+                })).filter(u => u.username && u.email); // Bắt buộc có username và email
+
+                if (usersToImport.length === 0) {
+                    throw new Error('Không tìm thấy dữ liệu hợp lệ. Cột phải có tên: "Tên đăng nhập", "Email", "Họ và tên"');
+                }
+
+                if (!(await customConfirm(`Đã tìm thấy ${usersToImport.length} tài khoản hợp lệ. Bạn có chắc muốn tạo?`))) {
+                    event.target.value = '';
+                    return;
+                }
+
+                // Gửi API (bạn có thể tạo bulk endpoint, hoặc gọi vòng lặp nếu chưa có API bulk)
+                const res = await fetch(API_URL + '/users/bulk', {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ users: usersToImport })
+                });
+                const result = await res.json();
+                
+                if (!res.ok) throw new Error(result.error || result.message || 'Lỗi nhập dữ liệu');
+                showAlert(result.message || `Đã nhập thành công!`, 'success');
+                loadUsers();
+            } catch (err) {
+                showAlert(err.message, 'error');
+            }
+            event.target.value = ''; // reset
+        }
 
         function escapeHtml(s) {
             return String(s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
