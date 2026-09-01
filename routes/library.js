@@ -7,7 +7,7 @@ const authenticateToken = require('../middlewares/auth');
 router.get('/', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(`
-            SELECT l.id as lesson_id, l.project_id, l.schedule_tt, l.updated_at,
+            SELECT l.id as lesson_id, l.project_id, l.schedule_tt, l.updated_at, l.pdf_link,
                    p.name as project_name, p.system_type,
                    u.full_name as author_name, u.username, d.name as department_name
             FROM lessons l
