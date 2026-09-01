@@ -4,6 +4,10 @@ const pool = require('../config/database');
 const bcrypt = require('bcryptjs');
 const authenticateToken = require('../middlewares/auth');
 const mailer = require('../utils/mailer');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+const xlsx = require('xlsx');
+
 
 // Middleware to check if user is Admin
 const isAdmin = (req, res, next) => {
@@ -56,6 +60,108 @@ router.post('/', authenticateToken, isAdmin, async (req, res) => {
         res.status(201).json({ message: 'Thêm người dùng thành công' });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+
+// GET /api/users/template
+router.get('/template', authenticateToken, isAdmin, (req, res) => {
+    try {
+        const wb = xlsx.utils.book_new();
+        const wsData = [
+            ['Tên đăng nhập (*)', 'Họ và tên', 'Email', 'Vai trò (Admin/Manager/User)', 'Mật khẩu', 'Mã phòng ban (ID)']
+        ];
+        wsData.push(['nguyenvana', 'Nguyễn Văn A', 'nva@example.com', 'User', '123456', '']);
+        const ws = xlsx.utils.aoa_to_sheet(wsData);
+        ws['!cols'] = [{wch: 20}, {wch: 30}, {wch: 25}, {wch: 25}, {wch: 15}, {wch: 15}];
+        xlsx.utils.book_append_sheet(wb, ws, 'UsersTemplate');
+        const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        res.setHeader('Content-Disposition', 'attachment; filename="Mau_Import_Nguoi_Dung.xlsx"');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(buffer);
+    } catch(e) {
+        res.status(500).json({message: e.message});
+    }
+});
+
+// GET /api/users/export
+router.get('/export', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const query = `SELECT u.username, u.full_name, u.email, u.role, d.name AS department_name, u.is_verified, u.expires_at, u.last_login 
+                       FROM users u LEFT JOIN departments d ON u.department_id = d.id ORDER BY u.id ASC`;
+        const result = await pool.query(query);
+
+        const wsData = [
+            ['Tên đăng nhập', 'Họ và tên', 'Email', 'Vai trò', 'Phòng ban', 'Trạng thái', 'Hạn sử dụng', 'Đăng nhập cuối']
+        ];
+
+        result.rows.forEach(r => {
+            const exp = r.expires_at ? new Date(r.expires_at).toLocaleDateString('vi-VN') : 'Không giới hạn';
+            const ll = r.last_login ? new Date(r.last_login).toLocaleString('vi-VN') : 'Chưa đăng nhập';
+            const status = r.is_verified ? 'Đã xác thực' : 'Chờ xác thực';
+            wsData.push([
+                r.username, r.full_name || '', r.email || '', r.role, r.department_name || '', status, exp, ll
+            ]);
+        });
+
+        const wb = xlsx.utils.book_new();
+        const ws = xlsx.utils.aoa_to_sheet(wsData);
+        ws['!cols'] = [ {wch: 15}, {wch: 25}, {wch: 25}, {wch: 15}, {wch: 20}, {wch: 15}, {wch: 15}, {wch: 20} ];
+        xlsx.utils.book_append_sheet(wb, ws, 'UsersList');
+
+        const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+        res.setHeader('Content-Disposition', 'attachment; filename="Danh_Sach_Nguoi_Dung.xlsx"');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(buffer);
+    } catch(e) {
+        res.status(500).json({message: e.message});
+    }
+});
+
+// POST /api/users/import
+router.post('/import', authenticateToken, isAdmin, upload.single('file'), async (req, res) => {
+    if (!req.file) return res.status(400).json({ message: 'Vui lòng chọn file Excel.' });
+
+    try {
+        const wb = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const data = xlsx.utils.sheet_to_json(ws, { header: 1 });
+
+        if (data.length < 2) return res.status(400).json({ message: 'File không có dữ liệu hợp lệ.' });
+
+        const rows = data.slice(1);
+        let successCount = 0;
+        let skipCount = 0;
+
+        for (let row of rows) {
+            if (!row[0]) continue; // skip empty rows
+            
+            const username = row[0].toString().trim();
+            const full_name = row[1] ? row[1].toString().trim() : null;
+            const email = row[2] ? row[2].toString().trim() : null;
+            const role = row[3] ? row[3].toString().trim() : 'User';
+            const rawPassword = row[4] ? row[4].toString().trim() : '123456';
+            let dept_id = row[5] ? parseInt(row[5], 10) : null;
+            if (isNaN(dept_id)) dept_id = null;
+
+            const check = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
+            if (check.rows.length > 0) {
+                skipCount++;
+                continue;
+            }
+
+            const hashedPassword = await bcrypt.hash(rawPassword, 10);
+            let finalExpires = role === 'Admin' ? '2099-12-31 23:59:59' : null;
+            
+            const query = `INSERT INTO users (username, password, email, role, full_name, department_id, is_verified, expires_at) 
+                           VALUES ($1, $2, $3, $4, $5, $6, true, COALESCE($7, CURRENT_TIMESTAMP + INTERVAL '1 month'))`;
+            await pool.query(query, [username, hashedPassword, email, role, full_name, dept_id, finalExpires]);
+            successCount++;
+        }
+
+        res.json({ message: `Import thành công ${successCount} tài khoản, bỏ qua ${skipCount} (bị trùng Tên đăng nhập).` });
+    } catch(e) {
+        res.status(500).json({message: 'Lỗi đọc file: ' + e.message});
     }
 });
 
