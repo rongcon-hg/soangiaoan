@@ -80,7 +80,9 @@
             const tbody = document.getElementById('pending-list');
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Đang tải...</td></tr>';
             try {
-                const res = await fetch(API_URL + '/approvals/pending', { headers: getHeaders() });
+                const res = await fetch(API_URL + '/approvals/pending?t=' + Date.now(), { 
+                    headers: Object.assign({}, getHeaders(), { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }) 
+                });
                 if (!res.ok) throw new Error('Không thể tải danh sách');
                 const data = await res.json();
 

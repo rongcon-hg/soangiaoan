@@ -160,7 +160,8 @@ router.get('/debug_info', async (req, res) => {
             WHERE l.status = 'PENDING' AND u.department_id = $1
         `;
         const p = await pool.query(pendingQ, [1]);
-        res.json({ users: u.rows, lessons: l.rows, pendingMatches: p.rows });
+        const n = await pool.query("SELECT * FROM notifications ORDER BY created_at DESC LIMIT 10");
+        res.json({ users: u.rows, lessons: l.rows, pendingMatches: p.rows, notifications: n.rows });
     } catch(e) {
         res.status(500).json({error: e.message});
     }

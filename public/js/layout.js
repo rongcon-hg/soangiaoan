@@ -409,7 +409,7 @@ document.addEventListener('click', (e) => {
 
 async function loadNotifications() {
     try {
-        const res = await fetch(API_URL + '/users/notifications', { headers: getHeaders() });
+        const res = await fetch(API_URL + '/users/notifications?t=' + Date.now(), { headers: Object.assign({}, getHeaders(), { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }) });
         if (!res.ok) return;
         const notifs = await res.json();
         
