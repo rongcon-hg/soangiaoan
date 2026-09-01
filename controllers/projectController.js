@@ -8,7 +8,7 @@ exports.getAllProjects = async (req, res) => {
         
         const projects = result.rows.map(row => {
             if (row.program_data) {
-                try { row.program_data = JSON.parse(row.program_data); } 
+                try { row.program_data = typeof row.program_data === 'string' ? JSON.parse(row.program_data) : row.program_data; } 
                 catch(e) { row.program_data = null; }
             }
             return row;
@@ -32,7 +32,7 @@ exports.getProjectById = async (req, res) => {
         if (!project) return res.status(404).json({ message: 'Project not found' });
         
         if (project.program_data) {
-            try { project.program_data = JSON.parse(project.program_data); } 
+            try { project.program_data = typeof project.program_data === 'string' ? JSON.parse(project.program_data) : project.program_data; } 
             catch(e) { project.program_data = null; }
         }
         

@@ -12,7 +12,7 @@ exports.getScheduleByProjectId = async (req, res) => {
 
         if (!row) return res.json(null);
         
-        try { row.schedule_data = JSON.parse(row.schedule_data); } catch(e) { }
+        try { row.schedule_data = typeof row.schedule_data === 'string' ? JSON.parse(row.schedule_data) : row.schedule_data; } catch(e) { }
         res.json(row);
     } catch (error) {
         res.status(500).json({ error: error.message });

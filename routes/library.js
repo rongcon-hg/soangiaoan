@@ -85,7 +85,7 @@ router.post('/clone/:lesson_id', authenticateToken, async (req, res) => {
         let originalSchedule = [];
         if (sRes.rows.length > 0 && sRes.rows[0].schedule_data) {
             try {
-                originalSchedule = JSON.parse(sRes.rows[0].schedule_data);
+                originalSchedule = typeof sRes.rows[0].schedule_data === 'string' ? JSON.parse(sRes.rows[0].schedule_data) : sRes.rows[0].schedule_data;
             } catch(e) {}
         }
         const originalRow = originalSchedule.find(s => parseInt(s.tt) === lesson.schedule_tt);
