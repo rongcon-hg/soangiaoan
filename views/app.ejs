@@ -927,7 +927,7 @@ function parseDetailItems(text){
  }
 
  for(const line of lines){
-   const lm=line.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.*)$/i);
+   const lm=line.match(/^(?:Bài|Chương|Phần)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.*)$/i);
    if(lm){
      currentNo=romanToInt(lm[1]);
      const titleRaw=line.replace(/\s*Thời gian\s*[:\-].*$/i,&quot;&quot;).trim();
@@ -942,14 +942,14 @@ function parseDetailItems(text){
    if(currentNo===null) continue;
 
    // Nhận diện phần Nội dung: 2. Nội dung / Nội dung / Nội dung của bài / Nội dung bài học / Nội dung chi tiết
-   if(/^(?:\d+\.\s*)?Nội\s*dung(?:\s*chi\s*tiết|\s*của\s*(?:bài|chương)|\s*(?:bài\s*học|chương))?\s*:?\s*$/i.test(line)){
+   if(/^(?:\d+\.\s*)?Nội\s*dung(?:\s*chi\s*tiết|\s*của\s*(?:bài|chương|phần)|\s*(?:bài\s*học|chương))?\s*:?\s*$/i.test(line)){
      inContent=true;
      inObjectives=false;
      continue;
    }
 
    // Nhận diện phần Mục tiêu: 1. Mục tiêu / Mục tiêu / Mục tiêu của bài / Mục tiêu bài học / Mục tiêu của chương
-   if(/^(?:\d+\.\s*)?Mục\s*tiêu(?:\s*của\s*(?:bài|chương)|\s*(?:bài\s*học|chương))?\s*:?\s*$/i.test(line)){
+   if(/^(?:\d+\.\s*)?Mục\s*tiêu(?:\s*của\s*(?:bài|chương|phần)|\s*(?:bài\s*học|chương))?\s*:?\s*$/i.test(line)){
      inContent=false;
      inObjectives=true;
      continue;
@@ -958,7 +958,7 @@ function parseDetailItems(text){
    if(inObjectives){
      const trimmed = line.trim();
      if(trimmed){
-       if(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i.test(trimmed)){
+       if(/^(?:Bài|Chương|Phần)\s*(\d+|[IVXLCDM]+)/i.test(trimmed)){
          inObjectives=false;
        } else {
          if(!map[currentNo].objectives) map[currentNo].objectives=[];
@@ -1009,7 +1009,7 @@ function parseProgramTable(htmlText, detailMap){
    const txt=t.textContent||&quot;&quot;;
    const rowCount = t.querySelectorAll(&quot;tr&quot;).length;
    if(rowCount &gt; maxRows) { maxRows = rowCount; biggestTable = t; }
-   if(/Tên chương|Tên các bài|Tên bài|Nội dung/i.test(txt) &amp;&amp; (/Lý thuyết|LT|Số tiết|Thời gian/i.test(txt))){
+   if(/Tên chương/phần|Tên các bài/phần|Tên bài|Nội dung/i.test(txt) &amp;&amp; (/Lý thuyết|LT|Số tiết|Thời gian/i.test(txt))){
      table=t; break;
    }
  }
@@ -1034,7 +1034,7 @@ function parseProgramTable(htmlText, detailMap){
    for(let li=0; li&lt;lines.length; li++){
      const raw=lines[li];
 
-     const lm=raw.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.+)$/i);
+     const lm=raw.match(/^(?:Bài|Chương|Phần)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.+)$/i);
      if(lm){
        currentLessonNo=romanToInt(lm[1]);
        if(!tableItemsByLesson[currentLessonNo]) tableItemsByLesson[currentLessonNo]=[];
@@ -1061,7 +1061,7 @@ function parseProgramTable(htmlText, detailMap){
    const lines=getExactCellLines(cells[1]);
    const name=lines[0] || (cells[1].textContent||&quot;&quot;).trim();
 
-   const lm=name.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.+)$/i);
+   const lm=name.match(/^(?:Bài|Chương|Phần)\s*(\d+|[IVXLCDM]+)[\.\:\-\s]\s*(.+)$/i);
    if(lm){
      const no=romanToInt(lm[1]);
      if(seenLessons.has(no)) continue;
@@ -1506,10 +1506,10 @@ async function readProgramFile(file){
    const totalDetectedItems=lessons.reduce((s,x)=&gt;s+(x.items||[]).length,0);
 
    if(programSequence.length){
-     status.innerHTML=`&lt;b&gt;Đã đọc:&lt;/b&gt; ${file.name} · ${lessons.length} Bài/Chương · ${programSequence.filter(x=&gt;x.kind===&quot;assessment&quot;).length} mốc Kiểm tra. Thi kết thúc môn đã được loại. Dữ liệu cũ đã được xóa.`+
+     status.innerHTML=`&lt;b&gt;Đã đọc:&lt;/b&gt; ${file.name} · ${lessons.length} Bài/Chương/Phần · ${programSequence.filter(x=&gt;x.kind===&quot;assessment&quot;).length} mốc Kiểm tra. Thi kết thúc môn đã được loại. Dữ liệu cũ đã được xóa.`+
        (missingLessons.length
-        ? `&lt;br&gt;&lt;span style=&quot;color:#b45309&quot;&gt;&lt;b&gt;Cảnh báo:&lt;/b&gt; ${missingLessons.length} Bài/Chương chưa nhận diện được đề mục; cần kiểm tra file gốc.&lt;/span&gt;`
-        : `&lt;br&gt;&lt;span style=&quot;color:#166534&quot;&gt;&lt;b&gt;Đã kiểm tra:&lt;/b&gt; tất cả Bài/Chương đều có dữ liệu đề mục nhận diện được · Tổng ${totalDetectedItems} đề mục.&lt;/span&gt;`);
+        ? `&lt;br&gt;&lt;span style=&quot;color:#b45309&quot;&gt;&lt;b&gt;Cảnh báo:&lt;/b&gt; ${missingLessons.length} Bài/Chương/Phần chưa nhận diện được đề mục; cần kiểm tra file gốc.&lt;/span&gt;`
+        : `&lt;br&gt;&lt;span style=&quot;color:#166534&quot;&gt;&lt;b&gt;Đã kiểm tra:&lt;/b&gt; tất cả Bài/Chương/Phần đều có dữ liệu đề mục nhận diện được · Tổng ${totalDetectedItems} đề mục.&lt;/span&gt;`);
    }else{
      status.innerHTML=`&lt;b&gt;Chưa nhận diện được bảng phân phối thời gian.&lt;/b&gt; Hệ thống không sử dụng dữ liệu cũ.`;
    }
@@ -2200,7 +2200,7 @@ function sendSessionToPlanner(index){
      });
    });
 
-       const numMatch = lessonName.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i);
+       const numMatch = lessonName.match(/^(?:Bài|Chương|Phần)\s*(\d+|[IVXLCDM]+)/i);
     const lessonNum = numMatch ? romanToInt(numMatch[1]) : null;
     let matchedLessonObj = null;
     if (lessonNum !== null) {
@@ -2325,7 +2325,7 @@ document.getElementById(&quot;tbody&quot;).innerHTML=&quot;&quot;;
   <div class="section-head">
     <div>
       <h2>BƯỚC 2. SOẠN GIÁO ÁN TỪ SỔ ĐẦU BÀI</h2>
-      <p>Bước 2 để trống hoàn toàn cho đến khi Bước 1 tải chương trình, chia lịch và chọn một buổi học. Khi đó Môn học – Mã môn, Bài/Chương, Loại giáo án, Số tiết và Tổng thời gian được truyền/tính trực tiếp từ đúng buổi trong Sổ đầu bài và bị khóa, không cho chọn lại.</p>
+      <p>Bước 2 để trống hoàn toàn cho đến khi Bước 1 tải chương trình, chia lịch và chọn một buổi học. Khi đó Môn học – Mã môn, Bài/Chương/Phần, Loại giáo án, Số tiết và Tổng thời gian được truyền/tính trực tiếp từ đúng buổi trong Sổ đầu bài và bị khóa, không cho chọn lại.</p>
     </div>
     <div class="actions"><button class="secondary" onclick="switchTab(1)" title="Quay lại" style="display:inline-flex;align-items:center;gap:6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> <span class="btn-text">Quay lại</span></button></div>
   </div>
@@ -2867,7 +2867,7 @@ function renderProgramList(){
   const box=$(&quot;#programList&quot;);
   if(!box) return;
   box.innerHTML=programs.map(p=&gt;`&lt;div class=&quot;program&quot;&gt;
-    &lt;div&gt;&lt;b&gt;${p.code}&lt;/b&gt; – ${p.name}&lt;br&gt;&lt;small&gt;${p.totalHours||&quot;?&quot;} giờ • ${p.lessons?.length||0} bài/chương • ${p.version||&quot;không phiên bản&quot;}&lt;/small&gt;&lt;/div&gt;
+    &lt;div&gt;&lt;b&gt;${p.code}&lt;/b&gt; – ${p.name}&lt;br&gt;&lt;small&gt;${p.totalHours||&quot;?&quot;} giờ • ${p.lessons?.length||0} bài/chương/phần • ${p.version||&quot;không phiên bản&quot;}&lt;/small&gt;&lt;/div&gt;
     &lt;div class=&quot;program-actions&quot;&gt;
       &lt;button class=&quot;btn mini&quot; onclick=&quot;viewProgram(${p.id})&quot;&gt;Xem&lt;/button&gt;
       &lt;button class=&quot;btn mini danger&quot; onclick=&quot;removeProgram(${p.id})&quot;&gt;Xóa&lt;/button&gt;
@@ -3440,7 +3440,7 @@ function objectives(type){
       let objText = String(g.objectivesText || (Array.isArray(g.objectives) ? g.objectives.join('\n') : '')).trim();
       
       if (!objText &amp;&amp; fullProg.length) {
-        const numMatch = name.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i);
+        const numMatch = name.match(/^(?:Bài|Chương|Phần)\s*(\d+|[IVXLCDM]+)/i);
         const lessonNum = numMatch ? romanToInt(numMatch[1]) : null;
         let found = null;
         if (lessonNum !== null) {
@@ -3469,7 +3469,7 @@ function objectives(type){
     targetLessonNames = [...new Set(targetLessonNames)];
 
     targetLessonNames.forEach(name =&gt; {
-      const numMatch = name.match(/^(?:Bài|Chương)\s*(\d+|[IVXLCDM]+)/i);
+      const numMatch = name.match(/^(?:Bài|Chương|Phần)\s*(\d+|[IVXLCDM]+)/i);
       const lessonNum = numMatch ? romanToInt(numMatch[1]) : null;
       let found = null;
       if (lessonNum !== null) {
@@ -3582,7 +3582,7 @@ async function syncUserInfo() {
 }
 function buildPaper(){
   const type=$(&quot;#type&quot;).value,p=currentProgram(),l=currentLesson(),sec=currentSection(),items=selectedContent();
-  if(!p||!l||!sec){alert(&quot;Vui lòng chọn đủ môn, bài/chương và nội dung.&quot;);return}
+  if(!p||!l||!sec){alert(&quot;Vui lòng chọn đủ môn, bài/chương/phần và nội dung.&quot;);return}
 
   if($(&quot;#subject&quot;).disabled){
     const imported=$(&quot;#scheduleImportInfo&quot;)?.innerText||&quot;&quot;;
@@ -3668,7 +3668,7 @@ function buildPaper(){
     }
   }else{
     lead = type===&quot;theory&quot;
-      ? `Tên chương: ${escapeHtml(prevValue||&quot;................................................&quot;)}`
+      ? `Tên chương/phần: ${escapeHtml(prevValue||&quot;................................................&quot;)}`
       : `Tên bài học trước: ${escapeHtml(prevValue||&quot;................................................&quot;)}`;
   }
 
@@ -3951,7 +3951,7 @@ async function testGeminiConnection(){
 function skillRulesText(){
   return `
 BẮT BUỘC BÁM SÁT SKILL SOẠN GIÁO ÁN:
-- Đúng môn học, mã môn, bài/chương, đề mục, mục tiêu và phạm vi chương trình.
+- Đúng môn học, mã môn, bài/chương/phần, đề mục, mục tiêu và phạm vi chương trình.
 - Không tự đổi tên bài, mã môn, số tiết hay phạm vi nội dung.
 - Đúng cấu trúc riêng của loại giáo án; tuyệt đối không trộn Lý thuyết/Thực hành/Tích hợp.
 - 01 tiết = 45 phút; tổng thời gian phải chính xác.
@@ -3975,7 +3975,7 @@ function currentContext(){
 Môn học: ${p?.name||&quot;&quot;}
 Mã môn: ${p?.code||&quot;&quot;}
 Loại giáo án: ${$(&quot;#type option:checked&quot;)?.textContent||&quot;&quot;}
-Bài/Chương: ${l?.title||&quot;&quot;}
+Bài/Chương/Phần: ${l?.title||&quot;&quot;}
 Đề mục: ${s?.title||&quot;&quot;}
 Các tiểu mục được chọn: ${selectedContent().join(&quot; | &quot;)}
 Số tiết: ${$(&quot;#periods&quot;).value}
@@ -4331,7 +4331,7 @@ function basicParseText(text, filename){
   const hours=Number((clean.match(/(?:Thời gian thực hiện môn học|Thời gian môn học)\s*:?\s*(\d+)\s*giờ/i)||[])[1])||0;
   const lines=clean.split(&quot;\n&quot;).map(x=&gt;x.trim()).filter(Boolean);
   const lessonIdx=[];
-  lines.forEach((x,i)=&gt;{if(/^(Bài|Chương)\s*\d+\s*(:|\.)/i.test(x) || /^(Bài tập|Bài tập tổng hợp|Kiểm tra|Thi(?: kết thúc)?)/i.test(x))lessonIdx.push(i)});
+  lines.forEach((x,i)=&gt;{if(/^(Bài|Chương|Phần)\s*\d+\s*(:|\.)/i.test(x) || /^(Bài tập|Bài tập tổng hợp|Kiểm tra|Thi(?: kết thúc)?)/i.test(x))lessonIdx.push(i)});
   const lessons=[];
   for(let k=0;k&lt;lessonIdx.length;k++){
     const start=lessonIdx[k],end=lessonIdx[k+1]??lines.length,title=lines[start];
@@ -4374,7 +4374,7 @@ function previewParsed(p){
   showModal(&quot;Xem trước chương trình được nhận diện&quot;,`
     &lt;p&gt;&lt;b&gt;Môn:&lt;/b&gt; ${escapeHtml(p.name||&quot;&quot;)}&lt;/p&gt;
     &lt;p&gt;&lt;b&gt;Mã:&lt;/b&gt; ${escapeHtml(p.code||&quot;&quot;)} &amp;nbsp; &lt;b&gt;Tổng giờ:&lt;/b&gt; ${p.totalHours||&quot;?&quot;}&lt;/p&gt;
-    &lt;p&gt;&lt;b&gt;Phát hiện:&lt;/b&gt; ${p.lessons.length} bài/chương&lt;/p&gt;
+    &lt;p&gt;&lt;b&gt;Phát hiện:&lt;/b&gt; ${p.lessons.length} bài/chương/phần&lt;/p&gt;
     &lt;div style=&quot;max-height:320px;overflow:auto;border:1px solid #ddd;padding:8px&quot;&gt;&lt;pre style=&quot;white-space:pre-wrap&quot;&gt;${escapeHtml(JSON.stringify(p.lessons,null,2))}&lt;/pre&gt;&lt;/div&gt;
     &lt;div class=&quot;toolbar&quot; style=&quot;margin-top:12px&quot;&gt;&lt;button class=&quot;btn primary&quot; id=&quot;confirmParsed&quot;&gt;Xác nhận nhập&lt;/button&gt;&lt;/div&gt;`);
   $(&quot;#confirmParsed&quot;).onclick=async()=&gt;{await addProgram(p);programs=await getAll();renderSubjects();closeModal();alert(&quot;Đã nhập chương trình.&quot;)}
@@ -4829,7 +4829,7 @@ function setFullProgramFromSchedule(pld){
     head.className=&quot;status ok&quot;;
     head.innerHTML=`&lt;b&gt;${escapeHtml(receivedFullCourse.name||&quot;&quot;)} – ${escapeHtml(receivedFullCourse.code||&quot;&quot;)}&lt;/b&gt;&lt;br&gt;
       Tổng thời gian chương trình: ${Number(receivedFullCourse.total||0)} giờ ·
-      ${receivedFullProgram.filter(x=&gt;x.kind===&quot;lesson&quot;).length} Bài/Chương ·
+      ${receivedFullProgram.filter(x=&gt;x.kind===&quot;lesson&quot;).length} Bài/Chương/Phần ·
       ${receivedFullProgram.filter(x=&gt;x.kind===&quot;assessment&quot;).length} mốc kiểm tra`;
     btn.disabled=false;
     btn.textContent=&quot;Xem toàn bộ chương trình&quot;;
@@ -4894,7 +4894,7 @@ function extractTextbookSnippet(fullText, title, sectionText) {
   // Skip TOC if present
   for (let i = 0; i < Math.min(rawLines.length, 500); i++) {
     const l = rawLines[i].trim();
-    if (l.match(/^(?:CHƯƠNG|Chương)\s+[I\d]+/i) && i > 40) {
+    if (l.match(/^(?:CHƯƠNG|Chương|PHẦN|Phần)\s+[I\d]+/i) && i > 40) {
       bodyStartIndex = i;
       break;
     }
@@ -4965,7 +4965,7 @@ function extractTextbookSnippet(fullText, title, sectionText) {
       const nextDepth = getHeadingDepth(nextNum);
 
       // Stop if chapter heading
-      if (l.match(/^(?:CHƯƠNG|Chương|BÀI|Bài)\s+[IVXLCDM\d]+/i)) {
+      if (l.match(/^(?:CHƯƠNG|Chương|BÀI|Bài|PHẦN|Phần)\s+[IVXLCDM\d]+/i)) {
         if (passage.length > 0) break;
       }
 
@@ -5239,7 +5239,7 @@ async function init(){
   $(&quot;#totalMinutes&quot;).dataset.fromSchedule=&quot;&quot;;
 
   $(&quot;#subject&quot;).innerHTML='&lt;option value=&quot;&quot;&gt;— Chưa nhận dữ liệu từ Bước 1 —&lt;/option&gt;';
-  $(&quot;#lesson&quot;).innerHTML='&lt;option value=&quot;&quot;&gt;— Chưa có bài/chương —&lt;/option&gt;';
+  $(&quot;#lesson&quot;).innerHTML='&lt;option value=&quot;&quot;&gt;— Chưa có bài/chương/phần —&lt;/option&gt;';
   $(&quot;#section&quot;).innerHTML='&lt;option value=&quot;&quot;&gt;— Chưa có nội dung —&lt;/option&gt;';
   $(&quot;#subitems&quot;).innerHTML='&lt;div class=&quot;hint&quot;&gt;Hãy tải Chương trình môn học và chia Sổ đầu bài ở Bước 1, sau đó bấm &lt;b&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/b&gt;.&lt;/div&gt;';
 
