@@ -1,6 +1,20 @@
 const API_URL = '/api';
 let currentUser = null;
 
+window.customConfirm = async function(msg) {
+    if(typeof Swal === 'undefined') return window.confirm(msg);
+    const result = await Swal.fire({
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#16469d',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Đồng ý',
+        cancelButtonText: 'Hủy'
+    });
+    return result.isConfirmed;
+};
+
 function showAlert(msg, type = 'error') {
     const box = document.getElementById('alert-box');
     if(!box) return alert(msg);
