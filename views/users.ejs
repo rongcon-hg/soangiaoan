@@ -272,7 +272,7 @@ window.customConfirm = async function(msg) {
                     <label><i class="fas fa-shield-alt" style="color:#64748b; margin-right:4px;"></i> Quyền hạn</label>
                     <select id="form-role" class="form-control">
                         <option value="User">Giáo viên (User)</option>
-                        <option value="Manager">Trưởng bộ môn (Manager)</option>
+                        <option value="Manager">Quản lý (Manager)</option>
                         <option value="Admin">Quản trị viên (Admin)</option>
                     </select>
                 </div>
@@ -378,13 +378,29 @@ window.customConfirm = async function(msg) {
         const PAGE_SIZE = 10;
         let currentPage = 1;
 
+
+        let allDepts = [];
+        async function loadDeptsForUsers() {
+            try {
+                const res = await fetch(API_URL + '/departments', { headers: getHeaders() });
+                if (res.ok) {
+                    allDepts = await res.json();
+                    const sel = document.getElementById('form-department');
+                    if (sel) {
+                        sel.innerHTML = '<option value="">-- Trống --</option>' + 
+                            allDepts.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+                    }
+                }
+            } catch(e){}
+        }
+
         checkAuth().then(user => {
             if(user) {
                 if(user.role !== 'Admin') {
                     window.location.href = '/';
                     return;
                 }
-                loadUsers();
+                loadDeptsForUsers().then(() => loadUsers());
             }
         });
 
