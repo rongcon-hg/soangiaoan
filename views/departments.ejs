@@ -94,7 +94,7 @@
                             <td style="color:#64748b;">#${d.id}</td>
                             <td><b style="color:#334155;">${escapeHtml(d.name)}</b></td>
                             <td style="color:#64748b;">${new Date(d.created_at).toLocaleDateString('vi-VN')}</td>
-                            <td style="text-align:right;">
+                            <td style="text-align:right; white-space:nowrap;">
                                 <button class="btn btn-secondary btn-sm" onclick="editDept(${d.id}, '${escapeHtml(d.name.replace(/'/g, "\\'"))}')" title="Sửa"><i class="fas fa-edit"></i></button>
                                 <button class="btn btn-secondary btn-sm" style="color:var(--danger);" onclick="deleteDept(${d.id})" title="Xoá"><i class="fas fa-trash-alt"></i></button>
                             </td>
