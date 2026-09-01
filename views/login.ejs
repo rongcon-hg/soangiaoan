@@ -170,7 +170,28 @@ window.customConfirm = async function(msg) {
         checkAuth(false).then(user => { if(user) window.location.href = '/'; });
 
         // Check Google OAuth URL parameters & Config on load
+
+        async function loadDepartmentsForReg() {
+            try {
+                const res = await fetch(API_URL + '/departments');
+                if (res.ok) {
+                    const depts = await res.json();
+                    const sel = document.getElementById('auth-department');
+                    if (sel && sel.tagName === 'SELECT') {
+                        if (depts.length === 0) {
+                            sel.innerHTML = '<option value="">(Chưa có đơn vị nào)</option>';
+                        } else {
+                            sel.innerHTML = '<option value="">-- Chọn đơn vị công tác --</option>' + 
+                                depts.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+                        }
+                    }
+                }
+            } catch(e) {}
+        }
+        function escapeHtml(s) { return (s||'').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
         window.addEventListener('DOMContentLoaded', async () => {
+            loadDepartmentsForReg();
             const urlParams = new URLSearchParams(window.location.search);
             
             // 1. Google Token returned
@@ -259,13 +280,25 @@ window.customConfirm = async function(msg) {
             const username = document.getElementById('auth-username').value;
             const password = document.getElementById('auth-password').value;
             const email = document.getElementById('auth-email').value;
+            
+            // Lấy thêm các trường mở rộng nếu đang ở chế độ đăng ký
+            let extraBody = {};
+            if (!isLoginMode) {
+                const fullNameEl = document.getElementById('auth-fullname');
+                const phoneEl = document.getElementById('auth-phone');
+                const deptEl = document.getElementById('auth-department');
+                if(fullNameEl) extraBody.full_name = fullNameEl.value;
+                if(phoneEl) extraBody.phone = phoneEl.value;
+                if(deptEl) extraBody.department_id = deptEl.value;
+            }
+
             const endpoint = isLoginMode ? '/auth/login' : '/auth/register';
             
             try {
                 const res = await fetch(API_URL + endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, email })
+                    body: JSON.stringify({ username, password, email, ...extraBody })
                 });
                 const data = await res.json();
                 

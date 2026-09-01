@@ -97,6 +97,15 @@ const initDb = async () => {
             )
         `);
 
+        // Tạo bảng departments (V2)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS departments (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL UNIQUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
         // Tạo bảng notifications (V2)
         await client.query(`
             CREATE TABLE IF NOT EXISTS notifications (
@@ -148,7 +157,8 @@ pool.on('connect', async (client) => {
                 ALTER TABLE users 
                 ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'User',
                 ADD COLUMN IF NOT EXISTS signature TEXT,
-                ADD COLUMN IF NOT EXISTS signature_filename TEXT;
+                ADD COLUMN IF NOT EXISTS signature_filename TEXT,
+                ADD COLUMN IF NOT EXISTS department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL;
 
                 ALTER TABLE projects 
                 ADD COLUMN IF NOT EXISTS system_type VARCHAR(50) DEFAULT 'Trung cấp',

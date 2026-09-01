@@ -22,6 +22,7 @@
                 <thead>
                     <tr>
                         <th>Người gửi</th>
+                        <th>Đơn vị</th>
                         <th>Môn học</th>
                         <th>Bài số</th>
                         <th>Thời gian gửi</th>
@@ -94,6 +95,7 @@
                     html += `
                         <tr>
                             <td><b>${escapeHtml(item.author_name || item.username)}</b></td>
+                            <td><span style="font-size:12px; color:#64748b;">${escapeHtml(item.department_name || 'Chưa rõ')}</span></td>
                             <td>${escapeHtml(item.project_name)}</td>
                             <td>Bài ${item.schedule_tt}</td>
                             <td>${dateStr}</td>

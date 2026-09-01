@@ -13,15 +13,33 @@ const isManager = (req, res, next) => {
 // Lấy danh sách giáo án chờ duyệt
 router.get('/pending', authenticateToken, isManager, async (req, res) => {
     try {
-        const result = await pool.query(`
+        let query = `
             SELECT l.id as lesson_id, l.project_id, l.schedule_tt, l.status, l.reviewer_comment, l.updated_at,
-                   p.name as project_name, u.full_name as author_name, u.username
+                   p.name as project_name, u.full_name as author_name, u.username, d.name as department_name
             FROM lessons l
             JOIN projects p ON l.project_id = p.id
             JOIN users u ON p.user_id = u.id
+            LEFT JOIN departments d ON u.department_id = d.id
             WHERE l.status = 'PENDING'
-            ORDER BY l.updated_at DESC
-        `);
+        `;
+        const params = [];
+        
+        // Nếu là Manager, chỉ xem giáo án của khoa mình
+        if (req.user.role === 'Manager') {
+            const userRes = await pool.query('SELECT department_id FROM users WHERE id = $1', [req.user.id]);
+            const deptId = userRes.rows[0]?.department_id;
+            if (deptId) {
+                query += ` AND u.department_id = $1`;
+                params.push(deptId);
+            } else {
+                // Manager mà chưa có khoa thì ko xem được gì
+                query += ` AND 1 = 0`; 
+            }
+        }
+        
+        query += ` ORDER BY l.updated_at DESC`;
+        
+        const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });

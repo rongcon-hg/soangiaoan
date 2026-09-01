@@ -15,9 +15,9 @@ exports.register = async (req, res) => {
 
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const query = `INSERT INTO users (username, password, email, expires_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP + INTERVAL '1 month') RETURNING id`;
+        const query = `INSERT INTO users (username, password, email, full_name, phone, department_id, expires_at) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP + INTERVAL '1 month') RETURNING id`;
         
-        const result = await pool.query(query, [username, hashedPassword, email]);
+        const result = await pool.query(query, [username, hashedPassword, email, full_name || null, phone || null, department_id || null]);
         
         const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
         const expires = new Date(Date.now() + 10 * 60000); // 10 phút

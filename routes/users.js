@@ -67,14 +67,15 @@ router.put('/:id', authenticateToken, isAdmin, async (req, res) => {
             finalExpires = '2099-12-31 23:59:59';
         }
 
+        const { department_id } = req.body;
         let query, params;
         if (password) {
             const hashedPassword = await bcrypt.hash(password, 10);
-            query = `UPDATE users SET email = $1, role = $2, full_name = $3, password = $4, expires_at = $5 WHERE id = $6`;
-            params = [email, role, full_name || null, hashedPassword, finalExpires, req.params.id];
+            query = `UPDATE users SET email = $1, role = $2, full_name = $3, password = $4, expires_at = $5, department_id = $6 WHERE id = $7`;
+            params = [email, role, full_name || null, hashedPassword, finalExpires, department_id || null, req.params.id];
         } else {
-            query = `UPDATE users SET email = $1, role = $2, full_name = $3, expires_at = $4 WHERE id = $5`;
-            params = [email, role, full_name || null, finalExpires, req.params.id];
+            query = `UPDATE users SET email = $1, role = $2, full_name = $3, expires_at = $4, department_id = $5 WHERE id = $6`;
+            params = [email, role, full_name || null, finalExpires, department_id || null, req.params.id];
         }
         await pool.query(query, params);
 

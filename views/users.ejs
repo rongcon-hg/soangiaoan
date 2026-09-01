@@ -272,7 +272,14 @@ window.customConfirm = async function(msg) {
                     <label><i class="fas fa-shield-alt" style="color:#64748b; margin-right:4px;"></i> Quyền hạn</label>
                     <select id="form-role" class="form-control">
                         <option value="User">Giáo viên (User)</option>
+                        <option value="Manager">Trưởng bộ môn (Manager)</option>
                         <option value="Admin">Quản trị viên (Admin)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-building" style="color:#64748b; margin-right:4px;"></i> Đơn vị công tác</label>
+                    <select id="form-department" class="form-control">
+                        <option value="">-- Trống --</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -495,7 +502,7 @@ window.customConfirm = async function(msg) {
                 const emailEsc = escapeHtml(u.email || '');
                 const roleEsc = escapeHtml(u.role || 'User');
                 
-                const editBtn = `<button class="btn btn-secondary btn-action" style="margin-right:4px;" onclick="openEditUserForm(${u.id}, '${usernameEsc}', '${fullNameEsc}', '${emailEsc}', '${roleEsc}', '${u.expires_at || ''}')" title="Sửa thông tin"><i class="fas fa-edit"></i> <span class="btn-action-text">Sửa</span></button>`;
+                const editBtn = `<button class="btn btn-secondary btn-action" style="margin-right:4px;" onclick="openEditUserForm(${u.id}, '${usernameEsc}', '${fullNameEsc}', '${emailEsc}', '${roleEsc}', '${u.expires_at || ''}', '${u.department_id || ''}')" title="Sửa thông tin"><i class="fas fa-edit"></i> <span class="btn-action-text">Sửa</span></button>`;
                 const delBtn = `<button class="btn btn-danger btn-action" onclick="deleteUser(${u.id})" title="Xóa người dùng"><i class="fas fa-trash-alt"></i> <span class="btn-action-text">Xóa</span></button>`;
                 
                 let expiryBadge = '';
@@ -572,11 +579,12 @@ window.customConfirm = async function(msg) {
             document.getElementById('form-email').value = '';
             document.getElementById('form-password').value = '';
             document.getElementById('form-role').value = 'User';
+            document.getElementById('form-department').value = '';
             setExpiryPreset(1);
             document.getElementById('user-form-modal').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function openEditUserForm(id, username, fullname, email, role, expiresAt) {
+        function openEditUserForm(id, username, fullname, email, role, expiresAt, deptId) {
             document.getElementById('user-form-modal').style.display = 'block'; 
             document.getElementById('form-title').innerHTML = '<i class="fas fa-user-edit"></i> Sửa thông tin: <b>' + username + '</b>';
             document.getElementById('form-user-id').value = id;
@@ -586,6 +594,7 @@ window.customConfirm = async function(msg) {
             document.getElementById('form-email').value = email || '';
             document.getElementById('form-password').value = ''; // Để trống nếu không đổi
             document.getElementById('form-role').value = role;
+            document.getElementById('form-department').value = deptId || '';
             if (expiresAt) {
                 document.getElementById('form-expires-at').value = expiresAt.split('T')[0];
             } else if (role === 'Admin') {
@@ -605,6 +614,7 @@ window.customConfirm = async function(msg) {
             const email = document.getElementById('form-email').value.trim();
             const password = document.getElementById('form-password').value;
             const role = document.getElementById('form-role').value;
+            const department_id = document.getElementById('form-department').value;
             const expires_at = document.getElementById('form-expires-at')?.value || null;
             
             if (!username) return showAlert('Vui lòng nhập tên đăng nhập');
@@ -616,7 +626,7 @@ window.customConfirm = async function(msg) {
                 const res = await fetch(API_URL + endpoint, {
                     method: method,
                     headers: getHeaders(),
-                    body: JSON.stringify({ username, full_name, email, password, role, expires_at })
+                    body: JSON.stringify({ username, full_name, email, password, role, expires_at, department_id })
                 });
                 const data = await res.json();
                 if(!res.ok) throw new Error(data.message || data.error);
