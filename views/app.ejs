@@ -5450,6 +5450,12 @@ window.addEventListener("message", async e => {
                     p.status = saved.status;
                     p.is_public = saved.is_public;
                     st.innerHTML += " <b>(Đã tải giáo án cũ từ CSDL)</b>";
+                    let statusHtml = '';
+                    if (saved.status === 'APPROVED') statusHtml = '<span id="status-badge" style="margin-left:8px; padding:3px 8px; background:#dcfce7; color:#15803d; border-radius:4px; font-weight:bold; font-size:12px;">ĐÃ DUYỆT</span>';
+                    else if (saved.status === 'PENDING') statusHtml = '<span id="status-badge" style="margin-left:8px; padding:3px 8px; background:#fef3c7; color:#b45309; border-radius:4px; font-weight:bold; font-size:12px;">CHỜ DUYỆT</span>';
+                    else if (saved.status === 'REJECTED') statusHtml = '<span id="status-badge" style="margin-left:8px; padding:3px 8px; background:#fee2e2; color:#b91c1c; border-radius:4px; font-weight:bold; font-size:12px;">BỊ TỪ CHỐI</span>';
+                    else statusHtml = '<span id="status-badge" style="margin-left:8px; padding:3px 8px; background:#f1f5f9; color:#64748b; border-radius:4px; font-weight:bold; font-size:12px;">BẢN NHÁP</span>';
+                    st.innerHTML += statusHtml;
                 }
             }
         }
@@ -5532,6 +5538,71 @@ window.addEventListener("message", async e => {
       }
   }
 });
+  window.submitApproval = async function() {
+    if (!(await customConfirm('Bạn có chắc chắn muốn gửi giáo án này cho Trưởng bộ môn duyệt không?'))) return;
+    
+    try {
+        const res = await fetch(API_URL + '/approvals/submit', {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ project_id: currentProject, schedule_tt: currentTT })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error || 'Lỗi gửi duyệt');
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ text: 'Đã gửi giáo án cho Trưởng bộ môn duyệt thành công!', icon: 'success', confirmButtonColor: '#16469d' });
+        } else {
+            alert('Đã gửi phê duyệt thành công!');
+        }
+        
+        // Update badge
+        const st = document.getElementById('transferStatus');
+        if (st) {
+            const badge = st.querySelector('#status-badge');
+            if (badge) badge.outerHTML = '<span id="status-badge" style="margin-left:8px; padding:3px 8px; background:#fef3c7; color:#b45309; border-radius:4px; font-weight:bold; font-size:12px;">CHỜ DUYỆT</span>';
+            else st.innerHTML += '<span id="status-badge" style="margin-left:8px; padding:3px 8px; background:#fef3c7; color:#b45309; border-radius:4px; font-weight:bold; font-size:12px;">CHỜ DUYỆT</span>';
+        }
+
+        const iframe = document.getElementById('plannerFrame');
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.lessonStatus = 'PENDING';
+            const btn = iframe.contentWindow.document.getElementById('btnSubmitApproval');
+            if (btn) btn.style.display = 'none';
+        }
+    } catch (err) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ text: err.message, icon: 'error' });
+        } else {
+            alert(err.message);
+        }
+    }
+  };
+
+  window.toggleLibrary = async function() {
+    if (!(await customConfirm('Bạn muốn chia sẻ giáo án này lên Thư viện chung?'))) return;
+    try {
+        const res = await fetch(API_URL + '/library/toggle', {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ project_id: currentProject, schedule_tt: currentTT })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error || 'Lỗi chia sẻ');
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ text: data.is_public ? 'Đã công khai giáo án lên Thư viện!' : 'Đã gỡ giáo án khỏi Thư viện.', icon: 'success', confirmButtonColor: '#16469d' });
+        } else {
+            alert('Thành công!');
+        }
+    } catch(err) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ text: err.message, icon: 'error' });
+        } else {
+            alert(err.message);
+        }
+    }
+  };
 </script>
 </body>
 </html>
