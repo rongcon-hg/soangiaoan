@@ -154,6 +154,30 @@ pool.on('connect', async (client) => {
         migrated = true;
         try {
             await client.query(`
+
+                CREATE TABLE IF NOT EXISTS departments (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL UNIQUE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS notifications (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                    message TEXT NOT NULL,
+                    type VARCHAR(50) DEFAULT 'info',
+                    is_read BOOLEAN DEFAULT false,
+                    link TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS templates (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    content TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
                 ALTER TABLE users 
                 ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'User',
                 ADD COLUMN IF NOT EXISTS signature TEXT,

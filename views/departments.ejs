@@ -7,49 +7,59 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        @media (min-width: 992px) {
+            .layout-grid {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="alert-box"></div>
 
-    <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="margin:0; color:var(--primary);"><i class="fas fa-building"></i> Danh mục Đơn vị / Khoa</h3>
-            <button class="btn btn-primary" onclick="openDeptModal()"><i class="fas fa-plus"></i> Thêm Đơn vị</button>
+    <div class="layout-grid">
+        <!-- Form thêm/sửa -->
+        <div class="card" style="height: fit-content;">
+            <h3 id="form-title" style="margin-top:0; color:var(--primary);"><i class="fas fa-plus-circle"></i> Thêm Đơn vị mới</h3>
+            <hr style="border:none; border-top:1px solid #e2e8f0; margin: 15px 0;">
+            <form id="deptForm" onsubmit="saveDept(event)">
+                <input type="hidden" id="dept-id">
+                <div class="form-group">
+                    <label>Tên Đơn vị/Khoa <span style="color:red">*</span></label>
+                    <input type="text" id="dept-name" class="form-control" required placeholder="VD: Khoa Công nghệ thông tin">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;"><i class="fas fa-save"></i> Lưu dữ liệu</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()" id="btn-cancel" style="display:none;"><i class="fas fa-times"></i> Hủy</button>
+                </div>
+            </form>
         </div>
 
-        <div style="overflow-x:auto;">
-            <table class="table" style="width:100%;">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên đơn vị</th>
-                        <th>Ngày tạo</th>
-                        <th style="text-align:right;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="dept-list">
-                    <tr><td colspan="4" style="text-align:center;">Đang tải...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div id="dept-modal" class="modal">
-        <div class="modal-content" style="max-width:400px;">
-            <div class="modal-header">
-                <h2 id="modal-title">Thêm Đơn vị mới</h2>
-                <span class="close" onclick="closeDeptModal()">&times;</span>
+        <!-- Danh sách -->
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--primary);"><i class="fas fa-building"></i> Danh mục Đơn vị / Khoa</h3>
             </div>
-            <div class="modal-body">
-                <form id="deptForm" onsubmit="saveDept(event)">
-                    <input type="hidden" id="dept-id">
-                    <div class="form-group">
-                        <label>Tên đơn vị/Khoa <span style="color:red">*</span></label>
-                        <input type="text" id="dept-name" class="form-control" required placeholder="VD: Khoa Công nghệ thông tin">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%;">Lưu dữ liệu</button>
-                </form>
+            <div style="overflow-x:auto;">
+                <table class="table" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">ID</th>
+                            <th>Tên đơn vị</th>
+                            <th>Ngày tạo</th>
+                            <th style="text-align:right; width:120px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dept-list">
+                        <tr><td colspan="4" style="text-align:center; padding: 20px; color:#64748b;">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -73,7 +83,7 @@
                 const tbody = document.getElementById('dept-list');
                 
                 if(data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Chưa có đơn vị nào.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding: 20px; color:#64748b;">Chưa có đơn vị nào. Hãy tạo đơn vị đầu tiên!</td></tr>';
                     return;
                 }
 
@@ -81,12 +91,12 @@
                 data.forEach(d => {
                     html += `
                         <tr>
-                            <td>${d.id}</td>
-                            <td><b>${escapeHtml(d.name)}</b></td>
-                            <td>${new Date(d.created_at).toLocaleDateString('vi-VN')}</td>
+                            <td style="color:#64748b;">#${d.id}</td>
+                            <td><b style="color:#334155;">${escapeHtml(d.name)}</b></td>
+                            <td style="color:#64748b;">${new Date(d.created_at).toLocaleDateString('vi-VN')}</td>
                             <td style="text-align:right;">
-                                <button class="btn btn-secondary btn-sm" onclick="editDept(${d.id}, '${escapeHtml(d.name.replace(/'/g, "\\'"))}')"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-secondary btn-sm" style="color:red;" onclick="deleteDept(${d.id})"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-secondary btn-sm" onclick="editDept(${d.id}, '${escapeHtml(d.name.replace(/'/g, "\\'"))}')" title="Sửa"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-secondary btn-sm" style="color:var(--danger);" onclick="deleteDept(${d.id})" title="Xoá"><i class="fas fa-trash-alt"></i></button>
                             </td>
                         </tr>
                     `;
@@ -97,20 +107,19 @@
             }
         }
 
-        function openDeptModal() {
-            document.getElementById('modal-title').textContent = 'Thêm Đơn vị mới';
+        function resetForm() {
+            document.getElementById('form-title').innerHTML = '<i class="fas fa-plus-circle"></i> Thêm Đơn vị mới';
             document.getElementById('deptForm').reset();
             document.getElementById('dept-id').value = '';
-            document.getElementById('dept-modal').style.display = 'block';
+            document.getElementById('btn-cancel').style.display = 'none';
         }
 
-        function closeDeptModal() { document.getElementById('dept-modal').style.display = 'none'; }
-
         function editDept(id, name) {
-            document.getElementById('modal-title').textContent = 'Sửa Đơn vị';
+            document.getElementById('form-title').innerHTML = '<i class="fas fa-edit"></i> Cập nhật Đơn vị';
             document.getElementById('dept-id').value = id;
             document.getElementById('dept-name').value = name;
-            document.getElementById('dept-modal').style.display = 'block';
+            document.getElementById('btn-cancel').style.display = 'block';
+            document.getElementById('dept-name').focus();
         }
 
         async function saveDept(e) {
@@ -130,7 +139,7 @@
                 if(!res.ok) throw new Error(data.message || data.error);
                 
                 showAlert('Đã lưu thành công!', 'success');
-                closeDeptModal();
+                resetForm();
                 loadDepts();
             } catch(err) {
                 showAlert(err.message, 'error');
