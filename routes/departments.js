@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
-const { authenticateToken } = require('../middlewares/auth');
+const authenticateToken = require('../middlewares/auth');
 
 const isAdmin = (req, res, next) => {
     if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
