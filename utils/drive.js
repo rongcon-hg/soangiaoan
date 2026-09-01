@@ -19,14 +19,15 @@ async function getAuthAndFolder(email, key, folderId, subFolderName) {
     }
     const formattedKey = actualKey.replace(/\\n/g, '\n');
 
-    const auth = new getGoogle().auth.JWT({
+    const googleAPI = getGoogle();
+        const auth = new googleAPI.auth.JWT({
         email: email,
         key: formattedKey,
         scopes: ['https://www.googleapis.com/auth/drive']
     });
 
     await auth.authorize();
-    const drive = getGoogle().drive({ version: 'v3', auth });
+    const drive = googleAPI.drive({ version: 'v3', auth });
 
     const date = new Date();
     const folderName = subFolderName || `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -90,13 +91,14 @@ exports.setPublicPermission = async (email, key, fileId) => {
         }
         const formattedKey = actualKey.replace(/\\n/g, '\n');
 
-        const auth = new getGoogle().auth.JWT({
+        const googleAPI = getGoogle();
+        const auth = new googleAPI.auth.JWT({
             email: email,
             key: formattedKey,
             scopes: ['https://www.googleapis.com/auth/drive']
         });
         await auth.authorize();
-        const drive = getGoogle().drive({ version: 'v3', auth });
+        const drive = googleAPI.drive({ version: 'v3', auth });
 
         // Thêm cơ chế retry (thử lại tối đa 3 lần) cho Eventual Consistency của Google Drive
         let retries = 3;

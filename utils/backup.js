@@ -22,14 +22,15 @@ async function getDriveClient(email, key) {
     }
     const formattedKey = actualKey.replace(/\\n/g, '\n');
 
-    const auth = new getGoogle().auth.JWT({
+    const googleAPI = getGoogle();
+        const auth = new googleAPI.auth.JWT({
         email: email,
         key: formattedKey,
         scopes: ['https://www.googleapis.com/auth/drive']
     });
 
     await auth.authorize();
-    const drive = getGoogle().drive({ version: 'v3', auth });
+    const drive = googleAPI.drive({ version: 'v3', auth });
     return drive;
 }
 
