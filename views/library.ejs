@@ -141,6 +141,7 @@
             gap: 8px;
             justify-content: flex-end;
         }
+        .btn-sm { padding: 5px 10px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -208,9 +209,11 @@
         
         let allLessons = [];
 
+        let currentUser = null;
         window.addEventListener('DOMContentLoaded', () => {
             checkAuth(true).then(user => {
                 if(user) {
+                    currentUser = user;
                     loadLibrary();
                 }
             });
@@ -271,10 +274,10 @@
                         <td><span style="font-size:13px; color:#64748b;">${escapeHtml(l.department_name || 'Chưa rõ đơn vị')}</span></td>
                         <td>${dateStr}</td>
                         <td>
-                            <div class="action-buttons">
-                                <button onclick="openPreviewModal(\'${l.project_id}\', \'${l.schedule_tt}\')" class="btn btn-secondary btn-action" title="Xem trước"><i class="fas fa-eye"></i> Xem trước</button>
-                                <button onclick="downloadPdf('${l.project_id}', '${l.schedule_tt}')" class="btn btn-success btn-action" style="background-color: #10b981; border-color: #10b981;" title="Tải file PDF về máy"><i class="fas fa-download"></i> Tải PDF</button>
-                                <button onclick="cloneLesson(${l.lesson_id})" class="btn btn-primary btn-action" title="Sao chép giáo án này về tài khoản để chỉnh sửa"><i class="fas fa-copy"></i> Mượn về</button>
+                                                        <div class="action-buttons">
+                                <button onclick="openPreviewModal('${l.project_id}', '${l.schedule_tt}')" class="btn btn-secondary btn-action btn-sm" title="Xem trước"><i class="fas fa-eye"></i> Xem</button>
+                                <button onclick="downloadPdf('${l.project_id}', '${l.schedule_tt}')" class="btn btn-success btn-action btn-sm" style="background-color: #10b981; border-color: #10b981;" title="Tải file PDF về máy"><i class="fas fa-download"></i> Tải</button>
+                                ${currentUser && currentUser.username === l.username ? `<button onclick="unshareLesson('${l.project_id}', '${l.schedule_tt}')" class="btn btn-danger btn-action btn-sm" style="background-color: #ef4444; border-color: #ef4444;" title="Gỡ giáo án khỏi thư viện"><i class="fas fa-unlink"></i> Hủy</button>` : ''}
                             </div>
                         </td>
                     </tr>
@@ -302,13 +305,30 @@
             }
         }
 
-        async function cloneLesson(lessonId) {
-            if(!(await customConfirm('Bạn có muốn tạo một bản sao của giáo án này về tài khoản của mình để chỉnh sửa không?'))) return;
+        async function unshareLesson(projectId, tt) {
+            if (!(await customConfirm('Bạn có chắc chắn muốn hủy chia sẻ giáo án này khỏi Thư viện chung?'))) return;
             try {
                 Swal.fire({
-                    title: 'Đang tạo bản sao...',
+                    title: 'Đang xử lý...',
                     allowOutsideClick: false,
                     didOpen: () => { Swal.showLoading(); }
+                });
+                
+                const res = await fetch(API_URL + '/library/toggle', { 
+                    method: 'POST', 
+                    headers: getHeaders(),
+                    body: JSON.stringify({ project_id: projectId, schedule_tt: tt, is_public: false })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || data.error);
+                
+                Swal.fire({ text: 'Đã gỡ giáo án khỏi Thư viện.', icon: 'success' });
+                // Reload list
+                loadLibrary();
+            } catch(e) {
+                showAlert(e.message, 'error');
+            }
+        }
                 });
                 
                 const res = await fetch(API_URL + '/library/clone/' + lessonId, { 
@@ -400,6 +420,7 @@
             gap: 8px;
             justify-content: flex-end;
         }
+        .btn-sm { padding: 5px 10px; font-size: 13px; }
     </style>`;
                         iframe.srcdoc = style + data.lesson_data;
                     } else {
