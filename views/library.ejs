@@ -142,6 +142,38 @@
             justify-content: flex-end;
         }
         .btn-sm { padding: 5px 10px; font-size: 13px; }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .page-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+        }
+        .page-btn.active {
+            background: #16469d;
+            color: #fff;
+            border-color: #16469d;
+        }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -178,6 +210,12 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Pagination -->
+        <div class="pagination-container" id="pagination-container" style="display:none;">
+            <div style="font-size: 0.9rem; color: #64748b;" id="pagination-info"></div>
+            <div style="display: flex; gap: 5px;" id="pagination-controls"></div>
+        </div>
     </div>
 
 
@@ -208,6 +246,9 @@
         injectLayout('library', 'Thư viện Giáo án');
         
         let allLessons = [];
+        let currentFilteredLessons = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
 
         
         window.addEventListener('DOMContentLoaded', () => {
@@ -224,7 +265,7 @@
                 const res = await fetch(API_URL + '/library', { headers: getHeaders() });
                 if (!res.ok) throw new Error('Không thể tải thư viện');
                 allLessons = await res.json();
-                renderLibrary(allLessons);
+                filterLibrary();
             } catch(e) {
                 document.getElementById('library-list').innerHTML = `
                     <tr><td colspan="7" style="text-align:center; padding: 40px; color:var(--danger);">
@@ -236,35 +277,48 @@
 
         function filterLibrary() {
             const keyword = document.getElementById('search-input').value.toLowerCase();
-            const filtered = allLessons.filter(l => {
+            currentFilteredLessons = allLessons.filter(l => {
                 const projectName = (l.project_name || '').toLowerCase();
                 const authorName = (l.author_name || l.username || '').toLowerCase();
                 const deptName = (l.department_name || '').toLowerCase();
                 return projectName.includes(keyword) || authorName.includes(keyword) || deptName.includes(keyword);
             });
-            renderLibrary(filtered);
+            currentPage = 1;
+            renderPage();
         }
 
-        function renderLibrary(lessons) {
+        function renderPage() {
             const tbody = document.getElementById('library-list');
-            if (lessons.length === 0) {
+            const paginationContainer = document.getElementById('pagination-container');
+            const paginationInfo = document.getElementById('pagination-info');
+            
+            if (currentFilteredLessons.length === 0) {
                 tbody.innerHTML = `
                     <tr><td colspan="7" style="text-align:center; padding: 40px; color:#64748b;">
                         <i class="fas fa-search fa-2x" style="color:#cbd5e1; margin-bottom:10px;"></i><br>
                         Không tìm thấy giáo án nào phù hợp.
                     </td></tr>
                 `;
+                paginationContainer.style.display = 'none';
                 return;
             }
 
+            const totalPages = Math.ceil(currentFilteredLessons.length / itemsPerPage);
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, currentFilteredLessons.length);
+            const pageData = currentFilteredLessons.slice(startIndex, endIndex);
+
             let html = '';
-            lessons.forEach((l, index) => {
+            pageData.forEach((l, index) => {
                 const authorStr = escapeHtml(l.author_name || l.username);
                 const dateStr = new Date(l.updated_at).toLocaleDateString('vi-VN');
                 
                 html += `
                     <tr>
-                        <td style="text-align:center; font-weight:bold; color:#64748b;">${index + 1}</td>
+                        <td style="text-align:center; font-weight:bold; color:#64748b;">${startIndex + index + 1}</td>
                         <td>
                             <b>${escapeHtml(l.project_name)}</b><br>
                             <span style="font-size:12px; color:#64748b;"><i class="fas fa-layer-group"></i> Hệ: ${escapeHtml(l.system_type || 'Chưa rõ')}</span>
@@ -274,7 +328,7 @@
                         <td><span style="font-size:13px; color:#64748b;">${escapeHtml(l.department_name || 'Chưa rõ đơn vị')}</span></td>
                         <td>${dateStr}</td>
                         <td>
-                                                        <div class="action-buttons">
+                            <div class="action-buttons">
                                 <button onclick="openPreviewModal('${l.project_id}', '${l.schedule_tt}')" class="btn btn-secondary btn-action btn-sm" title="Xem trước"><i class="fas fa-eye"></i> Xem</button>
                                 <button onclick="downloadPdf('${l.project_id}', '${l.schedule_tt}')" class="btn btn-success btn-action btn-sm" style="background-color: #10b981; border-color: #10b981;" title="Tải file PDF về máy"><i class="fas fa-download"></i> Tải</button>
                                 ${currentUser && currentUser.username === l.username ? `<button onclick="unshareLesson('${l.project_id}', '${l.schedule_tt}')" class="btn btn-danger btn-action btn-sm" style="background-color: #ef4444; border-color: #ef4444;" title="Gỡ giáo án khỏi thư viện"><i class="fas fa-unlink"></i> Hủy</button>` : ''}
@@ -284,6 +338,45 @@
                 `;
             });
             tbody.innerHTML = html;
+
+            if (totalPages > 1) {
+                paginationInfo.textContent = `Đang xem ${startIndex + 1} - ${endIndex} trong tổng số ${currentFilteredLessons.length} giáo án`;
+                renderPaginationControls(totalPages);
+                paginationContainer.style.display = 'flex';
+            } else {
+                paginationContainer.style.display = 'none';
+            }
+        }
+
+        function renderPaginationControls(totalPages) {
+            const controls = document.getElementById('pagination-controls');
+            let html = '';
+
+            html += `<button class="page-btn" onclick="goToPage(1)" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-angle-double-left"></i></button>`;
+            html += `<button class="page-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-angle-left"></i></button>`;
+
+            let delta = 2;
+            let lastPage = 0;
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+                    if (lastPage && i - lastPage > 1) {
+                        html += `<span style="padding: 0 4px; color: #94a3b8;">...</span>`;
+                    }
+                    html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                    lastPage = i;
+                }
+            }
+
+            html += `<button class="page-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-angle-right"></i></button>`;
+            html += `<button class="page-btn" onclick="goToPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-angle-double-right"></i></button>`;
+
+            controls.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderPage();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function downloadPdf(projectId, tt) {
@@ -396,6 +489,38 @@
             justify-content: flex-end;
         }
         .btn-sm { padding: 5px 10px; font-size: 13px; }
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .page-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: #fff;
+            color: #475569;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .page-btn:hover:not(:disabled) {
+            background: #f1f5f9;
+        }
+        .page-btn.active {
+            background: #16469d;
+            color: #fff;
+            border-color: #16469d;
+        }
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>`;
                         iframe.srcdoc = style + data.lesson_data;
                     } else {
