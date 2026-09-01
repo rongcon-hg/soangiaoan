@@ -65,16 +65,30 @@ router.post('/', authenticateToken, isAdmin, async (req, res) => {
 
 
 // GET /api/users/template
-router.get('/template', authenticateToken, isAdmin, (req, res) => {
+router.get('/template', authenticateToken, isAdmin, async (req, res) => {
     try {
         const wb = xlsx.utils.book_new();
+        
         const wsData = [
             ['Tên đăng nhập (*)', 'Họ và tên', 'Email', 'Vai trò (Admin/Manager/User)', 'Mật khẩu', 'Mã phòng ban (ID)']
         ];
-        wsData.push(['nguyenvana', 'Nguyễn Văn A', 'nva@example.com', 'User', '123456', '']);
+        wsData.push(['nguyenvana', 'Nguyễn Văn A', 'nva@example.com', 'User', '123456', '1']);
         const ws = xlsx.utils.aoa_to_sheet(wsData);
-        ws['!cols'] = [{wch: 20}, {wch: 30}, {wch: 25}, {wch: 25}, {wch: 15}, {wch: 15}];
-        xlsx.utils.book_append_sheet(wb, ws, 'UsersTemplate');
+        ws['!cols'] = [{wch: 20}, {wch: 30}, {wch: 25}, {wch: 25}, {wch: 15}, {wch: 20}];
+        xlsx.utils.book_append_sheet(wb, ws, 'Mau_Import');
+
+        // Fetch departments for reference
+        const deptRes = await pool.query('SELECT id, name FROM departments ORDER BY id ASC');
+        const deptData = [
+            ['Mã ID', 'Tên Phòng ban / Đơn vị']
+        ];
+        deptRes.rows.forEach(d => {
+            deptData.push([d.id, d.name]);
+        });
+        const deptWs = xlsx.utils.aoa_to_sheet(deptData);
+        deptWs['!cols'] = [{wch: 10}, {wch: 50}];
+        xlsx.utils.book_append_sheet(wb, deptWs, 'Danh_Sach_Don_Vi');
+
         const buffer = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
         res.setHeader('Content-Disposition', 'attachment; filename="Mau_Import_Nguoi_Dung.xlsx"');
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
