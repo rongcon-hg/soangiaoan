@@ -135,7 +135,18 @@ router.get('/notifications', authenticateToken, async (req, res) => {
     }
 });
 
-// Đánh dấu đã đọc thông báo (Phase 1)
+// Đánh dấu một thông báo là đã đọc
+router.post('/notifications/:id/read', authenticateToken, async (req, res) => {
+    try {
+        const pool = require('../config/database');
+        await pool.query('UPDATE notifications SET is_read = true WHERE user_id = $1 AND id = $2', [req.user.id, req.params.id]);
+        res.json({ success: true });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Đánh dấu tất cả đã đọc
 router.post('/notifications/read', authenticateToken, async (req, res) => {
     try {
         const pool = require('../config/database');

@@ -456,6 +456,27 @@ async function loadNotifications() {
     }
 }
 
+window.readSingleNotification = async function(id, link) {
+    try {
+        await fetch(API_URL + `/users/notifications/${id}/read`, {
+            method: 'POST',
+            headers: getHeaders()
+        });
+        
+        // Hide dropdown
+        document.getElementById('notif-dropdown').classList.remove('show');
+        
+        if (link && link !== 'null' && link !== '') {
+            window.location.href = link;
+        } else {
+            // If no link, just reload notifications to update UI
+            loadNotifications();
+        }
+    } catch(e) {
+        console.error('Lỗi đánh dấu đã đọc', e);
+    }
+}
+
 async function markAllNotificationsRead(e) {
     if (e) e.stopPropagation();
     try {

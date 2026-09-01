@@ -114,8 +114,8 @@ router.post('/:id/review', authenticateToken, isManager, async (req, res) => {
             : `Giáo án bài ${lessonInfo.schedule_tt} môn ${lessonInfo.project_name} BỊ TỪ CHỐI với lý do: ${comment}`;
         
         await pool.query(
-            'INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, $3)',
-            [lessonInfo.user_id, msg, status === 'APPROVED' ? 'success' : 'error']
+            'INSERT INTO notifications (user_id, message, type, link) VALUES ($1, $2, $3, $4)',
+            [lessonInfo.user_id, msg, status === 'APPROVED' ? 'success' : 'error', `/app?id=${lessonInfo.project_id}&tt=${lessonInfo.schedule_tt}`]
         );
 
         res.json({ message: 'Đã xử lý giáo án thành công' });
