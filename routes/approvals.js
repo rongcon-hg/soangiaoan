@@ -10,6 +10,35 @@ const isManager = (req, res, next) => {
     next();
 };
 
+// Gửi duyệt giáo án (Dành cho User)
+router.post('/submit', authenticateToken, async (req, res) => {
+    try {
+        const { project_id, schedule_tt } = req.body;
+        
+        // Cập nhật trạng thái
+        const updateRes = await pool.query(`
+            UPDATE lessons 
+            SET status = 'PENDING', updated_at = CURRENT_TIMESTAMP
+            WHERE project_id = $1 AND schedule_tt = $2
+            RETURNING id
+        `, [project_id, schedule_tt]);
+        
+        if (updateRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy giáo án' });
+        
+        // Gửi thông báo cho Manager
+        await pool.query(`
+            INSERT INTO notifications (user_id, type, title, message, link)
+            SELECT u.id, 'info', 'Chờ duyệt giáo án', $1, '/approvals'
+            FROM users u
+            WHERE u.role = 'Manager' AND u.department_id = $2
+        `, [`Giáo viên ${req.user.username} vừa gửi giáo án chờ duyệt.`, req.user.department_id]);
+        
+        res.json({ message: 'Đã gửi duyệt thành công' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Lấy danh sách giáo án chờ duyệt
 router.get('/pending', authenticateToken, isManager, async (req, res) => {
     try {
