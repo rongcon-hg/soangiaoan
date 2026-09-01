@@ -1,3 +1,28 @@
+
+function initActivityTracker() {
+    const lastActive = localStorage.getItem('last_active_time');
+    if (lastActive) {
+        const elapsed = Date.now() - parseInt(lastActive, 10);
+        if (elapsed > 5 * 60 * 1000) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('last_active_time');
+            if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+                window.location.href = '/login?error=' + encodeURIComponent('Phiên đăng nhập đã hết hạn do đóng trình duyệt quá 5 phút.');
+                return;
+            }
+        }
+    }
+    
+    // Update immediately
+    localStorage.setItem('last_active_time', Date.now());
+    
+    // Heartbeat every 10 seconds while the page is open
+    setInterval(() => {
+        localStorage.setItem('last_active_time', Date.now());
+    }, 10000);
+}
+initActivityTracker();
+
 const API_URL = '/api';
 let currentUser = null;
 

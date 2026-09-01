@@ -349,6 +349,7 @@ window.customConfirm = async function(msg) {
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Đơn vị</th>
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Trạng thái</th>
                         <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Hạn sử dụng</th>
+                        <th style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem;">Đăng nhập cuối</th>
                         <th class="sticky-action" style="padding:12px; border-bottom:1px solid var(--border); font-size:0.88rem; text-align:center; width:100px;">Hành động</th>
                     </tr>
                 </thead>
@@ -603,6 +604,7 @@ window.customConfirm = async function(msg) {
                     <td style="padding:12px; font-weight:500; color:#334155;">${escapeHtml(u.department_name || '') || '<span style="color:#94a3b8; font-weight:normal;">-</span>'}</td>
                     <td style="padding:12px;">${u.is_verified ? '<span style="color:var(--success); font-weight:600; font-size:0.88rem;"><i class="fas fa-check-circle"></i> Đã xác thực</span>' : '<span style="color:var(--text-light); font-size:0.88rem;"><i class="fas fa-clock"></i> Chờ xác thực</span>'}</td>
                     <td style="padding:12px;">${expiryBadge}</td>
+                    <td style="padding:12px; font-size:0.85rem; color:#64748b; white-space:nowrap;">${u.last_login ? new Date(u.last_login).toLocaleString('vi-VN') : 'Chưa đăng nhập'}</td>
                     <td class="sticky-action" style="padding:12px; text-align:center; white-space:nowrap;">
                         ${editBtn} ${delBtn}
                     </td>

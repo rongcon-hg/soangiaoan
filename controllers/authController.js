@@ -126,6 +126,8 @@ exports.login = async (req, res) => {
             return res.status(403).json({ message: 'Đã gửi mã OTP mới vào email của bạn. Vui lòng kiểm tra và xác thực để đăng nhập', requiresOtp: true, username: user.username });
         }
 
+        await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP').catch(()=>{});
+        await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
         const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
         res.json({ token, user: { id: user.id, username: user.username, role: user.role, gemini_api_key: user.gemini_api_key } });
     } catch (error) {
@@ -437,6 +439,7 @@ exports.googleAuthCallback = async (req, res) => {
 
         // Auto ensure google_id column exists
         await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255);`).catch(() => {});
+        await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP').catch(()=>{});
 
         // 1. Check if user already exists with matching google_id or email
         const userQuery = `SELECT * FROM users WHERE google_id = $1 OR LOWER(email) = LOWER($2) LIMIT 1`;
@@ -446,7 +449,7 @@ exports.googleAuthCallback = async (req, res) => {
         if (user) {
             // User exists -> Update google_id and mark is_verified = true
             await pool.query(
-                `UPDATE users SET google_id = $1, is_verified = true WHERE id = $2`,
+                `UPDATE users SET google_id = $1, is_verified = true, last_login = CURRENT_TIMESTAMP WHERE id = $2`,
                 [profile.id, user.id]
             );
 
