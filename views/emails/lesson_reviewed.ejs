@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #16469d;">Thông báo: Trạng thái giáo án của bạn</h2>
+    <p>Xin chào <strong><%= authorName %></strong>,</p>
+    <p>Giáo án của bạn vừa được xử lý bởi Quản lý.</p>
+    
+    <div style="background-color: #f8fafc; border-left: 4px solid <%= status === 'APPROVED' ? '#22c55e' : '#ef4444' %>; padding: 15px; margin: 20px 0;">
+        <p style="margin: 0 0 10px 0;"><strong>Môn học:</strong> <%= projectName %></p>
+        <p style="margin: 0 0 10px 0;"><strong>Bài số:</strong> <%= scheduleTt %></p>
+        <p style="margin: 0 0 10px 0;"><strong>Trạng thái:</strong> <strong style="color: <%= status === 'APPROVED' ? '#22c55e' : '#ef4444' %>;"><%= status === 'APPROVED' ? 'ĐÃ PHÊ DUYỆT' : 'TỪ CHỐI' %></strong></p>
+        <% if (status === 'REJECTED' && comment) { %>
+            <p style="margin: 0; color: #ef4444;"><strong>Lý do:</strong> <%= comment %></p>
+        <% } %>
+    </div>
+
+    <p>Vui lòng truy cập vào hệ thống để xem chi tiết.</p>
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="<%= systemUrl %>/app?id=<%= projectId %>&tt=<%= scheduleTt %>" style="background-color: #16469d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Xem Giáo Án</a>
+    </div>
+    
+    <p style="margin-top: 30px; font-size: 0.9em; color: #7f8c8d;">
+        Trân trọng,<br>
+        Hệ thống Quản lý Giáo án Điện tử
+    </p>
+</body>
+</html>

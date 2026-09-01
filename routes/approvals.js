@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { sendMail } = require('../utils/mailer');
 const pool = require('../config/database');
 const authenticateToken = require('../middlewares/auth');
 
@@ -38,6 +39,35 @@ router.post('/submit', authenticateToken, async (req, res) => {
                 FROM users u
                 WHERE u.role = 'Manager' AND u.department_id = $2
             `, [`Giáo viên ${req.user.username} vừa gửi giáo án chờ duyệt.`, authorDept]);
+            
+            // Gửi email cho Manager
+            try {
+                const managerRes = await pool.query(
+                    `SELECT email FROM users WHERE (role = 'Manager' OR role = 'Admin') AND department_id = $1 AND email IS NOT NULL`, 
+                    [authorDept]
+                );
+                // Nếu Admin duyệt tất cả, có thể admin không nằm trong khoa này, 
+                // nhưng thông báo submit chỉ báo cho Manager khoa đó.
+                if (managerRes.rows.length > 0) {
+                    const emails = managerRes.rows.map(r => r.email).filter(Boolean);
+                    const projRes = await pool.query('SELECT name FROM projects WHERE id = $1', [project_id]);
+                    const projectName = projRes.rows[0]?.name || 'Không xác định';
+
+                    const templateData = {
+                        authorName: req.user.full_name || req.user.username,
+                        lessonName: projectName,
+                        scheduleTt: schedule_tt,
+                        submitTime: new Date().toLocaleString('vi-VN'),
+                        systemUrl: req.headers.origin || (req.protocol + '://' + req.get('host'))
+                    };
+
+                    for (let email of emails) {
+                        sendMail(email, 'Thông báo: Có giáo án mới cần duyệt', 'lesson_submitted', templateData).catch(console.error);
+                    }
+                }
+            } catch (err) {
+                console.error('Error sending submit email:', err);
+            }
         }
         
         res.json({ message: 'Đã gửi duyệt thành công' });
@@ -117,6 +147,28 @@ router.post('/:id/review', authenticateToken, isManager, async (req, res) => {
             'INSERT INTO notifications (user_id, message, type, link) VALUES ($1, $2, $3, $4)',
             [lessonInfo.user_id, msg, status === 'APPROVED' ? 'success' : 'error', `/app?id=${lessonInfo.project_id}&tt=${lessonInfo.schedule_tt}`]
         );
+        
+        // Gửi email cho User
+        try {
+            const authorRes = await pool.query('SELECT email, full_name, username FROM users WHERE id = $1', [lessonInfo.user_id]);
+            const authorEmail = authorRes.rows[0]?.email;
+            
+            if (authorEmail) {
+                const templateData = {
+                    authorName: authorRes.rows[0].full_name || authorRes.rows[0].username,
+                    projectName: lessonInfo.project_name,
+                    scheduleTt: lessonInfo.schedule_tt,
+                    status: status,
+                    comment: comment || '',
+                    projectId: lessonInfo.project_id,
+                    systemUrl: req.headers.origin || (req.protocol + '://' + req.get('host'))
+                };
+                
+                sendMail(authorEmail, 'Thông báo: Trạng thái giáo án của bạn', 'lesson_reviewed', templateData).catch(console.error);
+            }
+        } catch (err) {
+            console.error('Error sending review email:', err);
+        }
 
         res.json({ message: 'Đã xử lý giáo án thành công' });
     } catch (err) {
