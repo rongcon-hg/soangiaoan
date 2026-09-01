@@ -22,8 +22,8 @@ const sidebarHTML = `
         <a href="/dashboard" class="nav-item" id="nav-dashboard" title="Bảng điều khiển">
             <i class="fas fa-chart-pie"></i> <span class="nav-item-text">Bảng điều khiển</span>
         </a>
-        <a href="/" class="nav-item" id="nav-projects" title="Quản lý Môn học">
-            <i class="fas fa-layer-group"></i> <span class="nav-item-text">Quản lý Môn học</span>
+        <a href="/" class="nav-item" id="nav-projects" title="Quản lý Giáo án">
+            <i class="fas fa-layer-group"></i> <span class="nav-item-text">Quản lý Giáo án</span>
         </a>
         <a href="/library" class="nav-item" id="nav-library" title="Thư viện Giáo án">
             <i class="fas fa-book-open"></i> <span class="nav-item-text">Thư viện Giáo án</span>
@@ -298,7 +298,7 @@ function closeRenewalModal() {
     const modal = document.getElementById('renewal-modal-overlay');
     if (modal) modal.style.display = 'none';
 
-    // Nếu tài khoản đã hết hạn và đang ở trang Quản lý Môn học hoặc Soạn giáo án, lập tức chuyển về Bảng điều khiển
+    // Nếu tài khoản đã hết hạn và đang ở trang Quản lý Giáo án hoặc Soạn giáo án, lập tức chuyển về Bảng điều khiển
     if (currentUser && currentUser.is_expired) {
         const path = window.location.pathname;
         if (path === '/' || path === '/app' || path.startsWith('/app')) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Môn học - Hệ thống Giáo án</title>
+    <title>Quản lý Giáo án - Hệ thống Giáo án</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
@@ -306,7 +306,7 @@ window.customConfirm = async function(msg) {
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
     <script>
-        injectLayout('projects', 'Quản lý Môn học');
+        injectLayout('projects', 'Quản lý Giáo án');
         
         const PAGE_SIZE = 12; // Yêu cầu: Vượt quá 12 môn sẽ tự động phân trang
         let allProjectsList = [];
@@ -337,7 +337,7 @@ window.customConfirm = async function(msg) {
                 banner.innerHTML = `
                     <div style="color:#991b1b; font-size:0.9rem; font-weight:600; display:flex; align-items:center; gap:8px;">
                         <i class="fas fa-lock" style="font-size:1.2rem; color:#dc2626;"></i>
-                        <span>Trang Quản lý Môn học đang tạm khóa do tài khoản của bạn đã hết hạn sử dụng.</span>
+                        <span>Trang Quản lý Giáo án đang tạm khóa do tài khoản của bạn đã hết hạn sử dụng.</span>
                     </div>
                     <button type="button" class="btn btn-sm" onclick="openRenewalModal()" style="background:#dc2626; color:#fff; font-weight:700; border:none; padding:6px 14px; border-radius:6px; cursor:pointer;">
                         <i class="fas fa-history"></i> Gia hạn ngay
