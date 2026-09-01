@@ -28,9 +28,12 @@ router.post('/toggle', authenticateToken, async (req, res) => {
     try {
         const { project_id, schedule_tt, is_public } = req.body;
         
-        // Kiểm tra quyền (chỉ tác giả mới được chia sẻ)
+        // Kiểm tra quyền (Tác giả hoặc Admin)
         const projRes = await pool.query('SELECT user_id FROM projects WHERE id = $1', [project_id]);
-        if (projRes.rows.length === 0 || projRes.rows[0].user_id !== req.user.id) {
+        if (projRes.rows.length === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy giáo án' });
+        }
+        if (projRes.rows[0].user_id !== req.user.id && req.user.role !== 'Admin') {
             return res.status(403).json({ message: 'Không có quyền thực hiện thao tác này' });
         }
 
