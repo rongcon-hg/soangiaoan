@@ -5663,27 +5663,86 @@ window.addEventListener("message", async e => {
   };
 
   window.toggleLibrary = async function() {
-    if (!(await customConfirm('Bạn muốn chia sẻ giáo án này lên Thư viện chung?'))) return;
+    if (!(await customConfirm('Bạn muốn thay đổi trạng thái chia sẻ của giáo án này trên Thư viện chung?'))) return;
     try {
+        Swal.fire({
+            title: 'Đang xử lý...',
+            html: 'Đang đồng bộ dữ liệu với Thư viện, vui lòng chờ...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        // 1. Generate PDF if making it public (we don't know the exact current state, so we always generate it just in case)
+        let pdfLink = null;
+        const frame = document.getElementById('plannerFrame');
+        if(frame && frame.contentWindow && typeof frame.contentWindow.exportPdfAsBlob === 'function') {
+            try {
+                const pdfBlob = await frame.contentWindow.exportPdfAsBlob();
+                const file = new File([pdfBlob], `GiaoAn_${projectId}_${currentTT}.pdf`, { type: 'application/pdf' });
+                
+                const token = localStorage.getItem('token');
+                const chunkSize = 3 * 1024 * 1024;
+                
+                const startRes = await fetch('/api/drive/start-upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ fileName: file.name, mimeType: file.type })
+                });
+                
+                if (startRes.ok) {
+                    const { uploadUrl } = await startRes.json();
+                    let fileId = null;
+                    for (let start = 0; start < file.size; start += chunkSize) {
+                        const end = Math.min(start + chunkSize, file.size);
+                        const chunkRes = await fetch('/api/drive/upload-chunk', {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': 'Bearer ' + token,
+                                'X-Upload-Url': uploadUrl,
+                                'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + file.size,
+                                'Content-Type': 'application/octet-stream'
+                            },
+                            body: file.slice(start, end)
+                        });
+                        if (chunkRes.status === 308) continue;
+                        if (chunkRes.ok) {
+                            const data = await chunkRes.json();
+                            fileId = data.fileId;
+                            break;
+                        }
+                    }
+                    if (fileId) {
+                        const finishRes = await fetch('/api/drive/finish-upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                            body: JSON.stringify({ fileId })
+                        });
+                        if (finishRes.ok) {
+                            const { url } = await finishRes.json();
+                            pdfLink = url;
+                        }
+                    }
+                }
+            } catch(e) {
+                console.warn('Lỗi tạo PDF khi chia sẻ:', e);
+                // Continue even if PDF generation fails
+            }
+        }
+
+        const reqBody = { project_id: projectId, schedule_tt: currentTT };
+        if (pdfLink) reqBody.pdf_link = pdfLink;
+
         const res = await fetch(API_URL + '/library/toggle', {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ project_id: projectId, schedule_tt: currentTT })
+            body: JSON.stringify(reqBody)
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || data.error || 'Lỗi chia sẻ');
         
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ text: data.is_public ? 'Đã công khai giáo án lên Thư viện!' : 'Đã gỡ giáo án khỏi Thư viện.', icon: 'success', confirmButtonColor: '#16469d' });
-        } else {
-            alert('Thành công!');
-        }
+        Swal.fire({ text: data.is_public ? 'Đã công khai giáo án lên Thư viện!' : 'Đã gỡ giáo án khỏi Thư viện.', icon: 'success', confirmButtonColor: '#16469d' });
     } catch(err) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ text: err.message, icon: 'error' });
-        } else {
-            alert(err.message);
-        }
+        Swal.fire({ text: err.message, icon: 'error' });
     }
   };
 </script>

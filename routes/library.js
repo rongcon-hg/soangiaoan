@@ -42,10 +42,15 @@ router.post('/toggle', authenticateToken, async (req, res) => {
             targetPublic = !currentRes.rows[0].is_public;
         }
 
-        const result = await pool.query(
-            'UPDATE lessons SET is_public = $1 WHERE project_id = $2 AND schedule_tt = $3 RETURNING *',
-            [targetPublic, project_id, schedule_tt]
-        );
+        let updateQuery = 'UPDATE lessons SET is_public = $1 WHERE project_id = $2 AND schedule_tt = $3 RETURNING *';
+        let queryParams = [targetPublic, project_id, schedule_tt];
+        
+        if (req.body.pdf_link) {
+            updateQuery = 'UPDATE lessons SET is_public = $1, pdf_link = $4 WHERE project_id = $2 AND schedule_tt = $3 RETURNING *';
+            queryParams.push(req.body.pdf_link);
+        }
+
+        const result = await pool.query(updateQuery, queryParams);
         
         const newStatus = result.rows[0].is_public;
         res.json({ 

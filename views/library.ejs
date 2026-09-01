@@ -237,7 +237,7 @@
                         <td>
                             <div class="action-buttons">
                                 <button onclick="openPreviewModal(\'${l.project_id}\', \'${l.schedule_tt}\')" class="btn btn-secondary btn-action" title="Xem trước"><i class="fas fa-eye"></i> Xem trước</button>
-                                <button onclick="cloneLesson(${l.lesson_id})" class="btn btn-primary btn-action" title="Mượn giáo án này về tài khoản"><i class="fas fa-copy"></i> Mượn về</button>
+                                <button onclick="cloneLesson(${l.lesson_id})" class="btn btn-primary btn-action" title="Tải giáo án này về tài khoản"><i class="fas fa-download"></i> Tải xuống</button>
                             </div>
                         </td>
                     </tr>
@@ -247,7 +247,7 @@
         }
 
         async function cloneLesson(lessonId) {
-            if(!(await customConfirm('Bạn có muốn tạo một bản sao của giáo án này về tài khoản của mình để chỉnh sửa không?'))) return;
+            if(!(await customConfirm('Bạn có muốn tải giáo án này về tài khoản của mình để có thể chỉnh sửa và xuất file không?'))) return;
             try {
                 Swal.fire({
                     title: 'Đang tạo bản sao...',
@@ -265,7 +265,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Thành công!',
-                    text: 'Đã tạo bản sao thành công!',
+                    text: 'Đã tải giáo án về tài khoản thành công!',
                     showCancelButton: true,
                     confirmButtonText: 'Mở giáo án ngay',
                     cancelButtonText: 'Đóng'
