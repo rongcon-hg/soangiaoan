@@ -5020,12 +5020,12 @@ async function receiveScheduleSession(data){
 
   window.currentScheduleTT = pld.scheduleTT;
   window._currentSchedulePayload = pld;
-  window.lessonStatus = pld.status || "DRAFT";
+  window.lessonStatus = pld.status || &quot;DRAFT&quot;;
   window.lessonIsPublic = pld.is_public || false;
   if(pld.userSignature !== undefined) window.USER_SIGNATURE = pld.userSignature;
   if(pld.userName !== undefined) window.USER_NAME = pld.userName;
   $(&quot;#btnSaveLesson&quot;).style.display = &quot;inline-block&quot;;
-  if(window.lessonStatus === &quot;DRAFT&quot; || window.lessonStatus === &quot;REJECTED&quot; || !window.lessonStatus) { $(&quot;#btnSubmitApproval&quot;).style.display = &quot;inline-block&quot;; } else { $(&quot;#btnSubmitApproval&quot;).style.display = &quot;none&quot;; }
+  if(window.lessonStatus === &quot;DRAFT&quot; || window.lessonStatus === &quot;REJECTED&quot; || !window.lessonStatus) { $(&quot;#btnSubmitApproval&quot;).style.display = &quot;inline-block&quot;; } else { $(&quot;#btnSubmitApproval&quot;).style.display = &quot;none&quot;; } if(window.lessonStatus === &quot;APPROVED&quot;) { $(&quot;#btnShareLibrary&quot;).style.display = &quot;inline-block&quot;; } else { $(&quot;#btnShareLibrary&quot;).style.display = &quot;none&quot;; }
   const ltCount=Number(pld.lt)||0;
   const thCount=Number(pld.th)||0;
   const ktCount=Number(pld.kt)||0;
