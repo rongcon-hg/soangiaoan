@@ -31,6 +31,9 @@ const sidebarHTML = `
         <a href="/profile" class="nav-item" id="nav-profile" title="Thông tin cá nhân">
             <i class="fas fa-user"></i> <span class="nav-item-text">Thông tin cá nhân</span>
         </a>
+        <a href="/approvals" class="nav-item" id="nav-approvals" style="display:none" title="Phê duyệt Giáo án">
+            <i class="fas fa-check-double"></i> <span class="nav-item-text">Phê duyệt Giáo án</span>
+        </a>
 
         <div class="nav-menu-bottom" style="margin-top:auto; padding-top:10px; border-top:1px solid var(--border, #e2e8f0); display:flex; flex-direction:column;">
             <a href="/departments" class="nav-item" id="nav-departments" style="display:none" title="Quản lý Đơn vị">

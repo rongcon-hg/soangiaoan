@@ -60,6 +60,12 @@ async function checkAuth(redirectIfNotAuth = true) {
             avatarEl.src = currentUser.avatar;
         }
 
+        // Hiện menu Phê duyệt Giáo án cho Quản lý & Admin
+        if(currentUser.role === 'Admin' || currentUser.role === 'Manager') {
+            const approvalsTab = document.getElementById('nav-approvals');
+            if(approvalsTab) approvalsTab.style.display = 'flex';
+        }
+
         // Hiện tab admin
         if(currentUser.role === 'Admin') {
             const adminTab = document.getElementById('nav-users');
