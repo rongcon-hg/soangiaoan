@@ -248,7 +248,13 @@ window.customConfirm = async function(msg) {
     <div class="card">
         <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:nowrap;">
             <h3 class="card-title" style="white-space:nowrap; margin:0; font-size:1.05rem; overflow:hidden; text-overflow:ellipsis;"><i class="fas fa-users-cog" style="color:var(--primary); margin-right:8px;"></i> Quản lý Người dùng</h3>
-            <button class="btn btn-primary" onclick="openNewUserForm()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-user-plus"></i> <span>Thêm thành viên</span></button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <button class="btn btn-secondary" onclick="downloadTemplate()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-file-excel"></i> <span class="hide-text-mobile">Mẫu Import</span></button>
+                <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-upload"></i> <span class="hide-text-mobile">Import</span></button>
+                <button class="btn btn-secondary" onclick="exportUsers()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-download"></i> <span class="hide-text-mobile">Export</span></button>
+                <button class="btn btn-primary" onclick="openNewUserForm()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-user-plus"></i> <span>Thêm thành viên</span></button>
+            </div>
+            <input type="file" id="import-file" accept=".xlsx, .xls" style="display:none;" onchange="importUsers(event)">
         </div>
         
         <!-- Add/Edit User Form -->
