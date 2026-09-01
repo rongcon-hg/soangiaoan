@@ -218,13 +218,6 @@
     }
 
 </style>
-<style>
-@media (max-width: 600px) {
-    .users-header { flex-direction: column; align-items: flex-start !important; }
-    .users-actions { width: 100%; justify-content: space-between !important; }
-    .users-actions button { flex: 1 1 45%; justify-content: center; }
-}
-</style>
 <script>
 window._originalAlert = window.alert;
 window.alert = function(msg) {
@@ -253,7 +246,7 @@ window.customConfirm = async function(msg) {
 <body>
     <div id="alert-box"></div>
     <div class="card">
-        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:nowrap;">
+        <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
             <h3 class="card-title" style="white-space:nowrap; margin:0; font-size:1.05rem; overflow:hidden; text-overflow:ellipsis;"><i class="fas fa-users-cog" style="color:var(--primary); margin-right:8px;"></i> Quản lý Người dùng</h3>
             <div class="users-actions" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end;">
                 <button class="btn btn-secondary" onclick="downloadTemplate()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-file-excel"></i> <span class="hide-text-mobile">Mẫu Import</span></button>
