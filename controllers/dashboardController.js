@@ -87,7 +87,7 @@ exports.getStats = async (req, res) => {
 
         // 6. Lấy trạng thái user (API Key, Chữ ký)
         const userRes = await pool.query(
-            `SELECT username, full_name, role, gemini_api_key, signature, signature_filename, department 
+            `SELECT username, full_name, role, gemini_api_key, signature, signature_filename, department, expires_at 
              FROM users 
              WHERE id = $1`,
             [userId]
@@ -99,10 +99,12 @@ exports.getStats = async (req, res) => {
         if (userRole === "Admin") {
             const allUsersCount = await pool.query(`SELECT COUNT(*) as c FROM users`);
             const allProjectsCount = await pool.query(`SELECT COUNT(*) as c FROM projects`);
+            const allSchedulesCount = await pool.query(`SELECT COUNT(*) as c FROM schedules`);
             const allLessonsCount = await pool.query(`SELECT COUNT(*) as c FROM lessons`);
             systemStats = {
                 totalUsers: parseInt(allUsersCount.rows[0]?.c || 0),
                 totalProjects: parseInt(allProjectsCount.rows[0]?.c || 0),
+                totalSchedules: parseInt(allSchedulesCount.rows[0]?.c || 0),
                 totalLessons: parseInt(allLessonsCount.rows[0]?.c || 0)
             };
         }
@@ -137,8 +139,10 @@ exports.getStats = async (req, res) => {
                 department: user.department || "Chưa cập nhật",
                 role: user.role,
                 hasGeminiKey: Boolean(user.gemini_api_key && user.gemini_api_key.trim()),
-                hasSignature: Boolean(user.signature)
+                hasSignature: Boolean(user.signature),
+                expires_at: user.expires_at
             },
+            adminStats: systemStats,
             stats: {
                 totalProjects,
                 totalHours,

@@ -360,6 +360,63 @@
                     sigBadge.style.borderColor = "rgba(245, 158, 11, 0.5)";
                 }
 
+                const expiryText = document.getElementById("badge-expiry-text");
+                const expiryBadge = document.getElementById("badge-expiry");
+                if (data.user.expires_at) {
+                    const expires = new Date(data.user.expires_at);
+                    const now = new Date();
+                    const diff = Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
+                    if (diff > 0) {
+                        expiryText.innerText = `Hạn dùng: ${diff} ngày`;
+                        if (diff <= 7) {
+                            expiryBadge.style.background = "rgba(245, 158, 11, 0.25)";
+                            expiryBadge.style.borderColor = "rgba(245, 158, 11, 0.5)";
+                        } else {
+                            expiryBadge.style.background = "rgba(16, 185, 129, 0.25)";
+                            expiryBadge.style.borderColor = "rgba(16, 185, 129, 0.5)";
+                        }
+                    } else {
+                        expiryText.innerText = "Hạn dùng: Đã hết hạn";
+                        expiryBadge.style.background = "rgba(239, 68, 68, 0.25)";
+                        expiryBadge.style.borderColor = "rgba(239, 68, 68, 0.5)";
+                    }
+                } else {
+                    expiryText.innerText = "Hạn dùng: Vô thời hạn";
+                    expiryBadge.style.background = "rgba(16, 185, 129, 0.25)";
+                    expiryBadge.style.borderColor = "rgba(16, 185, 129, 0.5)";
+                }
+
+                if (data.adminStats) {
+                    const kpiGrid = document.querySelector(".kpi-grid");
+                    if (kpiGrid && !document.getElementById("admin-stats-container")) {
+                        const container = document.createElement("div");
+                        container.id = "admin-stats-container";
+                        container.innerHTML = `
+                            <h3 style="margin-top:5px; margin-bottom:15px; color:var(--primary); font-size: 16px;"><i class="fas fa-crown"></i> Thống kê Hệ thống (Dành cho Admin)</h3>
+                            <div class="kpi-grid" style="margin-bottom: 30px;">
+                                <div class="kpi-card" style="background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; border:none; box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.2);">
+                                    <div class="kpi-title" style="color: rgba(255,255,255,0.9);"><i class="fas fa-users"></i> Tổng tài khoản</div>
+                                    <div class="kpi-value">${data.adminStats.totalUsers}</div>
+                                </div>
+                                <div class="kpi-card" style="background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; border:none; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2);">
+                                    <div class="kpi-title" style="color: rgba(255,255,255,0.9);"><i class="fas fa-book"></i> Tổng môn học</div>
+                                    <div class="kpi-value">${data.adminStats.totalProjects}</div>
+                                </div>
+                                <div class="kpi-card" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border:none; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);">
+                                    <div class="kpi-title" style="color: rgba(255,255,255,0.9);"><i class="fas fa-calendar-check"></i> Tổng sổ đầu bài</div>
+                                    <div class="kpi-value">${data.adminStats.totalSchedules}</div>
+                                </div>
+                                <div class="kpi-card" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border:none; box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.2);">
+                                    <div class="kpi-title" style="color: rgba(255,255,255,0.9);"><i class="fas fa-file-alt"></i> Tổng giáo án</div>
+                                    <div class="kpi-value">${data.adminStats.totalLessons}</div>
+                                </div>
+                            </div>
+                            <h3 style="margin-bottom:15px; color:var(--text); font-size: 16px;"><i class="fas fa-user-circle"></i> Thống kê Cá nhân</h3>
+                        `;
+                        kpiGrid.parentNode.insertBefore(container, kpiGrid);
+                    }
+                }
+
                 // 3. Cập nhật KPI
                 document.getElementById("stat-projects").innerText = data.stats.totalProjects || 0;
                 document.getElementById("stat-hours").innerText = data.stats.totalHours || 0;
