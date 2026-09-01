@@ -47,15 +47,6 @@ app.use('/api/library', require('./routes/library'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 
 // Page routes
-app.get('/login', (req, res) => res.render('login'));
-app.get('/dashboard', (req, res) => res.render('dashboard'));
-app.get('/profile', (req, res) => res.render('profile'));
-app.get('/settings', (req, res) => res.render('settings'));
-app.get('/users', (req, res) => res.render('users'));
-app.get('/approvals', (req, res) => res.render('approvals'));
-app.get('/departments', (req, res) => res.render('departments'));
-app.get('/library', (req, res) => res.render('library'));
-app.get('/app', (req, res) => res.render('app'));
 
 // Route chính trả về index.html (Dashboard)
 app.use((req, res) => {

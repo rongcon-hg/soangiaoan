@@ -150,7 +150,8 @@ const initDb = async () => {
 // Auto migrate columns safely
 let migrated = false;
 pool.on('connect', async (client) => {
-    if (!migrated) {
+    // Disabled auto migration on connect to save Vercel Serverless CPU
+    if (false) {
         migrated = true;
         try {
             await client.query(`
