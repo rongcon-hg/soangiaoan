@@ -23,4 +23,13 @@ router.get('/google/callback', authController.googleAuthCallback);
 
 router.post('/request-renewal', authController.requestRenewal);
 
+
+// Backup Routes (Admin only)
+router.get('/backup/config', authenticateToken, authController.getBackupConfig);
+router.post('/backup/config', authenticateToken, authController.saveBackupConfig);
+router.get('/backup/list', authenticateToken, authController.listBackups);
+router.post('/backup/manual', authenticateToken, authController.manualBackup);
+router.post('/backup/restore', authenticateToken, authController.restoreBackup);
+
 module.exports = router;
+

@@ -588,3 +588,80 @@ exports.requestRenewal = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// ================= BACKUP & RESTORE =================
+
+const backupUtil = require('../utils/backup');
+
+exports.getBackupConfig = async (req, res) => {
+    if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
+        const settings = userRes.rows[0].settings || {};
+        res.json({
+            backup_enabled: settings.backup_enabled || false,
+            backup_cron: settings.backup_cron || '0 0 * * *',
+            backup_retain: settings.backup_retain || 7
+        });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.saveBackupConfig = async (req, res) => {
+    if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const { backup_enabled, backup_cron, backup_retain } = req.body;
+        const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
+        let settings = userRes.rows[0].settings || {};
+        
+        settings.backup_enabled = !!backup_enabled;
+        settings.backup_cron = backup_cron;
+        settings.backup_retain = parseInt(backup_retain) || 7;
+
+        await pool.query('UPDATE users SET settings = $1 WHERE id = $2', [settings, req.user.id]);
+        res.json({ message: 'Lưu cấu hình sao lưu thành công' });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.listBackups = async (req, res) => {
+    if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
+        const settings = userRes.rows[0].settings || {};
+        const list = await backupUtil.listBackups(settings);
+        res.json({ backups: list });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.manualBackup = async (req, res) => {
+    if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
+        const settings = userRes.rows[0].settings || {};
+        await backupUtil.runBackup(settings);
+        res.json({ message: 'Tạo bản sao lưu thành công!' });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.restoreBackup = async (req, res) => {
+    if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const { fileId } = req.body;
+        if (!fileId) return res.status(400).json({ message: 'Thiếu fileId' });
+        
+        const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
+        const settings = userRes.rows[0].settings || {};
+        
+        await backupUtil.restoreBackup(fileId, settings);
+        res.json({ message: 'Khôi phục dữ liệu thành công!' });
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+};
