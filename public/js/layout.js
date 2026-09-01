@@ -12,7 +12,6 @@ const sidebarHTML = `
                 </div>
             </a>
             <div id="sidebar-user-fullname" class="sidebar-user-fullname" style="font-size:0.88rem; font-weight:700; color:#1e293b; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px; margin-left:auto; margin-right:auto;">...</div>
-            <div id="sidebar-expiry-badge" style="display:none; margin:4px auto 0 auto; cursor:pointer; text-align:center;" onclick="openRenewalModal()" title="Bấm vào đây để gửi yêu cầu gia hạn sử dụng"></div>
         </div>
 
         <a href="/dashboard" class="sidebar-brand-link" style="text-decoration:none; color:inherit; display:flex; align-items:center; justify-content:center; gap:8px;" title="Bảng điều khiển">
