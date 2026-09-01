@@ -472,3 +472,26 @@ tr:hover td.sticky-action {
         padding: 6px 10px;
     }
 }
+
+/* Notification Dropdown Styles */
+.notif-dropdown {
+    position: absolute;
+    top: 35px;
+    right: -10px;
+    width: 320px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 9999;
+}
+
+@media (max-width: 600px) {
+    .notif-dropdown {
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+}

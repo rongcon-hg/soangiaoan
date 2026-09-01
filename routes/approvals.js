@@ -43,7 +43,7 @@ router.post('/submit', authenticateToken, async (req, res) => {
             // Gửi email cho Manager
             try {
                 const managerRes = await pool.query(
-                    `SELECT email FROM users WHERE (role = 'Manager' OR role = 'Admin') AND department_id = $1 AND email IS NOT NULL`, 
+                    `SELECT email FROM users WHERE role = 'Manager' AND department_id = $1 AND email IS NOT NULL`, 
                     [authorDept]
                 );
                 // Nếu Admin duyệt tất cả, có thể admin không nằm trong khoa này, 

@@ -187,9 +187,22 @@
                 </h2>
                 <span class="my-modal-close" onclick="closePreviewModal()"><i class="fas fa-times"></i></span>
             </div>
-            <div style="flex:1; display:flex; overflow:hidden;">
+            
+<style>
+.preview-split { flex: 1; display: flex; overflow: hidden; }
+.preview-left { flex: 2; border-right: 1px solid #e2e8f0; background: #cbd5e1; overflow-y: auto; display: flex; justify-content: center; padding: 20px; position: relative; }
+.preview-right { flex: 1; display: flex; flex-direction: column; padding: 20px; background: #fff; overflow-y: auto; }
+
+@media (max-width: 900px) {
+    .preview-split { flex-direction: column-reverse; overflow-y: auto; display: flex; }
+    .preview-left { border-right: none; padding: 10px; flex: none; min-height: 80vh; overflow-y: visible; }
+    .preview-right { padding: 15px; flex: none; border-bottom: 2px solid #e2e8f0; overflow-y: visible; }
+    #preview-frame { width: 100% !important; min-height: 80vh !important; }
+}
+</style>
+            <div class="preview-split">
                 <!-- Left: Preview Frame -->
-                <div style="flex:2; border-right:1px solid #e2e8f0; background:#cbd5e1; overflow-y:auto; display:flex; justify-content:center; padding:20px; position:relative;">
+                <div class="preview-left">
                     <div id="preview-loading" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%);">
                         <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary);"></i>
                     </div>
@@ -197,7 +210,7 @@
                 </div>
                 
                 <!-- Right: Review Form -->
-                <div style="flex:1; display:flex; flex-direction:column; padding:20px; background:#fff; overflow-y:auto;">
+                <div class="preview-right">
                     <div id="preview-info" style="margin-bottom:20px; padding:15px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
                         <!-- JS injects info here -->
                     </div>

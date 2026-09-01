@@ -75,7 +75,7 @@ function injectLayout(pageId, pageTitle) {
                 <div class="notification-wrapper" style="position:relative; cursor:pointer;" onclick="toggleNotifications()">
                     <i class="fas fa-bell" style="font-size: 1.2rem; color: #64748b; transition: color 0.2s;"></i>
                     <span id="notif-badge" style="display:none; position:absolute; top:-6px; right:-6px; background:#ef4444; color:white; font-size:10px; padding:2px 5px; border-radius:10px; font-weight:bold; line-height:1;">0</span>
-                    <div id="notif-dropdown" class="notif-dropdown" style="display:none; position:absolute; top:35px; right:-10px; width:320px; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:9999;">
+                    <div id="notif-dropdown" class="notif-dropdown" style="display:none;">
                         <div style="padding:12px 15px; font-weight:bold; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:14px; color:#1e293b;">Thông báo</span>
                             <span style="font-size:12px; color:#3b82f6; cursor:pointer;" onclick="markAllNotificationsRead(event)">Đánh dấu đã đọc</span>

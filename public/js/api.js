@@ -7,7 +7,7 @@ function initActivityTracker() {
             localStorage.removeItem('token');
             localStorage.removeItem('last_active_time');
             if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-                window.location.href = '/login?error=' + encodeURIComponent('Phiên đăng nhập đã hết hạn do đóng trình duyệt quá 5 phút.');
+                window.location.href = '/login';
                 return;
             }
         }
