@@ -5311,6 +5311,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     
     let currentProject = null;
+    let currentTT = null;
     const urlParams = new URLSearchParams(window.location.search);
     const projectId = urlParams.get('project');
 
@@ -5434,6 +5435,7 @@ window.addEventListener("message", async e => {
     if(typeof switchTab === "function") switchTab(2);
 
     const p=e.data.payload||{};
+    currentTT = p.scheduleTT;
     const st=document.getElementById("transferStatus");
     st.style.display="block";
     const sysClassBadge = (p.systemType || p.className) ? ` [<b>${p.systemType || "Trung cấp"}${p.className ? " • Lớp: " + p.className : ""}</b>] · ` : "";
@@ -5539,19 +5541,19 @@ window.addEventListener("message", async e => {
   }
 });
   window.submitApproval = async function() {
-    if (!(await customConfirm('Bạn có chắc chắn muốn gửi giáo án này cho Trưởng bộ môn duyệt không?'))) return;
+    if (!(await customConfirm('Bạn có chắc chắn muốn gửi giáo án này cho Quản lý duyệt không?'))) return;
     
     try {
         const res = await fetch(API_URL + '/approvals/submit', {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ project_id: currentProject, schedule_tt: currentTT })
+            body: JSON.stringify({ project_id: projectId, schedule_tt: currentTT })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || data.error || 'Lỗi gửi duyệt');
         
         if (typeof Swal !== 'undefined') {
-            Swal.fire({ text: 'Đã gửi giáo án cho Trưởng bộ môn duyệt thành công!', icon: 'success', confirmButtonColor: '#16469d' });
+            Swal.fire({ text: 'Đã gửi giáo án cho Quản lý duyệt thành công!', icon: 'success', confirmButtonColor: '#16469d' });
         } else {
             alert('Đã gửi phê duyệt thành công!');
         }
@@ -5585,7 +5587,7 @@ window.addEventListener("message", async e => {
         const res = await fetch(API_URL + '/library/toggle', {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ project_id: currentProject, schedule_tt: currentTT })
+            body: JSON.stringify({ project_id: projectId, schedule_tt: currentTT })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || data.error || 'Lỗi chia sẻ');
