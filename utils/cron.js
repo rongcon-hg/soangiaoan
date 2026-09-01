@@ -13,7 +13,7 @@ function initCron() {
             const adminRes = await pool.query("SELECT settings FROM users WHERE role = 'Admin' LIMIT 1");
             if (!adminRes.rows.length) return;
 
-            const settings = adminRes.rows[0].settings || {};
+            const settings = typeof adminRes.rows[0].settings === 'string' ? JSON.parse(adminRes.rows[0].settings) : (adminRes.rows[0].settings || {});
             if (!settings.backup_enabled) return;
 
             const cronPattern = settings.backup_cron || '0 0 * * *';

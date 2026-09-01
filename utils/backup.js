@@ -32,6 +32,11 @@ async function getDriveClient(email, key) {
 
 // Ensure the Backup folder exists
 async function ensureBackupFolder(drive, parentFolderId) {
+    // Luôn sử dụng folder ID cứng theo yêu cầu của Cậu chủ cho Backup
+    return '1xqKJeiP2_FqCAye09Kk8vtKeiaLGn22p';
+    
+    // Đoạn code dưới đây bị vô hiệu hoá để dùng thư mục cứng
+    /*
     const folderName = 'Database_Backups';
     const searchRes = await drive.files.list({
         q: `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and '${parentFolderId}' in parents and trashed=false`,
@@ -50,12 +55,13 @@ async function ensureBackupFolder(drive, parentFolderId) {
         return folder.data.id;
     }
     return searchRes.data.files[0].id;
+    */
 }
 
 // 1. Thực hiện dump và upload
 exports.runBackup = async (adminSettings) => {
-    if (!adminSettings.drive_email || !adminSettings.drive_key || !adminSettings.drive_folder) {
-        throw new Error("Chưa cấu hình Google Drive cho tài khoản Admin.");
+    if (!adminSettings.drive_email || !adminSettings.drive_key) {
+        throw new Error("Chưa cấu hình Google Drive (Email hoặc Key) cho tài khoản Admin.");
     }
 
     const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;

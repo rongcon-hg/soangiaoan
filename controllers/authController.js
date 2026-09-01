@@ -597,7 +597,7 @@ exports.getBackupConfig = async (req, res) => {
     if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
     try {
         const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
-        const settings = userRes.rows[0].settings || {};
+        const settings = typeof userRes.rows[0].settings === 'string' ? JSON.parse(userRes.rows[0].settings) : (userRes.rows[0].settings || {});
         res.json({
             backup_enabled: settings.backup_enabled || false,
             backup_cron: settings.backup_cron || '0 0 * * *',
@@ -630,7 +630,7 @@ exports.listBackups = async (req, res) => {
     if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
     try {
         const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
-        const settings = userRes.rows[0].settings || {};
+        const settings = typeof userRes.rows[0].settings === 'string' ? JSON.parse(userRes.rows[0].settings) : (userRes.rows[0].settings || {});
         const list = await backupUtil.listBackups(settings);
         res.json({ backups: list });
     } catch(err) {
@@ -642,7 +642,7 @@ exports.manualBackup = async (req, res) => {
     if (req.user.role !== 'Admin') return res.status(403).json({ message: 'Forbidden' });
     try {
         const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
-        const settings = userRes.rows[0].settings || {};
+        const settings = typeof userRes.rows[0].settings === 'string' ? JSON.parse(userRes.rows[0].settings) : (userRes.rows[0].settings || {});
         await backupUtil.runBackup(settings);
         res.json({ message: 'Tạo bản sao lưu thành công!' });
     } catch(err) {
@@ -657,7 +657,7 @@ exports.restoreBackup = async (req, res) => {
         if (!fileId) return res.status(400).json({ message: 'Thiếu fileId' });
         
         const userRes = await pool.query('SELECT settings FROM users WHERE id = $1', [req.user.id]);
-        const settings = userRes.rows[0].settings || {};
+        const settings = typeof userRes.rows[0].settings === 'string' ? JSON.parse(userRes.rows[0].settings) : (userRes.rows[0].settings || {});
         
         await backupUtil.restoreBackup(fileId, settings);
         res.json({ message: 'Khôi phục dữ liệu thành công!' });
