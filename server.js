@@ -43,6 +43,7 @@ app.use('/api/lessons', require('./routes/lessons'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/approvals', require('./routes/approvals'));
 app.use('/api/departments', require('./routes/departments'));
+app.use('/api/library', require('./routes/library'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 
 // Page routes
@@ -53,6 +54,7 @@ app.get('/settings', (req, res) => res.render('settings'));
 app.get('/users', (req, res) => res.render('users'));
 app.get('/approvals', (req, res) => res.render('approvals'));
 app.get('/departments', (req, res) => res.render('departments'));
+app.get('/library', (req, res) => res.render('library'));
 app.get('/app', (req, res) => res.render('app'));
 
 // Route chính trả về index.html (Dashboard)

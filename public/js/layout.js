@@ -25,6 +25,9 @@ const sidebarHTML = `
         <a href="/" class="nav-item" id="nav-projects" title="Quản lý Môn học">
             <i class="fas fa-layer-group"></i> <span class="nav-item-text">Quản lý Môn học</span>
         </a>
+        <a href="/library" class="nav-item" id="nav-library" title="Thư viện Giáo án">
+            <i class="fas fa-book-open"></i> <span class="nav-item-text">Thư viện Giáo án</span>
+        </a>
         <a href="/profile" class="nav-item" id="nav-profile" title="Thông tin cá nhân">
             <i class="fas fa-user"></i> <span class="nav-item-text">Thông tin cá nhân</span>
         </a>

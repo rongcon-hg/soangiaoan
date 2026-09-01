@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thư viện Giáo án - Hệ thống Giáo án điện tử</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .lesson-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .lesson-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .card-title {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .card-meta {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+        .card-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .card-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .card-actions {
+            margin-top: auto;
+            padding-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div id="alert-box"></div>
+
+    <div class="card">
+        <h2 style="margin-top:0; color:var(--primary);"><i class="fas fa-book-open"></i> Thư viện Giáo án Cộng đồng</h2>
+        <p style="color:#64748b; margin-bottom:20px;">Khám phá và tham khảo các giáo án chất lượng từ đồng nghiệp chia sẻ.</p>
+
+        <div class="search-box">
+            <input type="text" id="search-input" class="search-input" placeholder="Tìm kiếm theo tên môn học, người soạn hoặc đơn vị..." oninput="filterLibrary()">
+        </div>
+
+        <div id="library-grid" class="grid-container">
+            <div style="grid-column: 1 / -1; text-align:center; padding: 40px; color:#64748b;">
+                <i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Đang tải dữ liệu...
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/layout.js"></script>
+    <script>
+        injectLayout('library', 'Thư viện Giáo án');
+        
+        let allLessons = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuth(true).then(user => {
+                if(user) {
+                    loadLibrary();
+                }
+            });
+        });
+
+        async function loadLibrary() {
+            try {
+                const res = await fetch(API_URL + '/library', { headers: getHeaders() });
+                if (!res.ok) throw new Error('Không thể tải thư viện');
+                allLessons = await res.json();
+                renderLibrary(allLessons);
+            } catch(e) {
+                document.getElementById('library-grid').innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align:center; padding: 40px; color:var(--danger);">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i><br><br>${e.message}
+                    </div>
+                `;
+            }
+        }
+
+        function filterLibrary() {
+            const keyword = document.getElementById('search-input').value.toLowerCase();
+            const filtered = allLessons.filter(l => {
+                const projectName = (l.project_name || '').toLowerCase();
+                const authorName = (l.author_name || l.username || '').toLowerCase();
+                const deptName = (l.department_name || '').toLowerCase();
+                return projectName.includes(keyword) || authorName.includes(keyword) || deptName.includes(keyword);
+            });
+            renderLibrary(filtered);
+        }
+
+        function renderLibrary(lessons) {
+            const grid = document.getElementById('library-grid');
+            if (lessons.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align:center; padding: 40px; color:#64748b;">
+                        <i class="fas fa-search fa-2x" style="color:#cbd5e1; margin-bottom:10px;"></i><br>
+                        Không tìm thấy giáo án nào phù hợp.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            lessons.forEach(l => {
+                const authorStr = escapeHtml(l.author_name || l.username);
+                const initial = authorStr.charAt(0).toUpperCase();
+                
+                html += `
+                    <div class="lesson-card">
+                        <div class="card-header">
+                            <div class="card-title">${escapeHtml(l.project_name)}</div>
+                            <div class="card-meta"><i class="fas fa-layer-group" style="width:16px;"></i> Hệ: ${escapeHtml(l.system_type || 'Chưa rõ')}</div>
+                            <div class="card-meta"><i class="fas fa-file-alt" style="width:16px;"></i> Bài số ${l.schedule_tt}</div>
+                            <div class="card-meta"><i class="fas fa-clock" style="width:16px;"></i> Cập nhật: ${new Date(l.updated_at).toLocaleDateString('vi-VN')}</div>
+                        </div>
+                        <div class="card-author">
+                            <div class="card-avatar">${initial}</div>
+                            <div>
+                                <div style="font-weight:bold; font-size:0.95rem; color:#334155;">${authorStr}</div>
+                                <div style="font-size:0.8rem; color:#64748b;">${escapeHtml(l.department_name || 'Chưa rõ đơn vị')}</div>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <a href="/app?id=${l.project_id}&tt=${l.schedule_tt}&viewOnly=true" target="_blank" class="btn btn-secondary" style="flex:1; text-align:center; padding:6px 0;"><i class="fas fa-eye"></i> Xem trước</a>
+                            <button onclick="cloneLesson(${l.lesson_id})" class="btn btn-primary" style="flex:1; padding:6px 0;"><i class="fas fa-copy"></i> Mượn về</button>
+                        </div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        async function cloneLesson(lessonId) {
+            if(!(await customConfirm('Bạn có muốn tạo một bản sao của giáo án này về tài khoản của mình để chỉnh sửa không?'))) return;
+            try {
+                const res = await fetch(API_URL + '/library/clone/' + lessonId, { 
+                    method: 'POST', 
+                    headers: getHeaders() 
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || data.error);
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Thành công!',
+                    text: 'Đã tạo bản sao thành công!',
+                    showCancelButton: true,
+                    confirmButtonText: 'Mở giáo án ngay',
+                    cancelButtonText: 'Đóng'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = `/app?id=${data.new_project_id}&tt=1`;
+                    }
+                });
+            } catch(e) {
+                showAlert(e.message, 'error');
+            }
+        }
+
+        function escapeHtml(s) { return (s || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    </script>
+</body>
+</html>
