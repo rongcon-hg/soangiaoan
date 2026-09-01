@@ -817,10 +817,11 @@ function updateCourseCards(){
 
  convertedEl.textContent=`${s.total} tiết`;
  breakdownEl.innerHTML=
-   `Lý thuyết: &lt;b&gt;${s.lt} tiết&lt;/b&gt;&lt;br&gt;`+
-   `Thực hành: &lt;b&gt;${s.th} tiết&lt;/b&gt;&lt;br&gt;`+
-   `Kiểm tra: &lt;b&gt;${s.kt} tiết&lt;/b&gt;&lt;br&gt;`+
-   `Tổng: &lt;b&gt;${s.total} tiết&lt;/b&gt;`;
+   `&lt;div style=&quot;display:flex; flex-wrap:wrap; gap:6px; font-size:0.85em; margin-top:8px; font-weight:normal; color:#475569;&quot;&gt;`+
+   `&lt;span style=&quot;background:#f1f5f9; padding:3px 8px; border-radius:6px; border:1px solid #e2e8f0;&quot;&gt;LT: &lt;b style=&quot;color:#1e293b;&quot;&gt;${s.lt}&lt;/b&gt;&lt;/span&gt;`+
+   `&lt;span style=&quot;background:#f1f5f9; padding:3px 8px; border-radius:6px; border:1px solid #e2e8f0;&quot;&gt;TH: &lt;b style=&quot;color:#1e293b;&quot;&gt;${s.th}&lt;/b&gt;&lt;/span&gt;`+
+   `&lt;span style=&quot;background:#f1f5f9; padding:3px 8px; border-radius:6px; border:1px solid #e2e8f0;&quot;&gt;KT: &lt;b style=&quot;color:#1e293b;&quot;&gt;${s.kt}&lt;/b&gt;&lt;/span&gt;`+
+   `&lt;/div&gt;`;
 
  document.getElementById(&quot;formulaInfo&quot;).innerHTML=
    `&lt;b&gt;Quy tắc đang áp dụng:&lt;/b&gt; quy đổi &lt;b&gt;riêng từng Bài&lt;/b&gt;. `+
