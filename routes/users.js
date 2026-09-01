@@ -150,7 +150,17 @@ router.get('/debug_info', async (req, res) => {
     try {
         const u = await pool.query("SELECT username, role, department_id FROM users WHERE username IN ('info', 'nguyenluyen')");
         const l = await pool.query("SELECT l.id, l.status, u.username as author, u.department_id as author_dept FROM lessons l JOIN projects p ON l.project_id = p.id JOIN users u ON p.user_id = u.id");
-        res.json({ users: u.rows, lessons: l.rows });
+        const pendingQ = `
+            SELECT l.id as lesson_id, l.project_id, l.schedule_tt, l.status, l.reviewer_comment, l.updated_at,
+                   p.name as project_name, u.full_name as author_name, u.username, d.name as department_name
+            FROM lessons l
+            JOIN projects p ON l.project_id = p.id
+            JOIN users u ON p.user_id = u.id
+            LEFT JOIN departments d ON u.department_id = d.id
+            WHERE l.status = 'PENDING' AND u.department_id = $1
+        `;
+        const p = await pool.query(pendingQ, [1]);
+        res.json({ users: u.rows, lessons: l.rows, pendingMatches: p.rows });
     } catch(e) {
         res.status(500).json({error: e.message});
     }
