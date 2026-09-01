@@ -273,7 +273,8 @@
                         <td>
                             <div class="action-buttons">
                                 <button onclick="openPreviewModal(\'${l.project_id}\', \'${l.schedule_tt}\')" class="btn btn-secondary btn-action" title="Xem trước"><i class="fas fa-eye"></i> Xem trước</button>
-                                <button onclick="cloneLesson(${l.lesson_id})" class="btn btn-primary btn-action" title="Tải giáo án này về tài khoản"><i class="fas fa-download"></i> Tải xuống</button>
+                                <button onclick="downloadPdf('${l.project_id}', '${l.schedule_tt}')" class="btn btn-success btn-action" style="background-color: #10b981; border-color: #10b981;" title="Tải file PDF về máy"><i class="fas fa-download"></i> Tải PDF</button>
+                                <button onclick="cloneLesson(${l.lesson_id})" class="btn btn-primary btn-action" title="Sao chép giáo án này về tài khoản để chỉnh sửa"><i class="fas fa-copy"></i> Mượn về</button>
                             </div>
                         </td>
                     </tr>
@@ -282,8 +283,27 @@
             tbody.innerHTML = html;
         }
 
+        function downloadPdf(projectId, tt) {
+            const item = allLessons.find(x => x.project_id == projectId && x.schedule_tt == tt);
+            if (!item || !item.pdf_link) {
+                showAlert('Tác giả chưa tạo hoặc chưa đồng bộ file PDF cho giáo án này.', 'error');
+                return;
+            }
+            
+            // Extract Google Drive ID and force download
+            const match = item.pdf_link.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                const fileId = match[1];
+                const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+                window.open(downloadUrl, '_blank');
+            } else {
+                // Fallback to open the link directly
+                window.open(item.pdf_link, '_blank');
+            }
+        }
+
         async function cloneLesson(lessonId) {
-            if(!(await customConfirm('Bạn có muốn tải giáo án này về tài khoản của mình để có thể chỉnh sửa và xuất file không?'))) return;
+            if(!(await customConfirm('Bạn có muốn tạo một bản sao của giáo án này về tài khoản của mình để chỉnh sửa không?'))) return;
             try {
                 Swal.fire({
                     title: 'Đang tạo bản sao...',
@@ -301,7 +321,7 @@
                 Swal.fire({
                     icon: 'success',
                     title: 'Thành công!',
-                    text: 'Đã tải giáo án về tài khoản thành công!',
+                    text: 'Đã tạo bản sao thành công!',
                     showCancelButton: true,
                     confirmButtonText: 'Mở giáo án ngay',
                     cancelButtonText: 'Đóng'
