@@ -101,9 +101,31 @@ router.get('/template', authenticateToken, isAdmin, async (req, res) => {
 // GET /api/users/export
 router.get('/export', authenticateToken, isAdmin, async (req, res) => {
     try {
-        const query = `SELECT u.username, u.full_name, u.email, u.role, d.name AS department_name, u.is_verified, u.expires_at, u.last_login 
-                       FROM users u LEFT JOIN departments d ON u.department_id = d.id ORDER BY u.id ASC`;
-        const result = await pool.query(query);
+        const { search, role, status } = req.query;
+        let query = `SELECT u.username, u.full_name, u.email, u.role, d.name AS department_name, u.is_verified, u.expires_at, u.last_login 
+                       FROM users u LEFT JOIN departments d ON u.department_id = d.id WHERE 1=1`;
+        let params = [];
+        let count = 1;
+
+        if (role) {
+            query += ` AND u.role = $${count++}`;
+            params.push(role);
+        }
+        if (status) {
+            if (status === 'verified') {
+                query += ` AND u.is_verified = true`;
+            } else if (status === 'unverified') {
+                query += ` AND u.is_verified = false`;
+            }
+        }
+        if (search) {
+            query += ` AND (LOWER(u.username) LIKE $${count} OR LOWER(u.full_name) LIKE $${count} OR LOWER(u.email) LIKE $${count})`;
+            params.push(`%${search.toLowerCase()}%`);
+            count++;
+        }
+        query += ` ORDER BY u.id ASC`;
+        
+        const result = await pool.query(query, params);
 
         const wsData = [
             ['Tên đăng nhập', 'Họ và tên', 'Email', 'Vai trò', 'Phòng ban', 'Trạng thái', 'Hạn sử dụng', 'Đăng nhập cuối']

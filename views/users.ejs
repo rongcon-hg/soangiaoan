@@ -323,6 +323,7 @@ window.customConfirm = async function(msg) {
                 <select id="filter-role" class="form-control" onchange="filterUsers()">
                     <option value="">Tất cả vai trò</option>
                     <option value="Admin">Quản trị viên (Admin)</option>
+                    <option value="Manager">Quản lý (Manager)</option>
                     <option value="User">Giáo viên (User)</option>
                 </select>
                 <div class="filter-status-group">
@@ -666,7 +667,12 @@ window.customConfirm = async function(msg) {
             }
         }
         function downloadTemplate() { downloadExcel('/users/template', 'Mau_Import_Nguoi_Dung.xlsx'); }
-        function exportUsers() { downloadExcel('/users/export', 'Danh_Sach_Nguoi_Dung.xlsx'); }
+        function exportUsers() {
+            const search = encodeURIComponent(document.getElementById('user-search-input')?.value || '');
+            const role = encodeURIComponent(document.getElementById('filter-role')?.value || '');
+            const status = encodeURIComponent(document.getElementById('filter-status')?.value || '');
+            downloadExcel(`/users/export?search=${search}&role=${role}&status=${status}`, 'Danh_Sach_Nguoi_Dung.xlsx');
+        }
         
         async function importUsers(event) {
             const file = event.target.files[0];
