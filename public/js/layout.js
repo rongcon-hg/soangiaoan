@@ -30,6 +30,9 @@ const sidebarHTML = `
         </a>
 
         <div class="nav-menu-bottom" style="margin-top:auto; padding-top:10px; border-top:1px solid var(--border, #e2e8f0); display:flex; flex-direction:column;">
+            <a href="/departments" class="nav-item" id="nav-departments" style="display:none" title="Quản lý Đơn vị">
+                <i class="fas fa-building"></i> <span class="nav-item-text">Quản lý Đơn vị</span>
+            </a>
             <a href="/users" class="nav-item" id="nav-users" style="display:none" title="Quản lý Người dùng">
                 <i class="fas fa-users"></i> <span class="nav-item-text">Quản lý Người dùng</span>
             </a>

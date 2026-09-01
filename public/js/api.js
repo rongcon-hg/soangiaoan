@@ -64,6 +64,8 @@ async function checkAuth(redirectIfNotAuth = true) {
         if(currentUser.role === 'Admin') {
             const adminTab = document.getElementById('nav-users');
             if(adminTab) adminTab.style.display = 'flex';
+            const deptTab = document.getElementById('nav-departments');
+            if(deptTab) deptTab.style.display = 'flex';
         }
 
         // Kiểm tra hết hạn sử dụng (User)
