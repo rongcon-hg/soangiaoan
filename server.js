@@ -46,7 +46,23 @@ app.use('/api/departments', require('./routes/departments'));
 app.use('/api/library', require('./routes/library'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 
+// Middleware to cache EJS views at the Edge for 1 hour to save Vercel Serverless CPU
+const cacheView = (req, res, next) => {
+    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    next();
+};
+
 // Page routes
+app.get('/login', cacheView, (req, res) => res.render('login'));
+app.get('/dashboard', cacheView, (req, res) => res.render('dashboard'));
+app.get('/profile', cacheView, (req, res) => res.render('profile'));
+app.get('/settings', cacheView, (req, res) => res.render('settings'));
+app.get('/users', cacheView, (req, res) => res.render('users'));
+app.get('/approvals', cacheView, (req, res) => res.render('approvals'));
+app.get('/departments', cacheView, (req, res) => res.render('departments'));
+app.get('/library', cacheView, (req, res) => res.render('library'));
+app.get('/app', cacheView, (req, res) => res.render('app'));
+app.get('/', cacheView, (req, res) => res.render('index'));
 
 // Route chính trả về index.html (Dashboard)
 app.use((req, res) => {
