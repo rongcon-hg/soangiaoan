@@ -329,31 +329,6 @@
                 showAlert(e.message, 'error');
             }
         }
-                });
-                
-                const res = await fetch(API_URL + '/library/clone/' + lessonId, { 
-                    method: 'POST', 
-                    headers: getHeaders() 
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || data.error);
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Thành công!',
-                    text: 'Đã tạo bản sao thành công!',
-                    showCancelButton: true,
-                    confirmButtonText: 'Mở giáo án ngay',
-                    cancelButtonText: 'Đóng'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.location.href = `/app?id=${data.new_project_id}&tt=1`;
-                    }
-                });
-            } catch(e) {
-                showAlert(e.message, 'error');
-            }
-        }
 
 
         async function openPreviewModal(projectId, tt) {
