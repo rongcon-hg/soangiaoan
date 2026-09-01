@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret_key';
 const mailer = require('../utils/mailer');
 
 exports.register = async (req, res) => {
-    const { username, password, email } = req.body;
+    const { username, password, email, full_name, phone, department_id } = req.body;
     
     if (!username || !password || !email) {
         return res.status(400).json({ message: 'Vui lòng nhập đầy đủ Tên đăng nhập, Mật khẩu và Email.' });
