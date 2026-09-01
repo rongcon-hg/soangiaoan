@@ -327,7 +327,7 @@
                         <td><b>${authorStr}</b></td>
                         <td><span style="font-size:13px; color:#64748b;">${escapeHtml(l.department_name || 'Chưa rõ đơn vị')}</span></td>
                         <td>${dateStr}</td>
-                        <td>
+                        <td class="sticky-action" style="text-align:right; white-space:nowrap;">
                             <div class="action-buttons">
                                 <button onclick="openPreviewModal('${l.project_id}', '${l.schedule_tt}')" class="btn btn-secondary btn-action btn-sm" title="Xem trước"><i class="fas fa-eye"></i> <span class="hide-text-mobile">Xem</span></button>
                                 <button onclick="downloadPdf('${l.project_id}', '${l.schedule_tt}')" class="btn btn-success btn-action btn-sm" style="background-color: #10b981; border-color: #10b981;" title="Tải file PDF về máy"><i class="fas fa-download"></i> <span class="hide-text-mobile">Tải</span></button>
