@@ -27,8 +27,8 @@ router.post('/submit', authenticateToken, async (req, res) => {
         
         // Gửi thông báo cho Manager
         await pool.query(`
-            INSERT INTO notifications (user_id, type, title, message, link)
-            SELECT u.id, 'info', 'Chờ duyệt giáo án', $1, '/approvals'
+            INSERT INTO notifications (user_id, type, message, link)
+            SELECT u.id, 'info', $1, '/approvals'
             FROM users u
             WHERE u.role = 'Manager' AND u.department_id = $2
         `, [`Giáo viên ${req.user.username} vừa gửi giáo án chờ duyệt.`, req.user.department_id]);
