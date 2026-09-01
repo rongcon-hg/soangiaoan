@@ -16,12 +16,13 @@ router.post('/submit', authenticateToken, async (req, res) => {
         const { project_id, schedule_tt } = req.body;
         
         // Cập nhật trạng thái
+        const { pdf_link } = req.body;
         const updateRes = await pool.query(`
             UPDATE lessons 
-            SET status = 'PENDING', updated_at = CURRENT_TIMESTAMP
+            SET status = 'PENDING', updated_at = CURRENT_TIMESTAMP, pdf_link = $3
             WHERE project_id = $1 AND schedule_tt = $2
             RETURNING id
-        `, [project_id, schedule_tt]);
+        `, [project_id, schedule_tt, pdf_link || null]);
         
         if (updateRes.rows.length === 0) return res.status(404).json({ message: 'Không tìm thấy giáo án' });
         
@@ -49,7 +50,7 @@ router.post('/submit', authenticateToken, async (req, res) => {
 router.get('/pending', authenticateToken, isManager, async (req, res) => {
     try {
         let query = `
-            SELECT l.id as lesson_id, l.project_id, l.schedule_tt, l.status, l.reviewer_comment, l.updated_at,
+            SELECT l.id as lesson_id, l.project_id, l.schedule_tt, l.status, l.reviewer_comment, l.updated_at, l.pdf_link,
                    p.name as project_name, u.full_name as author_name, u.username, d.name as department_name
             FROM lessons l
             JOIN projects p ON l.project_id = p.id

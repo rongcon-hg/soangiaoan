@@ -4570,6 +4570,33 @@ function exportWord(){
   setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},300);
 }
 
+window.exportPdfAsBlob = async function() {
+  if(!$("#paper table")) throw new Error("Hãy tạo giáo án trước.");
+  if(typeof html2pdf==="undefined") throw new Error("Chưa tải được thư viện PDF.");
+  const clone = getCleanPaperClone();
+  if(!clone) throw new Error("Không thể tạo bản sao giáo án.");
+
+  const pdfStyle = document.createElement("style");
+  pdfStyle.textContent = `
+    * { box-sizing: border-box !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .paper { width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
+    table { width: 100% !important; border-collapse: collapse !important; table-layout: fixed !important; }
+    td, th { border: 1px solid #000 !important; padding: 6px !important; word-wrap: break-word !important; }
+    p, li { margin: 4px 0 !important; line-height: 1.4 !important; }
+    body { background: white !important; font-size: 14pt !important; }
+  `;
+  clone.prepend(pdfStyle);
+
+  const opt = {
+    margin: [15, 20, 15, 20],
+    filename: 'giao_an.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  return await html2pdf().set(opt).from(clone).output('blob');
+};
+
 async function exportPdf(){
   if(!$(&quot;#paper table&quot;)){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
 
@@ -5544,19 +5571,75 @@ window.addEventListener("message", async e => {
     if (!(await customConfirm('Bạn có chắc chắn muốn gửi giáo án này cho Quản lý duyệt không?'))) return;
     
     try {
+        Swal.fire({
+            title: 'Đang tạo PDF & Gửi duyệt...',
+            html: 'Quá trình xuất PDF và tải lên Google Drive có thể mất vài chục giây. Vui lòng không đóng trang...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        // 1. Get PDF Blob from iframe
+        const frame = document.getElementById('plannerFrame');
+        if(!frame || !frame.contentWindow || typeof frame.contentWindow.exportPdfAsBlob !== 'function') {
+            throw new Error('Chưa thể xuất PDF. Vui lòng thử lại!');
+        }
+        
+        const pdfBlob = await frame.contentWindow.exportPdfAsBlob();
+        const file = new File([pdfBlob], `GiaoAn_${projectId}_${currentTT}.pdf`, { type: 'application/pdf' });
+        
+        // 2. Upload to Drive chunked
+        const token = localStorage.getItem('token');
+        const chunkSize = 3 * 1024 * 1024;
+        
+        const startRes = await fetch('/api/drive/start-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ fileName: file.name, mimeType: file.type })
+        });
+        if (!startRes.ok) throw new Error('Không thể khởi tạo upload Drive. Vui lòng kiểm tra cấu hình Google Drive.');
+        const { uploadUrl } = await startRes.json();
+        
+        let fileId = null;
+        for (let start = 0; start < file.size; start += chunkSize) {
+            const end = Math.min(start + chunkSize, file.size);
+            const chunk = file.slice(start, end);
+            const chunkRes = await fetch('/api/drive/upload-chunk', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'X-Upload-Url': uploadUrl,
+                    'Content-Range': 'bytes ' + start + '-' + (end - 1) + '/' + file.size,
+                    'Content-Type': 'application/octet-stream'
+                },
+                body: chunk
+            });
+            if (chunkRes.status === 308) continue;
+            if (chunkRes.ok) {
+                const data = await chunkRes.json();
+                fileId = data.fileId;
+                break;
+            }
+        }
+        if (!fileId) throw new Error('Upload PDF thất bại (chưa hoàn thành)');
+        
+        const finishRes = await fetch('/api/drive/finish-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ fileId })
+        });
+        if (!finishRes.ok) throw new Error('Không thể thiết lập quyền chia sẻ file');
+        const { url: pdfLink } = await finishRes.json();
+
+        // 3. Submit Approval to Database
         const res = await fetch(API_URL + '/approvals/submit', {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({ project_id: projectId, schedule_tt: currentTT })
+            body: JSON.stringify({ project_id: projectId, schedule_tt: currentTT, pdf_link: pdfLink })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || data.error || 'Lỗi gửi duyệt');
         
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ text: 'Đã gửi giáo án cho Quản lý duyệt thành công!', icon: 'success', confirmButtonColor: '#16469d' });
-        } else {
-            alert('Đã gửi phê duyệt thành công!');
-        }
+        Swal.fire({ text: 'Đã xuất PDF và gửi duyệt thành công!', icon: 'success', confirmButtonColor: '#16469d' });
         
         // Update badge
         const st = document.getElementById('transferStatus');
@@ -5566,18 +5649,16 @@ window.addEventListener("message", async e => {
             else st.innerHTML += '<span id="status-badge" style="margin-left:8px; padding:3px 8px; background:#fef3c7; color:#b45309; border-radius:4px; font-weight:bold; font-size:12px;">CHỜ DUYỆT</span>';
         }
 
-        const iframe = document.getElementById('plannerFrame');
-        if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.lessonStatus = 'PENDING';
-            const btn = iframe.contentWindow.document.getElementById('btnSubmitApproval');
+        if (frame && frame.contentWindow) {
+            frame.contentWindow.lessonStatus = 'PENDING';
+            const btn = frame.contentWindow.document.getElementById('btnSubmitApproval');
             if (btn) btn.style.display = 'none';
+            const btnShare = frame.contentWindow.document.getElementById('btnShareLibrary');
+            if (btnShare) btnShare.style.display = 'none';
         }
-    } catch (err) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ text: err.message, icon: 'error' });
-        } else {
-            alert(err.message);
-        }
+        
+    } catch(e) {
+        Swal.fire({ text: e.message, icon: 'error' });
     }
   };
 

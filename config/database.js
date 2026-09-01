@@ -191,7 +191,8 @@ pool.on('connect', async (client) => {
                 ALTER TABLE lessons 
                 ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'DRAFT',
                 ADD COLUMN IF NOT EXISTS reviewer_comment TEXT,
-                ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT false;
+                ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT false,
+                ADD COLUMN IF NOT EXISTS pdf_link TEXT;
             `);
         } catch(e) {
             console.error('Auto migration warning:', e.message);

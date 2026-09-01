@@ -363,24 +363,37 @@
             loader.style.display = 'block';
             
             try {
-                const res = await fetch(API_URL + `/lessons/${projectId}/lessons/${tt}`, { headers: getHeaders() });
-                if(res.ok) {
-                    const data = await res.json();
-                    if(data && data.lesson_data) {
-                        const style = `<style>
-                            body { font-family: 'Times New Roman', serif; margin:0; padding: 20mm; background: #fff; line-height: 1.5; font-size: 14pt; }
-                            table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px; }
-                            th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-                            h1, h2, h3 { text-align: center; }
-                        </style>`;
-                        iframe.srcdoc = style + data.lesson_data;
-                    } else {
-                        iframe.srcdoc = '<div style="padding:20px; color:red; font-family:sans-serif;">Không có dữ liệu giáo án (Bản nháp trống).</div>';
+                if (item.pdf_link) {
+                    iframe.removeAttribute('srcdoc');
+                    // Ensure the Drive link uses preview mode
+                    let previewUrl = item.pdf_link;
+                    if (previewUrl.includes('/view')) {
+                        previewUrl = previewUrl.replace('/view', '/preview');
                     }
+                    iframe.src = previewUrl;
                 } else {
-                    throw new Error('Lỗi truy xuất từ máy chủ');
+                    const res = await fetch(API_URL + `/lessons/${projectId}/lessons/${tt}`, { headers: getHeaders() });
+                    if(res.ok) {
+                        const data = await res.json();
+                        if(data && data.lesson_data) {
+                            const style = `<style>
+                                body { font-family: 'Times New Roman', serif; margin:0; padding: 20mm; background: #fff; line-height: 1.5; font-size: 14pt; }
+                                table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px; }
+                                th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+                                h1, h2, h3 { text-align: center; }
+                            </style>`;
+                            iframe.removeAttribute('src');
+                            iframe.srcdoc = style + data.lesson_data;
+                        } else {
+                            iframe.removeAttribute('src');
+                            iframe.srcdoc = '<div style="padding:20px; color:red; font-family:sans-serif;">Không có dữ liệu giáo án (Bản nháp trống).</div>';
+                        }
+                    } else {
+                        throw new Error('Lỗi truy xuất từ máy chủ');
+                    }
                 }
             } catch(e) {
+                iframe.removeAttribute('src');
                 iframe.srcdoc = `<div style="padding:20px; color:red; font-family:sans-serif;">Lỗi tải giáo án: ${e.message}</div>`;
             } finally {
                 loader.style.display = 'none';
@@ -389,7 +402,9 @@
 
         function closePreviewModal() {
             document.getElementById('preview-modal').style.display = 'none';
-            document.getElementById('preview-frame').srcdoc = '';
+            const iframe = document.getElementById('preview-frame');
+            iframe.removeAttribute('srcdoc');
+            iframe.removeAttribute('src');
         }
 
         function toggleComment() {
