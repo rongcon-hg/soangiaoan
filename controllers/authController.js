@@ -26,6 +26,14 @@ exports.register = async (req, res) => {
         
         try {
             await mailer.sendMail(email, 'Mã xác thực OTP - Hệ thống Giáo án', 'otp', { username, otp: otpCode });
+            
+            // Gửi thông báo cho Admin
+            const adminRes = await pool.query("SELECT email FROM users WHERE role = 'Admin' LIMIT 1");
+            if (adminRes.rows.length > 0 && adminRes.rows[0].email) {
+                const adminEmail = adminRes.rows[0].email;
+                const timeStr = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+                await mailer.sendMail(adminEmail, 'Thông báo: Có người dùng mới đăng ký', 'admin_new_user', { newUsername: username, newEmail: email, time: timeStr });
+            }
         } catch(e) {
             console.error('Lỗi gửi mail', e);
         }
