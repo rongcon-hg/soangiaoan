@@ -122,6 +122,7 @@
             <table class="table" style="width:100%;">
                 <thead>
                     <tr>
+                        <th style="text-align:center; width:5%;">STT</th>
                         <th>Người gửi</th>
                         <th>Đơn vị</th>
                         <th>Môn học</th>
@@ -131,7 +132,7 @@
                     </tr>
                 </thead>
                 <tbody id="pending-list">
-                    <tr><td colspan="6" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+                    <tr><td colspan="7" style="text-align:center;">Đang tải dữ liệu...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -229,7 +230,7 @@
 
         async function loadPendingLessons() {
             const tbody = document.getElementById('pending-list');
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Đang tải...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Đang tải...</td></tr>';
             try {
                 const res = await fetch(API_URL + '/approvals/pending?t=' + Date.now(), { 
                     headers: Object.assign({}, getHeaders(), { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }) 
@@ -238,7 +239,7 @@
                 allPendingLessons = await res.json();
                 applyFilters();
             } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:red;">${e.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">${e.message}</td></tr>`;
             }
         }
 
@@ -263,7 +264,7 @@
             const total = filteredLessons.length;
             
             if (total === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">Không có giáo án nào phù hợp.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b;">Không có giáo án nào phù hợp.</td></tr>';
                 document.getElementById('pagination-container').style.display = 'none';
                 return;
             }
@@ -276,10 +277,11 @@
             const pageData = filteredLessons.slice(startIndex, endIndex);
 
             let html = '';
-            pageData.forEach(item => {
+            pageData.forEach((item, index) => {
                 const dateStr = new Date(item.updated_at).toLocaleString('vi-VN');
                 html += `
                     <tr>
+                        <td style="text-align:center; font-weight:bold; color:#64748b;">${startIndex + index + 1}</td>
                         <td><b>${escapeHtml(item.author_name || item.username)}</b></td>
                         <td><span style="font-size:12px; color:#64748b;">${escapeHtml(item.department_name || 'Chưa rõ')}</span></td>
                         <td>${escapeHtml(item.project_name)}</td>
