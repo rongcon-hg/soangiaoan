@@ -4571,12 +4571,12 @@ function exportWord(){
 }
 
 window.exportPdfAsBlob = async function() {
-  if(!$("#paper table")) throw new Error("Hãy tạo giáo án trước.");
-  if(typeof html2pdf==="undefined") throw new Error("Chưa tải được thư viện PDF.");
+  if(!$(&quot;#paper table&quot;)) throw new Error(&quot;Hãy tạo giáo án trước.&quot;);
+  if(typeof html2pdf===&quot;undefined&quot;) throw new Error(&quot;Chưa tải được thư viện PDF.&quot;);
   const clone = getCleanPaperClone();
-  if(!clone) throw new Error("Không thể tạo bản sao giáo án.");
+  if(!clone) throw new Error(&quot;Không thể tạo bản sao giáo án.&quot;);
 
-  const pdfStyle = document.createElement("style");
+  const pdfStyle = document.createElement(&quot;style&quot;);
   pdfStyle.textContent = `
     * { box-sizing: border-box !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     .paper { width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
