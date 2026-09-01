@@ -163,7 +163,7 @@ exports.me = async (req, res) => {
     try {
         let user;
         try {
-            const query = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, signature, signature_filename, settings, expires_at FROM users WHERE id = $1`;
+            const query = `SELECT id, username, role, gemini_api_key, full_name, department, department_id, phone, email, avatar, signature, signature_filename, settings, expires_at FROM users WHERE id = $1`;
             const result = await pool.query(query, [req.user.id]);
             user = result.rows[0];
         } catch (colErr) {
@@ -238,7 +238,7 @@ exports.updateProfile = async (req, res) => {
         }
 
         avatar = toDirectDriveUrl(avatar);
-        const query = `UPDATE users SET full_name = $1, department = $2, phone = $3, email = $4, avatar = $5 WHERE id = $6`;
+        const query = `UPDATE users SET full_name = $1, department_id = $2, phone = $3, email = $4, avatar = $5 WHERE id = $6`;
         await pool.query(query, [full_name, department, phone, email, avatar, req.user.id]);
         res.json({ message: 'Profile updated successfully', avatar_url: avatar });
     } catch (error) {

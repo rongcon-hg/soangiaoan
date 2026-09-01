@@ -101,7 +101,9 @@ window.customConfirm = async function(msg) {
                     </div>
                     <div class="form-group">
                         <label>Khoa / Đơn vị công tác</label>
-                        <input type="text" id="profile-department" class="form-control" placeholder="VD: Khoa Cơ khí">
+                        <select id="profile-department" class="form-control">
+                            <option value="">-- Trống --</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Số điện thoại</label>
@@ -139,12 +141,29 @@ window.customConfirm = async function(msg) {
         let currentAvatarBase64 = null;
 
         injectLayout('profile', 'Thông tin cá nhân');
+        async function loadDeptsForProfile() {
+            try {
+                const res = await fetch(API_URL + '/departments', { headers: getHeaders() });
+                if(res.ok) {
+                    const depts = await res.json();
+                    const sel = document.getElementById('profile-department');
+                    const currentValue = sel.value;
+                    sel.innerHTML = '<option value="">-- Trống --</option>' + 
+                        depts.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
+                    if (currentValue) sel.value = currentValue;
+                }
+            } catch(e){}
+        }
+        function escapeHtml(s) { return (s || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+        loadDeptsForProfile();
+
         checkAuth().then(user => {
             if(user) {
                 document.getElementById('profile-username').value = user.username;
                 document.getElementById('profile-role').value = user.role;
                 document.getElementById('profile-fullname').value = user.full_name || '';
-                document.getElementById('profile-department').value = user.department || '';
+                document.getElementById('profile-department').value = user.department_id || '';
                 document.getElementById('profile-phone').value = user.phone || '';
                 document.getElementById('profile-email').value = user.email || '';
                 
@@ -225,7 +244,7 @@ window.customConfirm = async function(msg) {
         async function saveProfile() {
             const payload = {
                 full_name: document.getElementById('profile-fullname').value.trim(),
-                department: document.getElementById('profile-department').value.trim(),
+                department_id: document.getElementById('profile-department').value.trim(),
                 phone: document.getElementById('profile-phone').value.trim(),
                 email: document.getElementById('profile-email').value.trim(),
                 avatar: currentAvatarBase64
