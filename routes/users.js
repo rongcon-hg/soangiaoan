@@ -146,4 +146,13 @@ router.post('/notifications/read', authenticateToken, async (req, res) => {
     }
 });
 
+router.get('/debug_info', async (req, res) => {
+    try {
+        const u = await pool.query("SELECT username, role, department_id FROM users WHERE username IN ('info', 'nguyenluyen')");
+        const l = await pool.query("SELECT l.id, l.status, u.username as author, u.department_id as author_dept FROM lessons l JOIN projects p ON l.project_id = p.id JOIN users u ON p.user_id = u.id");
+        res.json({ users: u.rows, lessons: l.rows });
+    } catch(e) {
+        res.status(500).json({error: e.message});
+    }
+});
 module.exports = router;
