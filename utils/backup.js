@@ -1,14 +1,9 @@
-const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const util = require('util');
+const { Readable } = require('stream');
 const pool = require('../config/database');
 const { google } = require('googleapis');
-const driveUtil = require('./drive');
 
-const execAsync = util.promisify(exec);
-
-// Helper function to get Drive Auth directly (bypassing the date-based folder creation if we just want a specific folder)
 async function getDriveClient(email, key) {
     let actualKey = key;
     if (key.trim().startsWith('{')) {
@@ -30,67 +25,50 @@ async function getDriveClient(email, key) {
     return drive;
 }
 
-// Ensure the Backup folder exists
 async function ensureBackupFolder(drive, parentFolderId) {
-    // Luôn sử dụng folder ID cứng theo yêu cầu của Cậu chủ cho Backup
+    // Luôn sử dụng folder ID cứng theo yêu cầu
     return '1xqKJeiP2_FqCAye09Kk8vtKeiaLGn22p';
-    
-    // Đoạn code dưới đây bị vô hiệu hoá để dùng thư mục cứng
-    /*
-    const folderName = 'Database_Backups';
-    const searchRes = await drive.files.list({
-        q: `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and '${parentFolderId}' in parents and trashed=false`,
-        fields: 'files(id, name)',
-        spaces: 'drive',
-        includeItemsFromAllDrives: true,
-        supportsAllDrives: true
-    });
-
-    if (searchRes.data.files.length === 0) {
-        const folder = await drive.files.create({
-            resource: { name: folderName, mimeType: 'application/vnd.google-apps.folder', parents: [parentFolderId] },
-            fields: 'id',
-            supportsAllDrives: true
-        });
-        return folder.data.id;
-    }
-    return searchRes.data.files[0].id;
-    */
 }
 
-// 1. Thực hiện dump và upload
+// 1. Thực hiện dump và upload bằng JS thuần (tương thích Vercel)
 exports.runBackup = async (adminSettings) => {
     if (!adminSettings.drive_email || !adminSettings.drive_key) {
         throw new Error("Chưa cấu hình Google Drive (Email hoặc Key) cho tài khoản Admin.");
     }
 
-    const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-    if (!dbUrl) throw new Error("Không tìm thấy biến môi trường DATABASE_URL.");
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const fileName = `backup_${timestamp}.sql`;
-    const filePath = path.join(__dirname, '..', fileName);
-
     try {
-        // 1. Tạo file dump (Sử dụng pg_dump)
-        await execAsync(`pg_dump "${dbUrl}" -F c -f "${filePath}"`);
+        // Lấy dữ liệu tất cả các bảng
+        const users = await pool.query('SELECT * FROM users');
+        const projects = await pool.query('SELECT * FROM projects');
+        const schedules = await pool.query('SELECT * FROM schedules');
+        const lessons = await pool.query('SELECT * FROM lessons');
 
-        // 2. Upload lên Drive
+        const backupData = {
+            timestamp: new Date().toISOString(),
+            tables: {
+                users: users.rows,
+                projects: projects.rows,
+                schedules: schedules.rows,
+                lessons: lessons.rows
+            }
+        };
+
+        const jsonString = JSON.stringify(backupData);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const fileName = `backup_${timestamp}.json`;
+
+        // Upload lên Drive
         const drive = await getDriveClient(adminSettings.drive_email, adminSettings.drive_key);
         const backupFolderId = await ensureBackupFolder(drive, adminSettings.drive_folder);
 
-        const fileSize = fs.statSync(filePath).size;
         const res = await drive.files.create({
             resource: { name: fileName, parents: [backupFolderId] },
-            media: { mimeType: 'application/octet-stream', body: fs.createReadStream(filePath) },
+            media: { mimeType: 'application/json', body: Readable.from(jsonString) },
             fields: 'id, name, createdTime, size',
             supportsAllDrives: true
         });
 
-        // 3. Xoá file local
-        fs.unlinkSync(filePath);
-
-        // 4. Xoá các file cũ nếu vượt quá số lượng lưu giữ (retain)
+        // Xoá các file cũ nếu vượt quá số lượng lưu giữ (retain)
         const retainCount = parseInt(adminSettings.backup_retain) || 7;
         const listRes = await drive.files.list({
             q: `'${backupFolderId}' in parents and trashed=false`,
@@ -115,14 +93,13 @@ exports.runBackup = async (adminSettings) => {
 
         return res.data;
     } catch (error) {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
         throw new Error('Backup failed: ' + error.message);
     }
 };
 
 // 2. Lấy danh sách backup
 exports.listBackups = async (adminSettings) => {
-    if (!adminSettings.drive_email || !adminSettings.drive_key || !adminSettings.drive_folder) {
+    if (!adminSettings.drive_email || !adminSettings.drive_key) {
         return [];
     }
     const drive = await getDriveClient(adminSettings.drive_email, adminSettings.drive_key);
@@ -140,38 +117,69 @@ exports.listBackups = async (adminSettings) => {
     return listRes.data.files || [];
 };
 
+async function insertTableData(client, tableName, rows) {
+    if (!rows || rows.length === 0) return;
+    const columns = Object.keys(rows[0]);
+    for (const row of rows) {
+        const values = columns.map(col => row[col]);
+        const placeholders = columns.map((_, i) => `$${i + 1}`).join(', ');
+        
+        // Escape column names with double quotes to prevent syntax errors
+        const safeColumns = columns.map(c => `"${c}"`).join(', ');
+        const query = `INSERT INTO ${tableName} (${safeColumns}) VALUES (${placeholders})`;
+        await client.query(query, values);
+    }
+}
+
 // 3. Restore từ file ID
 exports.restoreBackup = async (fileId, adminSettings) => {
-    if (!adminSettings.drive_email || !adminSettings.drive_key || !adminSettings.drive_folder) {
+    if (!adminSettings.drive_email || !adminSettings.drive_key) {
         throw new Error("Chưa cấu hình Google Drive.");
     }
-    const dbUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL;
-    if (!dbUrl) throw new Error("Không tìm thấy biến môi trường DATABASE_URL.");
-
-    const drive = await getDriveClient(adminSettings.drive_email, adminSettings.drive_key);
     
-    const filePath = path.join(__dirname, '..', `restore_${Date.now()}.sql`);
+    const drive = await getDriveClient(adminSettings.drive_email, adminSettings.drive_key);
     
     try {
         // Tải file từ Drive
-        const dest = fs.createWriteStream(filePath);
-        const res = await drive.files.get({ fileId, alt: 'media', supportsAllDrives: true }, { responseType: 'stream' });
-        
-        await new Promise((resolve, reject) => {
-            res.data.on('end', () => resolve());
-            res.data.on('error', err => reject(err));
-            res.data.pipe(dest);
-        });
+        const res = await drive.files.get({ fileId, alt: 'media', supportsAllDrives: true });
+        let backupData = res.data;
+        if (typeof backupData === 'string') {
+            backupData = JSON.parse(backupData);
+        }
 
-        // Đảm bảo đóng kết nối để pg_restore có thể drop DB (hoặc dùng cờ clean)
-        // Lưu ý: pg_restore với cờ -c (clean) sẽ xoá object trước khi tạo lại.
-        // -O (no owner), -x (no privileges).
-        await execAsync(`pg_restore --clean --if-exists -O -x -d "${dbUrl}" "${filePath}"`);
-        
-        fs.unlinkSync(filePath);
+        if (!backupData || !backupData.tables) {
+            throw new Error("Dữ liệu backup không hợp lệ.");
+        }
+
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            
+            // Xóa sạch dữ liệu (CASCADE để xử lý khóa ngoại)
+            await client.query('TRUNCATE lessons, schedules, projects, users CASCADE');
+
+            // Insert lại dữ liệu theo thứ tự (users -> projects -> schedules/lessons)
+            await insertTableData(client, 'users', backupData.tables.users);
+            await insertTableData(client, 'projects', backupData.tables.projects);
+            await insertTableData(client, 'schedules', backupData.tables.schedules);
+            await insertTableData(client, 'lessons', backupData.tables.lessons);
+
+            // Cập nhật lại các sequence ID để không bị lỗi khi tạo mới
+            await client.query(`SELECT setval('users_id_seq', COALESCE((SELECT MAX(id) FROM users), 1), true)`);
+            await client.query(`SELECT setval('projects_id_seq', COALESCE((SELECT MAX(id) FROM projects), 1), true)`);
+            await client.query(`SELECT setval('schedules_id_seq', COALESCE((SELECT MAX(id) FROM schedules), 1), true)`);
+            await client.query(`SELECT setval('lessons_id_seq', COALESCE((SELECT MAX(id) FROM lessons), 1), true)`);
+
+            await client.query('COMMIT');
+        } catch(e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
+
         return { success: true };
     } catch(err) {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
         throw new Error("Restore failed: " + err.message);
     }
 };
