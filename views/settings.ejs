@@ -131,8 +131,8 @@ window.customConfirm = async function(msg) {
 
     <div class="card">
         <div class="settings-tabs">
-            <div class="s-tab active" onclick="switchSettingsTab('gemini', this)"><i class="fas fa-brain"></i> AI (Gemini)</div>
-            <div class="s-tab" onclick="switchSettingsTab('signature', this)"><i class="fas fa-signature"></i> Chữ ký điện tử</div>
+            <div class="s-tab active" id="tab-gemini" onclick="switchSettingsTab('gemini', this)"><i class="fas fa-brain"></i> AI (Gemini)</div>
+            <div class="s-tab" id="tab-signature" onclick="switchSettingsTab('signature', this)"><i class="fas fa-signature"></i> Chữ ký điện tử</div>
             <div class="s-tab" id="tab-smtp" style="display:none" onclick="switchSettingsTab('smtp', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
             <div class="s-tab" id="tab-google" style="display:none" onclick="switchSettingsTab('google', this)"><i class="fab fa-google"></i> Đăng nhập Google</div>
             <div class="s-tab" id="tab-gdrive" style="display:none" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
@@ -346,6 +346,18 @@ window.customConfirm = async function(msg) {
         let newSignatureFilename = '';
 
         injectLayout('settings', 'Cấu hình Hệ thống');
+        
+        // Handle direct linking to tabs via hash
+        const hash = window.location.hash.replace('#', '');
+        if (hash) {
+            setTimeout(() => {
+                const tabEl = document.getElementById('tab-' + hash);
+                if (tabEl) {
+                    switchSettingsTab(hash, tabEl);
+                }
+            }, 100);
+        }
+
         checkAuth().then(user => {
             if(user) {
                 if(user.role === 'Admin') {
