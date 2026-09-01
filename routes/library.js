@@ -34,16 +34,24 @@ router.post('/toggle', authenticateToken, async (req, res) => {
             return res.status(403).json({ message: 'Không có quyền thực hiện thao tác này' });
         }
 
+        // Fetch current status if is_public is not explicitly provided
+        let targetPublic = is_public;
+        if (targetPublic === undefined) {
+            const currentRes = await pool.query('SELECT is_public FROM lessons WHERE project_id = $1 AND schedule_tt = $2', [project_id, schedule_tt]);
+            if (currentRes.rows.length === 0) return res.status(404).json({ message: 'Chưa có dữ liệu giáo án để chia sẻ' });
+            targetPublic = !currentRes.rows[0].is_public;
+        }
+
         const result = await pool.query(
             'UPDATE lessons SET is_public = $1 WHERE project_id = $2 AND schedule_tt = $3 RETURNING *',
-            [is_public, project_id, schedule_tt]
+            [targetPublic, project_id, schedule_tt]
         );
         
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'Chưa có dữ liệu giáo án để chia sẻ' });
-        }
-        
-        res.json({ message: is_public ? 'Đã chia sẻ lên Thư viện' : 'Đã gỡ khỏi Thư viện' });
+        const newStatus = result.rows[0].is_public;
+        res.json({ 
+            is_public: newStatus,
+            message: newStatus ? 'Đã chia sẻ lên Thư viện' : 'Đã gỡ khỏi Thư viện' 
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
