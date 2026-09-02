@@ -77,9 +77,44 @@ exports.getExportData = async (req, res) => {
         // Fetch all lesson_data for this project ordered by schedule_tt
         const lessonsRes = await pool.query(`SELECT schedule_tt, lesson_data FROM lessons WHERE project_id = $1 AND lesson_data IS NOT NULL AND lesson_data != '' ORDER BY schedule_tt ASC`, [projectId]);
         
+        // Fetch schedule to determine Book Type
+        const schedRes = await pool.query(`SELECT schedule_data FROM schedules WHERE project_id = $1`, [projectId]);
+        let bookType = "LÝ THUYẾT"; // Default
+        if (schedRes.rows.length > 0 && schedRes.rows[0].schedule_data) {
+            try {
+                const schedArr = typeof schedRes.rows[0].schedule_data === 'string' ? JSON.parse(schedRes.rows[0].schedule_data) : schedRes.rows[0].schedule_data;
+                let totalLt = 0, totalTh = 0, totalKt = 0;
+                if (Array.isArray(schedArr)) {
+                    for (const session of schedArr) {
+                        let lt = 0, th = 0, kt = 0;
+                        if (session.overrideCounts) {
+                            lt = Number(session.overrideCounts.LT) || Number(session.overrideCounts.lt) || 0;
+                            th = Number(session.overrideCounts.TH) || Number(session.overrideCounts.th) || 0;
+                            kt = Number(session.overrideCounts.KT) || Number(session.overrideCounts.kt) || 0;
+                        } else if (Array.isArray(session.units)) {
+                            lt = session.units.filter(u => u.type === 'LT').length;
+                            th = session.units.filter(u => u.type === 'TH').length;
+                            kt = session.units.filter(u => u.type === 'KT').length;
+                        } else {
+                            lt = Number(session.lt) || Number(session.LT) || 0;
+                            th = Number(session.th) || Number(session.TH) || 0;
+                            kt = Number(session.kt) || Number(session.KT) || 0;
+                        }
+                        totalLt += lt;
+                        totalTh += th;
+                        totalKt += kt;
+                    }
+                    if (totalLt > 0 && (totalTh > 0 || totalKt > 0)) bookType = "TÍCH HỢP";
+                    else if (totalLt === 0 && (totalTh > 0 || totalKt > 0)) bookType = "THỰC HÀNH";
+                    else bookType = "LÝ THUYẾT";
+                }
+            } catch(e) {}
+        }
+        
         res.json({
             project: projRes.rows[0],
-            lessons: lessonsRes.rows
+            lessons: lessonsRes.rows,
+            bookType: bookType
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

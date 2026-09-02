@@ -82,13 +82,24 @@
         
         /* Cover Page */
         .cover-page {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; min-height: 250mm;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            text-align: center; min-height: 257mm;
+            border: 5px double #000;
+            padding: 40px;
+            font-family: "Times New Roman", Times, serif;
         }
-        .cover-department { font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 60px; }
-        .cover-title { font-size: 42px; font-weight: bold; margin-bottom: 40px; color: #000; text-transform: uppercase; }
-        .cover-course { font-size: 32px; font-weight: bold; color: #16469d; margin-bottom: 60px; }
-        .cover-details { font-size: 20px; text-align: left; line-height: 2; border: 2px solid #000; padding: 30px; border-radius: 12px; width: 80%; }
+        .cover-header { font-size: 16pt; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+        .cover-header-line { width: 300px; height: 1px; background: #000; margin: 0 auto 50px auto; }
+        .cover-title { font-size: 22pt; font-weight: bold; color: #000; margin-top: 150px; }
+        .cover-type { font-size: 36pt; font-weight: bold; text-transform: uppercase; margin-top: 10px; margin-bottom: 50px; }
+        
+        .cover-details { font-size: 16pt; text-align: left; line-height: 2.2; width: 80%; margin: 0 auto; margin-bottom: 150px; }
+        .cover-details .row { display: flex; align-items: flex-end; margin-bottom: 12px; }
+        .cover-details .label { white-space: nowrap; margin-right: 10px; }
+        .cover-details .val { white-space: nowrap; font-weight: bold; }
+        .cover-details .dots { flex-grow: 1; border-bottom: 2px dotted #000; margin-left: 10px; position: relative; top: -6px; min-width: 30px; }
+        
+        .cover-footer { font-size: 16pt; font-weight: bold; margin-top: auto; }
 
         @media print {
             body { background: #fff; margin: 0; }
@@ -144,30 +155,83 @@
 
                 let html = '';
                 
+                // Logic for Cover Page Data
+                let projDate = new Date(proj.created_at || Date.now());
+                let month = projDate.getMonth() + 1;
+                let year = projDate.getFullYear();
+                let startYear = month >= 8 ? year : year - 1;
+                let schoolYear = `${startYear} - ${startYear + 1}`;
+                
+                let khoa = proj.class_name ? proj.class_name.split('-')[0].trim() : '.........';
+                let bookType = data.bookType || 'LÝ THUYẾT';
+
                 // 1. Generate Cover Page
                 html += `
-                <div class="paper">
-                    <div class="cover-page">
-                        <div class="cover-department">UBND THÀNH PHỐ HỒ CHÍ MINH<br>TRƯỜNG CAO ĐẲNG NGHỀ QUẢN LÝ VÀ CÔNG NGHỆ<br>---oOo---</div>
-                        <div class="cover-title">TẬP GIÁO ÁN ĐIỆN TỬ</div>
-                        <div class="cover-course">${proj.name}</div>
-                        <div class="cover-details">
-                            <b>Giảng viên:</b> ${proj.full_name || 'Chưa cập nhật'}<br>
-                            <b>Khoa/Đơn vị:</b> ${proj.department || 'Chưa cập nhật'}<br>
-                            <b>Mã môn học/Mô-đun:</b> ${proj.course_code || '---'}<br>
-                            <b>Hệ đào tạo:</b> ${proj.system_type || '---'}<br>
-                            <b>Lớp:</b> ${proj.class_name || '---'}<br>
-                            <b>Tổng số giờ:</b> ${proj.total_hours || 0} giờ<br>
-                            <b>Năm học:</b> ${new Date().getFullYear()} - ${new Date().getFullYear() + 1}
+                <div class="paper" style="padding: 10mm; display: flex;">
+                    <div class="cover-page" style="flex: 1;">
+                        <div>
+                            <div class="cover-header">ỦY BAN NHÂN DÂN THÀNH PHỐ HỒ CHÍ MINH<br>TRƯỜNG CAO ĐẲNG BÁCH KHOA NAM SÀI GÒN</div>
+                            <div class="cover-header-line"></div>
                         </div>
+                        
+                        <div>
+                            <div class="cover-title">SỔ GIÁO ÁN</div>
+                            <div class="cover-type">${bookType}</div>
+                            
+                            <div class="cover-details">
+                                <div class="row">
+                                    <span class="label">Môn học/ Mô đun:</span>
+                                    <span class="val">${proj.name}</span>
+                                    <div class="dots"></div>
+                                </div>
+                                <div class="row">
+                                    <span class="label">Lớp:</span>
+                                    <span class="val">${proj.class_name || ''}</span>
+                                    <div class="dots" style="flex-grow: 1;"></div>
+                                    
+                                    <span class="label" style="margin-left: 20px;">Khóa:</span>
+                                    <span class="val">${khoa}</span>
+                                    <div class="dots" style="flex-grow: 1;"></div>
+                                </div>
+                                <div class="row">
+                                    <span class="label">Họ và tên giáo viên:</span>
+                                    <span class="val">${proj.full_name || ''}</span>
+                                    <div class="dots"></div>
+                                </div>
+                                <div class="row">
+                                    <span class="label">Năm học:</span>
+                                    <span class="val">${schoolYear}</span>
+                                    <div class="dots"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="cover-footer">Quyển số: ......</div>
                     </div>
                 </div>`;
 
                 // 2. Append all lessons
                 for (const l of lessons) {
-                    // Extract HTML from lesson_data (it's the innerHTML of #paper)
-                    let lessonContent = l.lesson_data;
-                    // Sometimes saved with surrounding wrapper if they copied outerHTML, but usually just innerHTML
+                    // Create a temporary DOM element to parse and clean the lesson_data HTML
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = l.lesson_data;
+                    
+                    // Remove ai-tools and tfoot which are not needed for printing
+                    tempDiv.querySelectorAll('.ai-tools').forEach(x => x.remove());
+                    tempDiv.querySelectorAll('table.ga tfoot').forEach(x => x.remove());
+                    
+                    // Convert all time-inputs to plain spans so they render perfectly inside the table border during PDF print
+                    tempDiv.querySelectorAll('.time-input').forEach(inp => {
+                        const span = document.createElement('span');
+                        span.textContent = inp.value || inp.getAttribute('value') || '';
+                        inp.replaceWith(span);
+                    });
+                    
+                    // Remove contenteditable attributes
+                    tempDiv.querySelectorAll('[contenteditable]').forEach(x => x.removeAttribute('contenteditable'));
+
+                    let lessonContent = tempDiv.innerHTML;
+                    
                     html += `
                     <div class="paper">
                         ${lessonContent}
