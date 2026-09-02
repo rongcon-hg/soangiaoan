@@ -4397,7 +4397,7 @@ async function runSlideAI() {
 Yêu cầu:
 - Mỗi slide tương ứng với một đề mục (Slide 1: Tiêu đề, Slide 2: Mục tiêu, Slide 3: Khái niệm...).
 - KHÔNG viết thành đoạn văn dài, CHỈ dùng các gạch đầu dòng (bullet points) cực kỳ ngắn gọn để giảng viên chiếu lên màn hình.
-- Trả về nguyên văn dưới dạng Markdown thuần (chỉ dùng thẻ # cho tiêu đề Slide và dấu - cho gạch đầu dòng). Không dùng code fence (\`\`\`).
+- Trả về HTML thuần túy (không dùng code fence \`\`\`). Dùng các thẻ &lt;h3&gt;, &lt;ul&gt;, &lt;li&gt; để định dạng nội dung từng slide.
 
 Nội dung giáo án:
 ${textContent}`;
@@ -4426,26 +4426,21 @@ ${textContent}`;
       $(&quot;#aiStatus&quot;).className=&quot;status success&quot;;
       $(&quot;#aiStatus&quot;).textContent=&quot;Đã trích xuất Dàn ý Slide thành công!&quot;;
       
+      const div = document.createElement(&quot;div&quot;);
+      div.className = &quot;slide-section&quot;;
+      div.style.marginTop = &quot;20px&quot;;
+      div.style.pageBreakBefore = &quot;always&quot;;
+      div.innerHTML = `&lt;h3 style=&quot;color:#ec4899; margin-top:20px; font-weight:bold; font-size:16px; text-transform:uppercase;&quot;&gt;DÀN Ý SLIDE BÀI GIẢNG (AI TRÍCH XUẤT)&lt;/h3&gt;` + slideMarkdown;
+      const paper = document.getElementById(&quot;paper&quot;);
+      paper.appendChild(div);
+      
       if(typeof Swal !== 'undefined') {
           Swal.fire({
-              title: 'Dàn ý Slide PowerPoint',
-              html: `&lt;textarea id=&quot;slideMarkdown&quot; style=&quot;width:100%; height:350px; font-family:monospace; padding:10px; border:1px solid #cbd5e1; border-radius:5px; resize:none;&quot; readonly&gt;${slideMarkdown.replace(/</g, '&lt;').replace(/>/g, '&gt;')}&lt;/textarea&gt;`,
-              width: '800px',
-              showCancelButton: true,
-              confirmButtonText: '&lt;i class=&quot;fas fa-copy&quot;&gt;&lt;/i&gt; Copy vào Clipboard',
-              cancelButtonText: 'Đóng',
-              confirmButtonColor: '#16469d',
-              preConfirm: () =&gt; {
-                  const copyText = document.getElementById(&quot;slideMarkdown&quot;);
-                  copyText.select();
-                  document.execCommand(&quot;copy&quot;);
-                  Swal.showValidationMessage('Đã chép vào Clipboard!');
-                  return false; // Prevent closing automatically to let them see the message
-              }
+              title: 'Đã tạo Dàn ý Slide',
+              text: 'Dàn ý Slide đã được thêm vào cuối trang. Bạn có thể xem và Xuất File Word/PDF thành các file riêng biệt!',
+              icon: 'success',
+              confirmButtonColor: '#16469d'
           });
-      } else {
-          alert(&quot;Đã trích xuất xong! Hãy mở Console (F12) để copy nội dung.&quot;);
-          console.log(slideMarkdown);
       }
   } catch(e) {
       console.error(e);
@@ -4500,12 +4495,8 @@ ${textContent}`;
       div.innerHTML = `&lt;h3 style=&quot;color:#6d28d9; margin-top:20px; font-weight:bold; font-size:16px; text-transform:uppercase;&quot;&gt;BÀI TẬP VÀ ĐỀ KIỂM TRA (AI SINH TỰ ĐỘNG)&lt;/h3&gt;` + htmlContent;
       
       const paper = document.getElementById(&quot;paper&quot;);
-      const signDiv = paper.querySelector(&quot;.signature&quot;) || paper.querySelector(&quot;table:last-of-type&quot;)?.nextElementSibling;
-      if(signDiv) {
-          paper.insertBefore(div, signDiv);
-      } else {
-          paper.appendChild(div);
-      }
+      div.style.pageBreakBefore = &quot;always&quot;;
+      paper.appendChild(div);
       
       $(&quot;#aiStatus&quot;).className=&quot;status success&quot;;
       $(&quot;#aiStatus&quot;).textContent=&quot;Đã tạo bộ câu hỏi thành công!&quot;;
@@ -4898,31 +4889,46 @@ function exportWord(){
     .teacher-signature, table.footer-sign-table img{width:130px!important;height:50px!important;max-width:130px!important;max-height:50px!important;object-fit:contain!important;display:block!important;margin:4px auto!important}
   `;
 
-  const doc=`&lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot; xmlns:w=&quot;urn:schemas-microsoft-com:office:word&quot; xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;
-  &lt;head&gt;
-    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot;&gt;
-    &lt;title&gt;Giáo án&lt;/title&gt;
+  function buildWordDoc(inner) {
+    return `&lt;html xmlns:o=&quot;urn:schemas-microsoft-com:office:office&quot; xmlns:w=&quot;urn:schemas-microsoft-com:office:word&quot; xmlns=&quot;http://www.w3.org/TR/REC-html40&quot;&gt;
+    &lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;
     &lt;!--[if gte mso 9]&gt;
-    &lt;xml&gt;
-      &lt;w:WordDocument&gt;
-        &lt;w:View&gt;Print&lt;/w:View&gt;
-        &lt;w:Zoom&gt;100&lt;/w:Zoom&gt;
-        &lt;w:DoNotOptimizeForBrowser/&gt;
-      &lt;/w:WordDocument&gt;
-    &lt;/xml&gt;
+    &lt;xml&gt;&lt;w:WordDocument&gt;&lt;w:View&gt;Print&lt;/w:View&gt;&lt;w:Zoom&gt;100&lt;/w:Zoom&gt;&lt;w:DoNotOptimizeForBrowser/&gt;&lt;/w:WordDocument&gt;&lt;/xml&gt;
     &lt;![endif]--&gt;
     &lt;style&gt;${css}&lt;/style&gt;
-  &lt;/head&gt;
-  &lt;body&gt;${clone.innerHTML}&lt;/body&gt;
-  &lt;/html&gt;`;
+    &lt;/head&gt;
+    &lt;body&gt;${inner}&lt;/body&gt;&lt;/html&gt;`;
+  }
+  
+  function downloadWord(inner, filename) {
+    const doc = buildWordDoc(inner);
+    const blob = new Blob([&quot;\ufeff&quot;, doc], {type:&quot;application/msword;charset=utf-8&quot;});
+    const a = document.createElement(&quot;a&quot;);
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()}, 300);
+  }
 
-  const blob=new Blob([&quot;\ufeff&quot;,doc],{type:&quot;application/msword;charset=utf-8&quot;});
-  const a=document.createElement(&quot;a&quot;);
-  a.href=URL.createObjectURL(blob);
-  a.download = getExportGiaoAnFilename(&quot;doc&quot;);
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(()=&gt;{URL.revokeObjectURL(a.href);a.remove()},300);
+  const quizNode = clone.querySelector('.quiz-section');
+  const slideNode = clone.querySelector('.slide-section');
+  let quizHtml = &quot;&quot;;
+  let slideHtml = &quot;&quot;;
+  
+  if(quizNode) { quizHtml = quizNode.outerHTML; quizNode.remove(); }
+  if(slideNode) { slideHtml = slideNode.outerHTML; slideNode.remove(); }
+
+  const mainFilename = getExportGiaoAnFilename(&quot;doc&quot;);
+  downloadWord(clone.innerHTML, mainFilename);
+
+  if(quizHtml) {
+    setTimeout(() =&gt; downloadWord(quizHtml, mainFilename.replace(&quot;.doc&quot;, &quot;_CauHoi.doc&quot;)), 500);
+  }
+  
+  if(slideHtml) {
+    setTimeout(() =&gt; downloadWord(slideHtml, mainFilename.replace(&quot;.doc&quot;, &quot;_Slide.doc&quot;)), 1000);
+  }
 }
 
 window.exportPdfAsBlob = async function() {
@@ -5090,14 +5096,38 @@ async function exportPdf(){
   const origText = btn ? btn.innerHTML : &quot;&quot;;
   if(btn) { btn.innerHTML = &quot;⏳ Đang tạo file PDF...&quot;; btn.disabled = true; }
 
+  const quizNode = clone.querySelector('.quiz-section');
+  const slideNode = clone.querySelector('.slide-section');
+  let quizHtml = "";
+  let slideHtml = "";
+  
+  if(quizNode) { quizHtml = quizNode.outerHTML; quizNode.remove(); }
+  if(slideNode) { slideHtml = slideNode.outerHTML; slideNode.remove(); }
+
   try {
     if(document.fonts &amp;&amp; document.fonts.ready) {
       await document.fonts.ready;
     }
     await html2pdf().set(opt).from(clone).save();
+
+    if(quizHtml) {
+      const qDiv = document.createElement("div");
+      qDiv.innerHTML = quizHtml;
+      qDiv.prepend(pdfStyle.cloneNode(true));
+      opt.filename = filename.replace(".pdf", "_CauHoi.pdf");
+      await html2pdf().set(opt).from(qDiv).save();
+    }
+
+    if(slideHtml) {
+      const sDiv = document.createElement("div");
+      sDiv.innerHTML = slideHtml;
+      sDiv.prepend(pdfStyle.cloneNode(true));
+      opt.filename = filename.replace(".pdf", "_Slide.pdf");
+      await html2pdf().set(opt).from(sDiv).save();
+    }
   } catch(e) {
     console.error(e);
-    alert(&quot;Lỗi khi xuất file PDF: &quot; + (e?.message || e));
+    alert("Lỗi khi xuất file PDF: " + (e?.message || e));
   } finally {
     if(btn) { btn.innerHTML = origText; btn.disabled = false; }
   }
