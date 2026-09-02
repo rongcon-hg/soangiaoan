@@ -71,13 +71,13 @@
                         <th style="width: 15%;">Người dùng</th>
                         <th style="width: 15%;">Hành động</th>
                         <th style="width: 10%;">Đối tượng</th>
-                        <th style="width: 10%;">ID Đối tượng</th>
-                        <th style="width: 25%;">Chi tiết</th>
+                        
+                        <th style="width: 35%;">Chi tiết</th>
                         <th style="width: 10%;">IP</th>
                     </tr>
                 </thead>
                 <tbody id="audit-tbody">
-                    <tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
+                    <tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -153,11 +153,11 @@
             const action = document.getElementById('audit-action-filter').value;
             
             try {
-                document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>';
+                document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>';
                 const url = `${API_URL}/audit?page=${page}&limit=20&search=${encodeURIComponent(search)}&action=${encodeURIComponent(action)}`;
                 const res = await fetch(url, { headers: getHeaders() });
                 if (res.status === 403 || res.status === 401) {
-                    document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Bạn không có quyền truy cập trang này.</td></tr>';
+                    document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Bạn không có quyền truy cập trang này.</td></tr>';
                     return;
                 }
                 const responseData = await res.json();
@@ -166,7 +166,7 @@
 
                 const tbody = document.getElementById('audit-tbody');
                 if (!logs || logs.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Chưa có dữ liệu lịch sử hoạt động.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">Chưa có dữ liệu lịch sử hoạt động.</td></tr>';
                     return;
                 }
                 
@@ -181,7 +181,44 @@
                     if (log.action.includes('DELETE')) badgeClass = 'badge-delete';
                     if (log.action.includes('SAVE')) badgeClass = 'badge-save';
                     
-                    const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details) : log.details;
+                    let details = log.details;
+                    if (typeof details === 'string') {
+                        try { details = JSON.parse(details); } catch(e) {}
+                    }
+                    if (!details) details = {};
+                    
+                    let detailsArr = [];
+                    let idCtx = log.target_id ? ` <span style="color:#94a3b8">(ID: ${log.target_id})</span>` : '';
+                    
+                    if (log.action === 'LOGIN') {
+                        detailsArr.push(`Tài khoản: <b>${escapeHtml(details.username || '')}</b>`);
+                    } else if (log.action === 'CREATE_PROJECT') {
+                        detailsArr.push(`Tạo thư mục: <b>${escapeHtml(details.name || '')}</b>`);
+                        if (details.code) detailsArr.push(`Mã môn: <b>${escapeHtml(details.code)}</b>`);
+                    } else if (log.action === 'UPDATE_PROJECT') {
+                        detailsArr.push(`Cập nhật thư mục${idCtx}`);
+                        if (details.name) detailsArr.push(`Tên mới: <b>${escapeHtml(details.name)}</b>`);
+                    } else if (log.action === 'DELETE_PROJECT') {
+                        detailsArr.push(`Xoá thư mục${idCtx}`);
+                    } else if (log.action === 'SAVE_SCHEDULE') {
+                        detailsArr.push(`Lưu Sổ đầu bài cho thư mục${idCtx}`);
+                    } else if (log.action === 'SAVE_LESSON') {
+                        detailsArr.push(`Lưu giáo án Tiết <b>${escapeHtml(details.tt || '')}</b>${idCtx}`);
+                    } else if (log.action === 'SUBMIT_LESSON') {
+                        detailsArr.push(`Trình ký Tiết <b>${escapeHtml(details.tt || '')}</b>${idCtx}`);
+                    } else if (log.action === 'REVIEW_LESSON') {
+                        let st = details.status === 'Approved' ? '<span style="color:#15803d;font-weight:600;">Đã duyệt</span>' : 
+                                 details.status === 'Rejected' ? '<span style="color:#b91c1c;font-weight:600;">Từ chối</span>' : escapeHtml(details.status || '');
+                        detailsArr.push(`Phê duyệt giáo án${idCtx}`);
+                        if (st) detailsArr.push(`Trạng thái: ${st}`);
+                    } else {
+                        for (const [k, v] of Object.entries(details)) {
+                            detailsArr.push(`<b>${escapeHtml(k)}</b>: ${escapeHtml(v)}`);
+                        }
+                        if (detailsArr.length === 0 && log.target_id) detailsArr.push(`ID tác động: ${log.target_id}`);
+                    }
+                    
+                    const finalDetails = detailsArr.join(' &bull; ');
                     
                     html += `
                         <tr>
@@ -189,8 +226,7 @@
                             <td style="font-weight:500;">${escapeHtml(log.full_name || log.username || 'System')}</td>
                             <td><span class="badge ${badgeClass}">${escapeHtml(log.action)}</span></td>
                             <td>${escapeHtml(log.target_type || '')}</td>
-                            <td>${log.target_id || ''}</td>
-                            <td style="color:#64748b; font-family:monospace; font-size:0.8rem; word-break:break-all;">${escapeHtml(detailsStr || '')}</td>
+                            <td style="color:#334155; font-size:0.85rem; line-height:1.4;">${finalDetails}</td>
                             <td style="font-size:0.8rem; color:#94a3b8;">${escapeHtml(log.ip_address || '')}</td>
                         </tr>
                     `;
@@ -203,7 +239,7 @@
                     for(let i=1; i<=pagination.totalPages; i++) {
                         // Show first, last, current, and +/- 2 pages
                         if(i === 1 || i === pagination.totalPages || (i >= page - 2 && i <= page + 2)) {
-                            pHtml += `<button class="btn btn-sm ${i === page ? 'btn-primary' : 'btn-secondary'}" onclick="loadAuditLogs(${i})">${i}</button>`;
+                            pHtml += `<button class="page-btn ${i === page ? 'active' : ''}" onclick="loadAuditLogs(${i})">${i}</button>`;
                         } else if(i === page - 3 || i === page + 3) {
                             pHtml += `<span>...</span>`;
                         }
@@ -213,7 +249,7 @@
                 
             } catch (err) {
                 console.error(err);
-                document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Lỗi tải dữ liệu.</td></tr>';
+                document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Lỗi tải dữ liệu.</td></tr>';
             }
         }
         
@@ -224,7 +260,7 @@
             // Allow layout.js to render user first
             setTimeout(() => {
                 if (currentUser && currentUser.role !== 'Admin') {
-                    document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Chỉ Admin mới có quyền xem trang này.</td></tr>';
+                    document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Chỉ Admin mới có quyền xem trang này.</td></tr>';
                 } else {
                     loadAuditLogs();
                 }
