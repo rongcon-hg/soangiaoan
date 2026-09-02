@@ -1935,7 +1935,7 @@ function nextScheduledDates(start, slots, needed){
     const key = dateKey(d);
     const extrasToday = (window.extraSessions || []).filter(x =&gt; x.date === key);
     for(const ext of extrasToday) {
-      dates.push({ date:new Date(d), weekday:wd, periods: ext.periods, isExtra: true, extId: ext.id, extOverrideCounts: ext.overrideCounts });
+      dates.push({ date:new Date(d), weekday:wd, periods: ext.periods, isExtra: true, extId: ext.id });
     }
 
     d.setDate(d.getDate()+1);
@@ -2298,19 +2298,9 @@ async function addExtraSession() {
                 <label style="font-weight:bold;">Ngày dạy (vd: 20/07/2026 hoặc 2026-07-20):</label>
                 <input type="text" id="extraDate" class="swal2-input" placeholder="dd/mm/yyyy" style="width:100%; max-width:100%; margin-top:5px;">
             </div>
-            <div style="text-align:left; display:flex; gap:10px;">
-                <div style="flex:1">
-                    <label style="font-weight:bold; font-size:13px;">Lý thuyết (tiết):</label>
-                    <input type="number" id="extraLT" class="swal2-input" min="0" max="10" value="1" style="width:100%; margin-top:5px; padding:0 10px;">
-                </div>
-                <div style="flex:1">
-                    <label style="font-weight:bold; font-size:13px;">Thực hành (tiết):</label>
-                    <input type="number" id="extraTH" class="swal2-input" min="0" max="10" value="0" style="width:100%; margin-top:5px; padding:0 10px;">
-                </div>
-                <div style="flex:1">
-                    <label style="font-weight:bold; font-size:13px;">Kiểm tra (tiết):</label>
-                    <input type="number" id="extraKT" class="swal2-input" min="0" max="10" value="0" style="width:100%; margin-top:5px; padding:0 10px;">
-                </div>
+            <div style="text-align:left;">
+                <label style="font-weight:bold;">Số tiết:</label>
+                <input type="number" id="extraPeriods" class="swal2-input" min="1" max="10" value="1" style="width:100%; max-width:100%; margin-top:5px;">
             </div>
             <div style="font-size:12px; color:#ef4444; margin-top:15px; text-align:left;">
                 <i class="fas fa-exclamation-triangle"></i> Lưu ý: Nếu bạn đã lưu giáo án cho các buổi sau ngày này, việc chèn thêm buổi học sẽ làm lệch số thứ tự (Buổi) của các giáo án đã lưu.
@@ -2340,13 +2330,10 @@ async function addExtraSession() {
                 Swal.showValidationMessage('Ngày không hợp lệ! Vui lòng nhập chuẩn dd/mm/yyyy'); return false;
             }
 
-            const lt = parseInt(document.getElementById('extraLT').value, 10) || 0;
-            const th = parseInt(document.getElementById('extraTH').value, 10) || 0;
-            const kt = parseInt(document.getElementById('extraKT').value, 10) || 0;
-            const p = lt + th + kt;
-
-            if(p <= 0) { Swal.showValidationMessage('Tổng số tiết phải lớn hơn 0!'); return false; }
-            return { date: parsedDate, periods: p, lt, th, kt };
+            const p = parseInt(document.getElementById('extraPeriods').value, 10);
+            if(isNaN(p) || p <= 0) { Swal.showValidationMessage('Số tiết không hợp lệ!'); return false; }
+            
+            return { date: parsedDate, periods: p };
         }
     });
 
@@ -2355,8 +2342,7 @@ async function addExtraSession() {
         window.extraSessions.push({
             id: Date.now(),
             date: formValues.date,
-            periods: formValues.periods,
-            overrideCounts: { LT: formValues.lt, TH: formValues.th, KT: formValues.kt }
+            periods: formValues.periods
         });
         updateScheduleProgression();
     }
