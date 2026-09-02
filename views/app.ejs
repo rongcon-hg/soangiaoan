@@ -4226,7 +4226,25 @@ ${textContent}`;
       $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
       $(&quot;#aiStatus&quot;).textContent=&quot;Gemini đang tạo câu hỏi trắc nghiệm và bài tập...&quot;;
       
-      const raw = await callOpenAI(prompt);
+      let raw = "";
+      const statusInterval = setInterval(() =&gt; {
+          if(btn &amp;&amp; $(&quot;#aiStatus&quot;)) {
+              const text = $(&quot;#aiStatus&quot;).textContent;
+              if(text.includes(&quot;Đang gọi&quot;) || text.includes(&quot;đang bận&quot;)) {
+                  btn.innerHTML = &quot;⏳ &quot; + text;
+              }
+          }
+      }, 500);
+      
+      try {
+          raw = await Promise.race([
+              callOpenAI(prompt),
+              new Promise((_, reject) =&gt; setTimeout(() =&gt; reject(new Error(&quot;Quá thời gian kết nối (Timeout 90s). Vui lòng thử lại!&quot;)), 90000))
+          ]);
+      } finally {
+          clearInterval(statusInterval);
+      }
+      
       const htmlContent = cleanAIText(raw);
       
       const div = document.createElement(&quot;div&quot;);
