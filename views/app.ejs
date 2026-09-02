@@ -4216,7 +4216,7 @@ async function runSlideAI() {
   
   try {
       const textContent = document.getElementById(&quot;paper&quot;).innerText || document.getElementById(&quot;paper&quot;).textContent;
-      const prompt = `Bạn là một trợ lý tạo Slide bài giảng chuyên nghiệp. Dựa vào nội dung giáo án chi tiết dưới đây, hãy tóm tắt và trích xuất ra một "Dàn ý Slide PowerPoint" ngắn gọn, súc tích (Bullet points).
+      const prompt = `Bạn là một trợ lý tạo Slide bài giảng chuyên nghiệp. Dựa vào nội dung giáo án chi tiết dưới đây, hãy tóm tắt và trích xuất ra một &quot;Dàn ý Slide PowerPoint&quot; ngắn gọn, súc tích (Bullet points).
 Yêu cầu:
 - Mỗi slide tương ứng với một đề mục (Slide 1: Tiêu đề, Slide 2: Mục tiêu, Slide 3: Khái niệm...).
 - KHÔNG viết thành đoạn văn dài, CHỈ dùng các gạch đầu dòng (bullet points) cực kỳ ngắn gọn để giảng viên chiếu lên màn hình.
@@ -4228,7 +4228,7 @@ ${textContent}`;
       $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
       $(&quot;#aiStatus&quot;).textContent=&quot;Gemini đang phân tích và trích xuất Dàn ý Slide...&quot;;
       
-      let raw = "";
+      let raw = &quot;&quot;;
       const statusInterval = setInterval(() =&gt; {
           if(btn &amp;&amp; $(&quot;#aiStatus&quot;)) {
               const text = $(&quot;#aiStatus&quot;).textContent;
