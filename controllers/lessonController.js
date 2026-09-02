@@ -71,7 +71,7 @@ exports.getAllLessonsByProject = async (req, res) => {
     const projectId = req.params.projectId;
     
     try {
-        const query = `SELECT schedule_tt, updated_at FROM lessons WHERE project_id = $1 ORDER BY schedule_tt ASC`;
+        const query = `SELECT schedule_tt, updated_at, status FROM lessons WHERE project_id = $1 ORDER BY schedule_tt ASC`;
         const result = await pool.query(query, [projectId]);
         res.json(result.rows);
     } catch (error) {

@@ -63,8 +63,8 @@
                 
                 for (let proj of projects) {
                     try {
-                        const schedRes = await fetch(API_URL + '/projects/' + proj.id, { headers: getHeaders() });
-                        const projDetail = await schedRes.json();
+                        const schedRes = await fetch(API_URL + '/lessons/' + proj.id + '/schedule', { headers: getHeaders() });
+                        const schedDetail = await schedRes.json();
                         
                         // Also get lesson statuses
                         const lessonRes = await fetch(API_URL + '/lessons/' + proj.id + '/lessons', { headers: getHeaders() });
@@ -76,15 +76,25 @@
                             statusMap[l.schedule_tt] = l.status || 'DRAFT';
                         });
 
-                        if (projDetail.scheduleData && projDetail.scheduleData.sessions) {
-                            projDetail.scheduleData.sessions.forEach(sess => {
+                        if (schedDetail && schedDetail.schedule_data) {
+                            // schedule_data could be an Array, or an Object with .sessions array
+                            let sessions = [];
+                            if (Array.isArray(schedDetail.schedule_data)) {
+                                sessions = schedDetail.schedule_data;
+                            } else if (schedDetail.schedule_data.sessions) {
+                                sessions = schedDetail.schedule_data.sessions;
+                            }
+                            
+                            sessions.forEach(sess => {
+                                // Sometimes property is 'tt', sometimes 'scheduleTT'
+                                const tt = sess.scheduleTT || sess.tt;
                                 if (sess.date) {
                                     // Parse DD/MM/YYYY
                                     const parts = sess.date.split('/');
                                     if (parts.length === 3) {
                                         const isoDate = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
                                         
-                                        const stat = statusMap[sess.scheduleTT];
+                                        const stat = statusMap[tt];
                                         let color = '#94a3b8'; // Default grey
                                         if (stat === 'APPROVED') color = '#10b981';
                                         else if (stat === 'PENDING') color = '#f59e0b';
@@ -92,12 +102,12 @@
                                         else if (stat === 'DRAFT') color = '#3b82f6';
                                         
                                         events.push({
-                                            title: `TT ${sess.scheduleTT}: ${proj.name}`,
+                                            title: `TT ${tt}: ${proj.name}`,
                                             start: isoDate,
                                             color: color,
                                             extendedProps: {
                                                 projectId: proj.id,
-                                                scheduleTT: sess.scheduleTT,
+                                                scheduleTT: tt,
                                                 lessonContent: sess.summaryText || 'Chưa có nội dung',
                                                 status: stat || 'Chưa soạn'
                                             }
