@@ -2587,7 +2587,6 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
             &lt;button class=&quot;btn primary&quot; id=&quot;btnGenerate&quot;&gt;Tạo giáo án&lt;/button&gt;
             &lt;button class=&quot;btn&quot; id=&quot;btnCheck&quot;&gt;Kiểm tra thời gian&lt;/button&gt;
             &lt;button class=&quot;btn&quot; id=&quot;btnAddRow&quot;&gt;Thêm dòng hoạt động&lt;/button&gt;
-            &lt;button class=&quot;btn&quot; id=&quot;btnQuizAI&quot; style=&quot;background:#8b5cf6; color:white; border:none;&quot;&gt;&lt;i class=&quot;fas fa-magic&quot;&gt;&lt;/i&gt; Tạo bộ câu hỏi (AI)&lt;/button&gt;
           &lt;/div&gt;
           &lt;div id=&quot;timeStatus&quot; class=&quot;status&quot;&gt;Chưa kiểm tra thời gian.&lt;/div&gt;
           &lt;div class=&quot;note&quot; style=&quot;margin-top:8px&quot;&gt;
@@ -2639,6 +2638,8 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
             &lt;button class=&quot;btn&quot; id=&quot;btnTestAI&quot;&gt;Kiểm tra kết nối Gemini&lt;/button&gt;
             &lt;button class=&quot;btn&quot; id=&quot;btnRefreshModels&quot;&gt;Tải danh sách model&lt;/button&gt;
             &lt;button class=&quot;btn primary&quot; id=&quot;btnAIWhole&quot;&gt;Gemini hoàn thiện toàn bộ giáo án&lt;/button&gt;
+            &lt;button class=&quot;btn&quot; id=&quot;btnQuizAI&quot; style=&quot;background:#8b5cf6; color:white; border:none;&quot;&gt;&lt;i class=&quot;fas fa-magic&quot;&gt;&lt;/i&gt; Tạo bộ câu hỏi (AI)&lt;/button&gt;
+            &lt;button class=&quot;btn&quot; id=&quot;btnSlideAI&quot; style=&quot;background:#f59e0b; color:white; border:none;&quot;&gt;&lt;i class=&quot;fas fa-file-powerpoint&quot;&gt;&lt;/i&gt; Dàn ý Slide&lt;/button&gt;
           &lt;/div&gt;
           &lt;div class=&quot;hint&quot;&gt;<span style='display:none'>Gemini API key được dùng trực tiếp từ trình duyệt theo yêu cầu của người dùng. Cách này tiện nhưng không an toàn nếu chia sẻ file hoặc máy.</span>&lt;/div&gt;
           &lt;div id=&quot;aiStatus&quot; class=&quot;status&quot;&gt;Gemini chưa được cấu hình.&lt;/div&gt;
@@ -4207,6 +4208,78 @@ function showAICompare(cell,oldText,newText){
   };
   $(&quot;#aiCancel&quot;).onclick=closeModal;
 }
+async function runSlideAI() {
+  if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước khi xuất dàn ý.&quot;);
+  const btn = document.getElementById(&quot;btnSlideAI&quot;);
+  const originalHtml = btn ? btn.innerHTML : &quot;&quot;;
+  if(btn) { btn.innerHTML = &quot;⏳ Đang trích xuất...&quot;; btn.disabled = true; }
+  
+  try {
+      const textContent = document.getElementById(&quot;paper&quot;).innerText || document.getElementById(&quot;paper&quot;).textContent;
+      const prompt = `Bạn là một trợ lý tạo Slide bài giảng chuyên nghiệp. Dựa vào nội dung giáo án chi tiết dưới đây, hãy tóm tắt và trích xuất ra một "Dàn ý Slide PowerPoint" ngắn gọn, súc tích (Bullet points).
+Yêu cầu:
+- Mỗi slide tương ứng với một đề mục (Slide 1: Tiêu đề, Slide 2: Mục tiêu, Slide 3: Khái niệm...).
+- KHÔNG viết thành đoạn văn dài, CHỈ dùng các gạch đầu dòng (bullet points) cực kỳ ngắn gọn để giảng viên chiếu lên màn hình.
+- Trả về nguyên văn dưới dạng Markdown thuần (chỉ dùng thẻ # cho tiêu đề Slide và dấu - cho gạch đầu dòng). Không dùng code fence (\`\`\`).
+
+Nội dung giáo án:
+${textContent}`;
+      
+      $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Gemini đang phân tích và trích xuất Dàn ý Slide...&quot;;
+      
+      let raw = "";
+      const statusInterval = setInterval(() =&gt; {
+          if(btn &amp;&amp; $(&quot;#aiStatus&quot;)) {
+              const text = $(&quot;#aiStatus&quot;).textContent;
+              if(text.includes(&quot;Đang gọi&quot;) || text.includes(&quot;đang bận&quot;)) {
+                  btn.innerHTML = &quot;⏳ &quot; + text;
+              }
+          }
+      }, 500);
+      
+      try {
+          raw = await callOpenAI(prompt);
+      } finally {
+          clearInterval(statusInterval);
+      }
+      
+      const slideMarkdown = cleanAIText(raw);
+      
+      $(&quot;#aiStatus&quot;).className=&quot;status success&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Đã trích xuất Dàn ý Slide thành công!&quot;;
+      
+      if(typeof Swal !== 'undefined') {
+          Swal.fire({
+              title: 'Dàn ý Slide PowerPoint',
+              html: `&lt;textarea id=&quot;slideMarkdown&quot; style=&quot;width:100%; height:350px; font-family:monospace; padding:10px; border:1px solid #cbd5e1; border-radius:5px; resize:none;&quot; readonly&gt;${slideMarkdown.replace(/</g, '&lt;').replace(/>/g, '&gt;')}&lt;/textarea&gt;`,
+              width: '800px',
+              showCancelButton: true,
+              confirmButtonText: '&lt;i class=&quot;fas fa-copy&quot;&gt;&lt;/i&gt; Copy vào Clipboard',
+              cancelButtonText: 'Đóng',
+              confirmButtonColor: '#16469d',
+              preConfirm: () =&gt; {
+                  const copyText = document.getElementById(&quot;slideMarkdown&quot;);
+                  copyText.select();
+                  document.execCommand(&quot;copy&quot;);
+                  Swal.showValidationMessage('Đã chép vào Clipboard!');
+                  return false; // Prevent closing automatically to let them see the message
+              }
+          });
+      } else {
+          alert(&quot;Đã trích xuất xong! Hãy mở Console (F12) để copy nội dung.&quot;);
+          console.log(slideMarkdown);
+      }
+  } catch(e) {
+      console.error(e);
+      $(&quot;#aiStatus&quot;).className=&quot;status err&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Lỗi xuất slide: &quot;+(e.message||e);
+      alert(&quot;Lỗi khi xuất dàn ý Slide: &quot; + (e.message||e));
+  } finally {
+      if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+  }
+}
+
 async function runQuizAI() {
   if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước khi sinh câu hỏi.&quot;);
   const btn = document.getElementById(&quot;btnQuizAI&quot;);
@@ -5367,6 +5440,7 @@ $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&g
   $(&quot;#btnRefreshModels&quot;).onclick=refreshGeminiModels;
   $(&quot;#btnAIWhole&quot;).onclick=runWholeAI;
   $(&quot;#btnQuizAI&quot;).onclick=runQuizAI;
+  $(&quot;#btnSlideAI&quot;).onclick=runSlideAI;
   loadAISettings();
   syncUserInfo();
   if (window.parent && window.parent._lastSchedulePayload) {
