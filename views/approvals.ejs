@@ -7,86 +7,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
-        let currentLessonHtmlForAI = "";
-
-        async function askAiToReview() {
-            const btn = document.querySelector('button[onclick="askAiToReview()"]');
-            const resultDiv = document.getElementById('ai-review-result');
-            
-            const apiKey = localStorage.getItem('giaoan_gemini_key');
-            if (!apiKey) {
-                showAlert('Không tìm thấy API Key Gemini. Vui lòng cập nhật trong Thông tin cá nhân.', 'warning');
-                return;
-            }
-            
-            if (!currentLessonHtmlForAI) {
-                showAlert('Dữ liệu giáo án đang tải hoặc trống. Vui lòng chờ 1 lát.', 'warning');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Trợ lý AI đang chấm...';
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = '<span style="color:#64748b;"><i class="fas fa-magic"></i> Đang phân tích mục tiêu, cấu trúc và thời lượng...</span>';
-
-            try {
-                const prompt = `Bạn là một chuyên gia giáo dục xuất sắc. Dưới đây là nội dung giáo án điện tử (HTML) của một giảng viên. 
-Hãy đọc kỹ và đưa ra nhận xét RẤT NGẮN GỌN (dưới 150 chữ) về:
-1. Mục tiêu bài học (có rõ ràng, đo lường được không?)
-2. Phân bổ thời gian (số phút cho các phần có hợp lý không?)
-3. Cấu trúc bài (có đủ Khởi động, Hình thành kiến thức, Luyện tập, Vận dụng không?)
-
-Cuối cùng, chốt 1 câu KẾT LUẬN: ĐẠT hay CẦN CHỈNH SỬA.
-
-Giáo án:
-${currentLessonHtmlForAI.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')}`;
-
-                // Mặc định gọi model pro
-                const model = 'gemini-1.5-pro';
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ role: "user", parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.3 }
-                    })
-                });
-                
-                if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.error?.message || 'Lỗi gọi API AI');
-                }
-                
-                const data = await res.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
-                
-                // Track usage info via API backend (async)
-                if (data.usageMetadata && data.usageMetadata.totalTokenCount) {
-                    fetch(API_URL + '/auth/usage', {
-                        method: 'POST',
-                        headers: getHeaders(),
-                        body: JSON.stringify({ tokens: data.usageMetadata.totalTokenCount, feature: 'AI Reviewer' })
-                    }).catch(console.error);
-                }
-                
-                // Format Markdown to HTML
-                let htmlResponse = text
-                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                    .replace(/\*(.*?)\*/g, '<i>$1</i>')
-                    .replace(/\n/g, '<br>');
-                    
-                resultDiv.innerHTML = htmlResponse;
-                
-            } catch(e) {
-                resultDiv.innerHTML = `<span style="color:#ef4444;">Lỗi: ${e.message}</span>`;
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-robot"></i> Trợ lý AI Nhận xét';
-            }
-        }
-
     </script>
     <style>
         .my-modal {
@@ -621,5 +541,87 @@ ${currentLessonHtmlForAI.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')}`;
 
         function escapeHtml(s) { return (s || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     </script>
+
+<script>
+        let currentLessonHtmlForAI = "";
+
+        async function askAiToReview() {
+            const btn = document.querySelector('button[onclick="askAiToReview()"]');
+            const resultDiv = document.getElementById('ai-review-result');
+            
+            const apiKey = localStorage.getItem('giaoan_gemini_key');
+            if (!apiKey) {
+                showAlert('Không tìm thấy API Key Gemini. Vui lòng cập nhật trong Thông tin cá nhân.', 'warning');
+                return;
+            }
+            
+            if (!currentLessonHtmlForAI) {
+                showAlert('Dữ liệu giáo án đang tải hoặc trống. Vui lòng chờ 1 lát.', 'warning');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Trợ lý AI đang chấm...';
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<span style="color:#64748b;"><i class="fas fa-magic"></i> Đang phân tích mục tiêu, cấu trúc và thời lượng...</span>';
+
+            try {
+                const prompt = `Bạn là một chuyên gia giáo dục xuất sắc. Dưới đây là nội dung giáo án điện tử (HTML) của một giảng viên. 
+Hãy đọc kỹ và đưa ra nhận xét RẤT NGẮN GỌN (dưới 150 chữ) về:
+1. Mục tiêu bài học (có rõ ràng, đo lường được không?)
+2. Phân bổ thời gian (số phút cho các phần có hợp lý không?)
+3. Cấu trúc bài (có đủ Khởi động, Hình thành kiến thức, Luyện tập, Vận dụng không?)
+
+Cuối cùng, chốt 1 câu KẾT LUẬN: ĐẠT hay CẦN CHỈNH SỬA.
+
+Giáo án:
+${currentLessonHtmlForAI.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')}`;
+
+                // Mặc định gọi model pro
+                const model = 'gemini-1.5-pro';
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ role: "user", parts: [{ text: prompt }] }],
+                        generationConfig: { temperature: 0.3 }
+                    })
+                });
+                
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error?.message || 'Lỗi gọi API AI');
+                }
+                
+                const data = await res.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "Không có phản hồi từ AI.";
+                
+                // Track usage info via API backend (async)
+                if (data.usageMetadata && data.usageMetadata.totalTokenCount) {
+                    fetch(API_URL + '/auth/usage', {
+                        method: 'POST',
+                        headers: getHeaders(),
+                        body: JSON.stringify({ tokens: data.usageMetadata.totalTokenCount, feature: 'AI Reviewer' })
+                    }).catch(console.error);
+                }
+                
+                // Format Markdown to HTML
+                let htmlResponse = text
+                    .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                    .replace(/\*(.*?)\*/g, '<i>$1</i>')
+                    .replace(/\n/g, '<br>');
+                    
+                resultDiv.innerHTML = htmlResponse;
+                
+            } catch(e) {
+                resultDiv.innerHTML = `<span style="color:#ef4444;">Lỗi: ${e.message}</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-robot"></i> Trợ lý AI Nhận xét';
+            }
+        }
+</script>
 </body>
 </html>
