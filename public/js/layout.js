@@ -46,9 +46,6 @@ const sidebarHTML = `
             <a href="/settings" class="nav-item" id="nav-settings" title="Cấu hình hệ thống">
                 <i class="fas fa-cog"></i> <span class="nav-item-text">Cấu hình hệ thống</span>
             </a>
-            <a href="#" class="nav-item" id="nav-darkmode" onclick="toggleDarkMode(event)" title="Chế độ ban đêm">
-                <i class="fas fa-moon"></i> <span class="nav-item-text">Chế độ tối</span>
-            </a>
             <a href="#" class="nav-item" onclick="logout()" style="color:var(--danger);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="Đăng xuất">
                 <i class="fas fa-sign-out-alt" style="color:var(--danger);"></i> <span class="nav-item-text">Đăng xuất</span>
             </a>
@@ -88,6 +85,10 @@ function injectLayout(pageId, pageTitle) {
                             <div style="text-align:center; padding:20px 10px; color:#94a3b8; font-size:13px;">Chưa có thông báo nào</div>
                         </div>
                     </div>
+                </div>
+                
+                <div style="cursor:pointer; display:flex; align-items:center; justify-content:center;" onclick="toggleDarkMode(event)" id="header-darkmode" title="Chế độ Tối / Sáng" onmouseover="this.querySelector('i').style.color='var(--primary)'" onmouseout="this.querySelector('i').style.color=document.body.classList.contains('dark-mode')?'#f59e0b':'#64748b'">
+                    <i class="fas fa-moon" style="font-size: 1.25rem; color: #64748b; transition: color 0.2s;"></i>
                 </div>
 
                 <div class="user-greeting">
@@ -199,11 +200,11 @@ function toggleDarkMode(e) {
 }
 
 function updateDarkModeUI(isDark) {
-    const btn = document.getElementById('nav-darkmode');
+    const btn = document.getElementById('header-darkmode');
     if(btn) {
         btn.innerHTML = isDark 
-            ? '<i class="fas fa-sun" style="color:#f59e0b;"></i> <span class="nav-item-text">Chế độ sáng</span>'
-            : '<i class="fas fa-moon"></i> <span class="nav-item-text">Chế độ tối</span>';
+            ? '<i class="fas fa-sun" style="font-size: 1.25rem; color:#f59e0b; transition: color 0.2s;"></i>'
+            : '<i class="fas fa-moon" style="font-size: 1.25rem; color:#64748b; transition: color 0.2s;"></i>';
     }
 }
 
