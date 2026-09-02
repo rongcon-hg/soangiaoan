@@ -156,10 +156,10 @@ window.customConfirm = async function(msg) {
         }
         function escapeHtml(s) { return (s || '').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-        loadDeptsForProfile();
-
-        checkAuth().then(user => {
-            if(user) {
+        async function initProfile() {
+            await loadDeptsForProfile();
+            const user = await checkAuth();
+            if (user) {
                 document.getElementById('profile-username').value = user.username;
                 document.getElementById('profile-role').value = user.role;
                 document.getElementById('profile-fullname').value = user.full_name || '';
@@ -201,7 +201,8 @@ window.customConfirm = async function(msg) {
                 }
 
             }
-        });
+        }
+        initProfile();
 
         function handleAvatarUpload(event) {
             const file = event.target.files[0];
