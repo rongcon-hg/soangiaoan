@@ -43,6 +43,9 @@ const sidebarHTML = `
             <a href="/users" class="nav-item" id="nav-users" style="display:none" title="Quản lý Người dùng">
                 <i class="fas fa-users"></i> <span class="nav-item-text">Quản lý Người dùng</span>
             </a>
+            <a href="/audit" class="nav-item" id="nav-audit" style="display:none" title="Lịch sử Hoạt động">
+                <i class="fas fa-history"></i> <span class="nav-item-text">Lịch sử Hoạt động</span>
+            </a>
             <a href="/settings" class="nav-item" id="nav-settings" title="Cấu hình hệ thống">
                 <i class="fas fa-cog"></i> <span class="nav-item-text">Cấu hình hệ thống</span>
             </a>

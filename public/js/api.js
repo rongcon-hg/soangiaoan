@@ -111,6 +111,8 @@ async function checkAuth(redirectIfNotAuth = true) {
             if(adminTab) adminTab.style.display = 'flex';
             const deptTab = document.getElementById('nav-departments');
             if(deptTab) deptTab.style.display = 'flex';
+            const auditTab = document.getElementById('nav-audit');
+            if(auditTab) auditTab.style.display = 'flex';
         }
 
         // Kiểm tra hết hạn sử dụng (User)

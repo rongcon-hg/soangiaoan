@@ -166,6 +166,12 @@
             padding: 20px;
             border: 1px solid var(--border);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            min-width: 0;
+        }
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
         }
         .chart-title {
             font-size: 1.05rem;
@@ -314,8 +320,8 @@
                 <div class="chart-title">
                     <i class="fas fa-trophy" style="color:#eab308"></i> Top 5 Giáo viên tích cực nhất (Đã duyệt)
                 </div>
-                <div class="table-responsive" style="border:none; margin-top:10px;">
-                    <table style="width:100%; border-collapse:collapse;">
+                <div class="table-responsive" style="border:none; margin-top:10px; overflow-x: auto;">
+                    <table style="width:100%; border-collapse:collapse; min-width: 0;">
                         <thead>
                             <tr style="background:#f8fafc; text-align:left;">
                                 <th style="padding:10px; border-bottom:1px solid #e2e8f0; font-size:0.85rem;">Giáo viên</th>
