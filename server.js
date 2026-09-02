@@ -48,7 +48,8 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 
 // Middleware to cache EJS views at the Edge for 1 hour to save Vercel Serverless CPU
 const cacheView = (req, res, next) => {
-    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    // Disable aggressive caching during active development
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     next();
 };
 
