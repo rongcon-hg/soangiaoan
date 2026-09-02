@@ -163,6 +163,21 @@ function toDirectDriveUrl(url) {
 
 exports.me = async (req, res) => {
     try {
+        await pool.query(`
+            ALTER TABLE users 
+            ADD COLUMN IF NOT EXISTS signature TEXT,
+            ADD COLUMN IF NOT EXISTS signature_filename TEXT,
+            ADD COLUMN IF NOT EXISTS department_id INTEGER REFERENCES departments(id) ON DELETE SET NULL,
+            ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ,
+            ADD COLUMN IF NOT EXISTS tokens_used BIGINT DEFAULT 0;
+        `).catch(() => {});
+        
+        // Auto set expires_at if missing
+        await pool.query(`
+            UPDATE users SET expires_at = '2099-12-31 23:59:59' WHERE role = 'Admin' AND (expires_at IS NULL OR expires_at < '2090-01-01');
+            UPDATE users SET expires_at = CURRENT_TIMESTAMP + INTERVAL '1 month' WHERE role != 'Admin' AND expires_at IS NULL;
+        `).catch(() => {});
+
         let user;
         try {
             const query = `SELECT id, username, role, gemini_api_key, full_name, department, department_id, phone, email, avatar, signature, signature_filename, settings, expires_at, tokens_used FROM users WHERE id = $1`;
@@ -176,6 +191,7 @@ exports.me = async (req, res) => {
                 ADD COLUMN IF NOT EXISTS signature_filename TEXT;
             `).catch(() => {});
 
+            console.error("Error in me query:", colErr);
             const fallbackQuery = `SELECT id, username, role, gemini_api_key, full_name, department, phone, email, avatar, settings FROM users WHERE id = $1`;
             const fallbackRes = await pool.query(fallbackQuery, [req.user.id]);
             user = fallbackRes.rows[0];

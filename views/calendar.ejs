@@ -168,7 +168,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            initSidebar();
+            injectLayout('calendar', 'Lịch biểu Giáo án');
             checkAuth();
             setTimeout(loadCalendarData, 500);
         });
