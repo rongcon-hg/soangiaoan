@@ -1912,6 +1912,9 @@ function nextScheduledDates(start, slots, needed){
 
 
 function rawSessionItems(session){
+  if(session?.manualText) {
+    return session.manualText.split('\n').map(x=&gt;x.trim()).filter(Boolean);
+  }
   const out=[];
   (session?.units||[]).forEach(u=&gt;{
     (u.items||[]).forEach(it=&gt;{
@@ -1933,6 +1936,23 @@ function displaySessionItems(sessionIndex){
   }));
 }
 
+
+function onContentChange(si, el) {
+  if(!currentSessions[si]) return;
+  const newHtml = el.innerHTML;
+  const newText = el.innerText.trim();
+  
+  // If user clears it completely, revert to auto
+  if(!newText) {
+    currentSessions[si].manualContent = null;
+    currentSessions[si].manualText = null;
+  } else {
+    currentSessions[si].manualContent = newHtml;
+    currentSessions[si].manualText = newText;
+    currentSessions[si].isManual = true;
+  }
+  if(typeof saveStateToBackend === 'function') saveStateToBackend();
+}
 
 function onPeriodChange(si, type, value) {
   const val = Math.max(0, parseInt(value, 10) || 0);
@@ -1978,6 +1998,15 @@ function updateScheduleProgression() {
   // Preserve explicitly modified period counts from table inputs
   const sessionOverrides = [];
   currentSessions.forEach((s, idx) =&gt; {
+    const isSaved = (window.savedLessons||[]).find(l=&gt;l.schedule_tt == (idx+1));
+    if (isSaved) {
+      s.isManual = true;
+      if (!s.overrideCounts) {
+        const c = {LT:0, TH:0, KT:0};
+        (s.units || []).forEach(x =&gt; { if(c[x.type] !== undefined) c[x.type]++; });
+        s.overrideCounts = c;
+      }
+    }
     const ltInput = document.getElementById('p_lt_' + idx);
     const thInput = document.getElementById('p_th_' + idx);
     const ktInput = document.getElementById('p_kt_' + idx);
@@ -2013,11 +2042,14 @@ function updateScheduleProgression() {
     }
 
     const sessionUnits = units.slice(cursor, Math.min(cursor + cap, units.length));
+    const s_old = currentSessions[di];
     newSessions.push({
       date: dates[di].date,
       units: sessionUnits,
       overrideCounts: overridesForThis,
-      isManual: !!overridesForThis
+      isManual: !!overridesForThis || !!(s_old && s_old.manualContent),
+      manualContent: s_old ? s_old.manualContent : null,
+      manualText: s_old ? s_old.manualText : null
     });
     cursor += cap;
     di++;
@@ -2049,7 +2081,7 @@ function renderScheduleTable() {
      s.units.forEach(x =&gt; { if(c[x.type] !== undefined) c[x.type]++; });
    }
 
-   let content=&quot;&quot;;
+   let content = s.manualContent || &quot;&quot;;
    const previousSession = si&gt;0 ? currentSessions[si-1] : null;
 
    const prevItemsByLesson = new Map();
@@ -2068,8 +2100,9 @@ function renderScheduleTable() {
      if(u.lesson && !orderedLessons.includes(u.lesson)) orderedLessons.push(u.lesson);
    });
 
-   orderedLessons.forEach(lessonName=&gt;{
-     content+=`&lt;div class=&quot;lesson-title&quot;&gt;${esc(lessonName)}&lt;/div&gt;`;
+   if(!s.manualContent) {
+     orderedLessons.forEach(lessonName=&gt;{
+       content+=`&lt;div class=&quot;lesson-title&quot;&gt;${esc(lessonName)}&lt;/div&gt;`;
 
      const shownThisLesson=new Set();
 
@@ -2088,7 +2121,8 @@ function renderScheduleTable() {
          content+=`&lt;div class=&quot;${cls}&quot;&gt;${esc(displayTxt)}&lt;/div&gt;`;
        });
      });
-   });
+     });
+   }
 
    const dt = new Date(s.date);
    const tr=document.createElement(&quot;tr&quot;);
@@ -2108,8 +2142,9 @@ function renderScheduleTable() {
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_lt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.LT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'LT', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_th_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.TH||0}&quot; onchange=&quot;onPeriodChange(${si}, 'TH', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_kt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.KT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'KT', this.value)&quot;&gt;&lt;/td&gt;
-   &lt;td class=&quot;content&quot;&gt;${content}
-   &lt;div style=&quot;margin-top:8px&quot;&gt;
+   &lt;td class=&quot;content&quot;&gt;
+   &lt;div class=&quot;manual-content-box&quot; contenteditable=&quot;true&quot; onblur=&quot;onContentChange(${si}, this)&quot; style=&quot;min-height:40px; padding:4px; border:1px dashed transparent; transition:border 0.2s;&quot; onfocus=&quot;this.style.border='1px dashed #cbd5e1'&quot;&gt;${content}&lt;/div&gt;
+   &lt;div contenteditable=&quot;false&quot; style=&quot;margin-top:8px&quot;&gt;
      &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#16469d; color:#fff; border-radius:4px; border:none; cursor:pointer;&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
      ${saved ? `&lt;span style=&quot;font-size:11px; margin-left:8px; font-weight:600; color:${saved.status === 'APPROVED' ? '#059669' : (saved.status === 'PENDING' ? '#d97706' : (saved.status === 'REJECTED' ? '#dc2626' : '#16a34a'))};&quot;&gt;&lt;i class=&quot;fas fa-check-circle&quot; style=&quot;margin-right:3px;&quot;&gt;&lt;/i&gt;${saved.status === 'APPROVED' ? 'Đã duyệt' : (saved.status === 'PENDING' ? 'Chờ duyệt' : (saved.status === 'REJECTED' ? 'Bị từ chối' : 'Đã soạn'))}&lt;/span&gt;` : ''}
    &lt;/div&gt;
