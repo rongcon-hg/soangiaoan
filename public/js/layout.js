@@ -488,32 +488,82 @@ async function loadNotifications() {
         const list = document.getElementById('notif-list');
         const badge = document.getElementById('notif-badge');
         
-        if (!notifs || notifs.length === 0) {
-            list.innerHTML = '<div style="text-align:center; padding:20px 10px; color:#94a3b8; font-size:13px;">Chưa có thông báo nào</div>';
-            badge.style.display = 'none';
-            return;
+        if (!notifs) notifs = [];
+
+        let hasExpiryWarning = false;
+        if (typeof currentUser !== 'undefined' && currentUser && currentUser.expires_at) {
+            const expDate = new Date(currentUser.expires_at);
+            if (Math.ceil((expDate - new Date()) / (1000 * 60 * 60 * 24)) <= 7) hasExpiryWarning = true;
         }
 
         const unreadCount = notifs.filter(n => !n.is_read).length;
-        if (unreadCount > 0) {
-            badge.textContent = unreadCount;
+        const totalBadge = unreadCount + (hasExpiryWarning ? 1 : 0);
+        
+        if (totalBadge > 0) {
+            badge.textContent = totalBadge;
             badge.style.display = 'block';
         } else {
             badge.style.display = 'none';
         }
+        
+        if (notifs.length === 0 && !hasExpiryWarning) {
+            list.innerHTML = '<div style="text-align:center; padding:20px 10px; color:#94a3b8; font-size:13px;">Chưa có thông báo nào</div>';
+            return;
+        }
 
         let html = '';
+
+        if (typeof currentUser !== 'undefined' && currentUser && currentUser.expires_at) {
+            const expDate = new Date(currentUser.expires_at);
+            const now = new Date();
+            const daysLeft = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+            
+            let expiryMsg = null;
+            let expiryType = null;
+            let expiryIcon = null;
+            
+            if (daysLeft < 0) {
+                expiryMsg = `Tài khoản của bạn đã <b>quá hạn</b> sử dụng ${-daysLeft} ngày. Vui lòng gia hạn để tiếp tục sử dụng hệ thống!`;
+                expiryType = 'error';
+                expiryIcon = '<i class="fas fa-ban" style="color:#ef4444;"></i>';
+            } else if (daysLeft === 0) {
+                expiryMsg = `Tài khoản của bạn sẽ <b>hết hạn vào hôm nay</b>. Vui lòng gia hạn để tránh gián đoạn!`;
+                expiryType = 'error';
+                expiryIcon = '<i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i>';
+            } else if (daysLeft <= 7) {
+                expiryMsg = `Tài khoản của bạn sắp hết hạn sau <b>${daysLeft} ngày</b> nữa. Vui lòng gia hạn sớm!`;
+                expiryType = 'warning';
+                expiryIcon = '<i class="fas fa-clock" style="color:#f59e0b;"></i>';
+            }
+
+            if (expiryMsg) {
+                html += `
+                    <div onclick="Swal.fire({ title: 'Bản quyền hệ thống', html: '${expiryMsg}', icon: '${expiryType}' })" style="cursor:pointer; padding:12px 15px; border-bottom:1px solid #f1f5f9; background:#fffbeb; display:flex; gap:12px; align-items:flex-start; font-size:13px; line-height:1.4;">
+                        <div style="margin-top:2px;">${expiryIcon}</div>
+                        <div>
+                            <div style="color:#b45309; margin-bottom:4px; font-weight:600;">${expiryMsg}</div>
+                            <div style="font-size:11px; color:#d97706;">Hệ thống tự động</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         notifs.forEach(n => {
             const bg = n.is_read ? 'transparent' : '#f0f9ff';
             const icon = n.type === 'success' ? '<i class="fas fa-check-circle" style="color:#22c55e;"></i>' : 
                          n.type === 'error' ? '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i>' : 
                          '<i class="fas fa-info-circle" style="color:#3b82f6;"></i>';
+            
+            const escapedMessage = (n.message || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '<br>');
+            const formattedDate = new Date(n.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
+            
             html += `
-                <div onclick="readSingleNotification(${n.id}, '${n.link || ''}')" style="cursor:pointer; padding:12px 15px; border-bottom:1px solid #f1f5f9; background:${bg}; display:flex; gap:12px; align-items:flex-start; font-size:13px; line-height:1.4; transition: background 0.2s;">
+                <div onclick="readSingleNotification(${n.id}, '${n.link || ''}', '${escapedMessage}', '${formattedDate}', '${n.type || 'info'}')" style="cursor:pointer; padding:12px 15px; border-bottom:1px solid #f1f5f9; background:${bg}; display:flex; gap:12px; align-items:flex-start; font-size:13px; line-height:1.4; transition: background 0.2s;">
                     <div style="margin-top:2px;">${icon}</div>
                     <div>
                         <div style="color:#334155; margin-bottom:4px;">${n.message}</div>
-                        <div style="font-size:11px; color:#94a3b8;">${new Date(n.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</div>
+                        <div style="font-size:11px; color:#94a3b8;">${formattedDate}</div>
                     </div>
                 </div>
             `;
@@ -525,22 +575,41 @@ async function loadNotifications() {
     }
 }
 
-window.readSingleNotification = async function(id, link) {
+window.readSingleNotification = async function(id, link, message, created_at, type) {
     try {
         await fetch(API_URL + `/users/notifications/${id}/read`, {
             method: 'POST',
             headers: getHeaders()
         });
         
-        // Hide dropdown
         document.getElementById('notif-dropdown').classList.remove('show');
-        
         loadNotifications();
         
-        if (link && link !== 'null' && link !== '') {
-            // Slight delay so badge updates before redirect (in case of same-page anchor)
-            setTimeout(() => { window.location.href = link; }, 100);
+        if (!message) {
+            if (link && link !== 'null' && link !== '') window.location.href = link;
+            return;
         }
+
+        const iconType = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+        
+        Swal.fire({
+            title: 'Chi tiết thông báo',
+            html: `
+                <div style="text-align:left; font-size:15px; line-height:1.5; color:#334155; margin-bottom:15px;">${message}</div>
+                <div style="font-size:12px; color:#94a3b8; text-align:left;"><i class="fas fa-clock" style="margin-right:4px;"></i> ${created_at}</div>
+            `,
+            icon: iconType,
+            showCancelButton: link && link !== 'null' && link !== '' ? true : false,
+            confirmButtonText: link && link !== 'null' && link !== '' ? '<i class="fas fa-external-link-alt" style="margin-right:5px;"></i> Xem chi tiết' : 'Đóng',
+            cancelButtonText: 'Đóng',
+            confirmButtonColor: '#0ea5e9',
+            cancelButtonColor: '#64748b'
+        }).then((result) => {
+            if (result.isConfirmed && link && link !== 'null' && link !== '') {
+                window.location.href = link;
+            }
+        });
+
     } catch(e) {
         console.error('Lỗi đánh dấu đã đọc', e);
     }
