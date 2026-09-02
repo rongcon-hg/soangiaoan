@@ -2040,14 +2040,18 @@ function updateScheduleProgression() {
   });
 
   const estimatedWeeks = Math.ceil(units.length / Math.max(1, slots.reduce((s,x)=&gt;s+x.periods,0)));
-  const needed = estimatedWeeks * slots.length + slots.length + 50;
+  const needed = Math.max(estimatedWeeks * slots.length + slots.length + 50, 200);
   const start = new Date(startValue + &quot;T00:00:00&quot;);
   const dates = nextScheduledDates(start, slots, needed);
 
   const newSessions = [];
   let cursor = 0, di = 0;
 
-  while (cursor &lt; units.length && di &lt; dates.length) {
+  const lastExtraDateKey = (window.extraSessions &amp;&amp; window.extraSessions.length &gt; 0) 
+      ? window.extraSessions.map(e =&gt; e.date).sort().pop() 
+      : null;
+
+  while ((cursor &lt; units.length || (lastExtraDateKey &amp;&amp; dates[di] &amp;&amp; dateKey(dates[di].date) &lt;= lastExtraDateKey)) &amp;&amp; di &lt; dates.length) {
     let cap;
     let overridesForThis = null;
 
