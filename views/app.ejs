@@ -1753,18 +1753,31 @@ function buildProgramUnits(){
 }
 
 function esc(s){return s.replace(/[&amp;&lt;&gt;&quot;']/g,m=&gt;({&quot;&amp;&quot;:&quot;&amp;amp;&quot;,&quot;&lt;&quot;:&quot;&amp;lt;&quot;,&quot;&gt;&quot;:&quot;&amp;gt;&quot;,'&quot;':&quot;&amp;quot;&quot;,&quot;'&quot;:&quot;&amp;#039;&quot;}[m]))}
-function fmt(d){return `${String(d.getDate()).padStart(2,&quot;0&quot;)}/${String(d.getMonth()+1).padStart(2,&quot;0&quot;)}/${d.getFullYear()}`}
-function weekdayName(d){
- const names=[&quot;Chủ nhật&quot;,&quot;Thứ 2&quot;,&quot;Thứ 3&quot;,&quot;Thứ 4&quot;,&quot;Thứ 5&quot;,&quot;Thứ 6&quot;,&quot;Thứ 7&quot;];
- return names[d.getDay()];
+function getVnParts(d) {
+ if (typeof d === 'string') d = new Date(d);
+ const parts = new Intl.DateTimeFormat('en-US', {
+   timeZone: 'Asia/Ho_Chi_Minh',
+   year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short'
+ }).formatToParts(d);
+ const p = {};
+ for (const part of parts) p[part.type] = part.value;
+ return p;
 }
-
+function fmt(d){
+ const p = getVnParts(d);
+ return `${p.day}/${p.month}/${p.year}`;
+}
+function weekdayName(d){
+ const p = getVnParts(d);
+ const map = { 'Sun':'Chủ nhật', 'Mon':'Thứ 2', 'Tue':'Thứ 3', 'Wed':'Thứ 4', 'Thu':'Thứ 5', 'Fri':'Thứ 6', 'Sat':'Thứ 7' };
+ return map[p.weekday] || p.weekday;
+}
 
 let exclusions=[];
 
 function dateKey(d){
- if (typeof d === 'string') d = new Date(d);
- return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,&quot;0&quot;)}-${String(d.getDate()).padStart(2,&quot;0&quot;)}`;
+ const p = getVnParts(d);
+ return `${p.year}-${p.month}-${p.day}`;
 }
 
 
@@ -1909,7 +1922,7 @@ function nextScheduledDates(start, slots, needed){
   let guard=0;
 
   while(dates.length&lt;needed &amp;&amp; guard&lt;3000){
-    const wd=d.getDay();
+    const p = getVnParts(d); const map = {'Sun':0,'Mon':1,'Tue':2,'Wed':3,'Thu':4,'Fri':5,'Sat':6}; const wd = map[p.weekday];
     const currentKey = dateKey(d);
     if(slotsByDay.has(wd) &amp;&amp; !isExcludedDate(d) &amp;&amp; !window.deletedDates.includes(currentKey)){
       const daySlots = slotsByDay.get(wd);

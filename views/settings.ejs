@@ -908,7 +908,7 @@ window.customConfirm = async function(msg) {
                     html += `
                         <tr>
                             <td>${b.name}</td>
-                            <td>${d.toLocaleString('vi-VN')}</td>
+                            <td>${d.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</td>
                             <td>${sizeMb} MB</td>
                             <td style="text-align:right;">
                                 <a href="${b.webContentLink}" target="_blank" class="btn btn-secondary btn-sm" title="Tải xuống"><i class="fas fa-download"></i></a>

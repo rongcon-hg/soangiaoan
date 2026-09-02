@@ -133,7 +133,7 @@ router.get('/export', authenticateToken, isAdmin, async (req, res) => {
 
         result.rows.forEach(r => {
             const exp = r.expires_at ? new Date(r.expires_at).toLocaleDateString('vi-VN') : 'Không giới hạn';
-            const ll = r.last_login ? new Date(r.last_login).toLocaleString('vi-VN') : 'Chưa đăng nhập';
+            const ll = r.last_login ? new Date(r.last_login).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) : 'Chưa đăng nhập';
             const status = r.is_verified ? 'Đã xác thực' : 'Chờ xác thực';
             wsData.push([
                 r.username, r.full_name || '', r.email || '', r.role, r.department_name || '', status, exp, ll

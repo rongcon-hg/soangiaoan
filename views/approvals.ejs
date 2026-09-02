@@ -333,7 +333,7 @@
 
             let html = '';
             pageData.forEach((item, index) => {
-                const dateStr = new Date(item.updated_at).toLocaleString('vi-VN');
+                const dateStr = new Date(item.updated_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
                 html += `
                     <tr>
                         <td style="text-align:center; font-weight:bold; color:#64748b;">${startIndex + index + 1}</td>
@@ -413,7 +413,7 @@
                 <div style="font-size:14px; color:#475569; margin-bottom:8px;"><b>🏫 Đơn vị:</b> ${escapeHtml(item.department_name || 'Chưa rõ')}</div>
                 <div style="font-size:14px; color:#475569; margin-bottom:8px;"><b>📚 Môn học:</b> <span style="color:#0f172a; font-weight:500;">${escapeHtml(item.project_name)}</span></div>
                 <div style="font-size:14px; color:#475569; margin-bottom:8px;"><b>📑 Bài số:</b> ${item.schedule_tt}</div>
-                <div style="font-size:14px; color:#475569;"><b>🕒 Gửi lúc:</b> ${new Date(item.updated_at).toLocaleString('vi-VN')}</div>
+                <div style="font-size:14px; color:#475569;"><b>🕒 Gửi lúc:</b> ${new Date(item.updated_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</div>
             `;
             
             document.getElementById('preview-modal').style.display = 'block';

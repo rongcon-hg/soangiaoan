@@ -58,7 +58,7 @@ router.post('/submit', authenticateToken, auditLog('SUBMIT_LESSON', req => ({ ta
                         authorName: req.user.full_name || req.user.username,
                         lessonName: projectName,
                         scheduleTt: schedule_tt,
-                        submitTime: new Date().toLocaleString('vi-VN'),
+                        submitTime: new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }),
                         systemUrl: req.headers.origin || (req.protocol + '://' + req.get('host'))
                     };
 

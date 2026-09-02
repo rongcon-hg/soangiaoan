@@ -146,7 +146,7 @@
                 
                 let html = '';
                 logs.forEach(log => {
-                    const date = new Date(log.created_at).toLocaleString('vi-VN');
+                    const date = new Date(log.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
                     let badgeClass = 'badge-other';
                     if (log.action.includes('SUBMIT')) badgeClass = 'badge-submit';
                     if (log.action.includes('REVIEW')) badgeClass = 'badge-review';

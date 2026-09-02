@@ -513,7 +513,7 @@ async function loadNotifications() {
                     <div style="margin-top:2px;">${icon}</div>
                     <div>
                         <div style="color:#334155; margin-bottom:4px;">${n.message}</div>
-                        <div style="font-size:11px; color:#94a3b8;">${new Date(n.created_at).toLocaleString('vi-VN')}</div>
+                        <div style="font-size:11px; color:#94a3b8;">${new Date(n.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</div>
                     </div>
                 </div>
             `;
