@@ -94,7 +94,7 @@
         .cover-type { font-size: 36pt; font-weight: bold; text-transform: uppercase; margin-top: 10px; margin-bottom: 50px; }
         
         .cover-details { font-size: 16pt; text-align: left; line-height: 2.2; width: 80%; margin: 0 auto; margin-bottom: 150px; }
-        .cover-details .row { display: flex; align-items: flex-end; margin-bottom: 16px; }
+        .cover-details .row { display: flex; align-items: baseline; margin-bottom: 16px; }
         .cover-details .label { white-space: nowrap; margin-right: 10px; }
         .cover-details .val { font-weight: bold; }
         
@@ -163,6 +163,10 @@
                 
                 let khoa = proj.class_name ? proj.class_name.split('-')[0].trim() : '.........';
                 let bookType = data.bookType || 'LÝ THUYẾT';
+                
+                // Ensure project name has no hidden newlines causing premature wrapping
+                let safeProjName = (proj.name || '').replace(/<br\s*\/?>/gi, ' ').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+                let safeTeacherName = (proj.full_name || '').replace(/<br\s*\/?>/gi, ' ').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 
                 // 1. Generate Cover Page
                 html += `
@@ -180,7 +184,7 @@
                             <div class="cover-details">
                                 <div class="row">
                                     <span class="label">Môn học/ Mô đun:</span>
-                                    <span class="val" style="padding-left: 5px;">${proj.name}</span>
+                                    <span class="val" style="padding-left: 5px; flex-grow: 1;">${safeProjName}</span>
                                 </div>
                                 <div class="row">
                                     <span class="label">Lớp:</span>
@@ -191,7 +195,7 @@
                                 </div>
                                 <div class="row">
                                     <span class="label">Họ và tên giáo viên:</span>
-                                    <span class="val" style="padding-left: 5px;">${proj.full_name || ''}</span>
+                                    <span class="val" style="padding-left: 5px; flex-grow: 1;">${safeTeacherName}</span>
                                 </div>
                                 <div class="row">
                                     <span class="label">Năm học:</span>
