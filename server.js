@@ -57,7 +57,29 @@ const cacheView = (req, res, next) => {
 app.get('/login', cacheView, (req, res) => res.render('login'));
 app.get('/dashboard', cacheView, (req, res) => res.render('dashboard'));
 app.get('/profile', cacheView, (req, res) => res.render('profile'));
-app.get('/settings', cacheView, (req, res) => res.render('settings'));
+const jwt = require('jsonwebtoken');
+
+function renderSettings(req, res) {
+    let isAdmin = false;
+    try {
+        const cookieHeader = req.headers.cookie;
+        if (cookieHeader) {
+            const tokenMatch = cookieHeader.match(/token=([^;]+)/);
+            if (tokenMatch) {
+                const token = tokenMatch[1];
+                const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
+                if (decoded && (decoded.role === 'admin' || decoded.is_admin)) {
+                    isAdmin = true;
+                }
+            }
+        }
+    } catch (err) {}
+    
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.render('settings', { isAdmin });
+}
+
+app.get('/settings', renderSettings);
 app.get('/users', cacheView, (req, res) => res.render('users'));
 app.get('/approvals', cacheView, (req, res) => res.render('approvals'));
 app.get('/departments', cacheView, (req, res) => res.render('departments'));

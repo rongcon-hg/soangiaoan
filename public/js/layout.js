@@ -558,3 +558,13 @@ window.addEventListener('DOMContentLoaded', () => {
     // Đợi token check
     setTimeout(loadNotifications, 1000);
 });
+
+// Ensure token is synced to cookies for SSR
+(function syncTokenToCookie() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        document.cookie = "token=" + token + "; path=/; max-age=864000; SameSite=Lax";
+    } else {
+        document.cookie = "token=; path=/; max-age=0";
+    }
+})();

@@ -133,15 +133,18 @@ window.customConfirm = async function(msg) {
         <div class="settings-tabs">
             <div class="s-tab active" id="tab-gemini" onclick="switchSettingsTab('gemini', this)"><i class="fas fa-brain"></i> AI (Gemini)</div>
             <div class="s-tab" id="tab-signature" onclick="switchSettingsTab('signature', this)"><i class="fas fa-signature"></i> Chữ ký điện tử</div>
-            <div class="s-tab" id="tab-backup" style="display:none; background:#fefce8; color:#a16207;" onclick="switchSettingsTab('backup', this)"><i class="fas fa-database"></i> Sao lưu - Khôi phục</div>
-            <div class="s-tab" id="tab-smtp" style="display:none" onclick="switchSettingsTab('smtp', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
-            <div class="s-tab" id="tab-google" style="display:none" onclick="switchSettingsTab('google', this)"><i class="fab fa-google"></i> Đăng nhập Google</div>
-            <div class="s-tab" id="tab-gdrive" style="display:none" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
+            <% if (isAdmin) { %>
+            <div class="s-tab" id="tab-backup" style="background:#fefce8; color:#a16207;" onclick="switchSettingsTab('backup', this)"><i class="fas fa-database"></i> Sao lưu - Khôi phục</div>
+            <div class="s-tab" id="tab-smtp" onclick="switchSettingsTab('smtp', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
+            <div class="s-tab" id="tab-google" onclick="switchSettingsTab('google', this)"><i class="fab fa-google"></i> Đăng nhập Google</div>
+            <div class="s-tab" id="tab-gdrive" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
+            <% } %>
         </div>
 
         <div id="settingsContainer">
             
             
+<% if (isAdmin) { %>
             <!-- PANEL: BACKUP -->
             <div id="panel-backup" class="s-panel">
                 <h3 style="margin-bottom: 12px; color: #a16207;"><i class="fas fa-database"></i> Sao lưu & Khôi phục Dữ liệu (Admin)</h3>
@@ -195,6 +198,7 @@ window.customConfirm = async function(msg) {
                     </div>
                 </div>
             </div>
+<% } %>
 
 <!-- PANEL: GEMINI -->
             <div id="panel-gemini" class="s-panel active">
@@ -276,6 +280,7 @@ window.customConfirm = async function(msg) {
                 </div>
             </div>
 
+<% if (isAdmin) { %>
             <!-- PANEL: SMTP -->
             <div id="panel-smtp" class="s-panel">
                 <h3 style="margin-bottom: 12px; color: var(--primary);"><i class="fas fa-envelope"></i> Cấu hình SMTP Gmail (Gửi thư thông báo)</h3>
@@ -313,8 +318,10 @@ window.customConfirm = async function(msg) {
                     </button>
                 </div>
             </div>
+<% } %>
 
             
+<% if (isAdmin) { %>
             <!-- PANEL: GOOGLE OAUTH -->
             <div id="panel-google" class="s-panel">
                 <h3 style="margin-bottom: 12px; color: var(--primary);"><i class="fab fa-google"></i> Cấu hình Đăng nhập bằng Google</h3>
@@ -361,7 +368,9 @@ window.customConfirm = async function(msg) {
                     </button>
                 </div>
             </div>
+<% } %>
 
+<% if (isAdmin) { %>
             <!-- PANEL: GDRIVE -->
             <div id="panel-gdrive" class="s-panel">
                 <h3 style="margin-bottom: 12px; color: var(--primary);"><i class="fab fa-google-drive"></i> Cấu hình Google Team Drive (Upload file)</h3>
@@ -389,6 +398,7 @@ window.customConfirm = async function(msg) {
                     </button>
                 </div>
             </div>
+<% } %>
         </div>
     </div>
 

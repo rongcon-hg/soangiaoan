@@ -4,7 +4,7 @@ function initActivityTracker() {
     if (lastActive) {
         const elapsed = Date.now() - parseInt(lastActive, 10);
         if (elapsed > 5 * 60 * 1000) {
-            localStorage.removeItem('token');
+            localStorage.removeItem('token'); document.cookie = 'token=; path=/; max-age=0';
             localStorage.removeItem('last_active_time');
             if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
                 window.location.href = '/login';
@@ -122,13 +122,13 @@ async function checkAuth(redirectIfNotAuth = true) {
 
         return currentUser;
     } catch (err) {
-        localStorage.removeItem('token');
+        localStorage.removeItem('token'); document.cookie = 'token=; path=/; max-age=0';
         if (redirectIfNotAuth) window.location.href = '/login';
         return null;
     }
 }
 
 function logout() {
-    localStorage.removeItem('token');
+    localStorage.removeItem('token'); document.cookie = 'token=; path=/; max-age=0';
     window.location.href = '/login';
 }
