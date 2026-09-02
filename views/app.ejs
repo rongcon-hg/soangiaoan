@@ -2084,7 +2084,6 @@ function updateScheduleProgression() {
     }
 
     const sessionUnits = units.slice(cursor, Math.min(cursor + cap, units.length));
-    const s_old = currentSessions[di];
     newSessions.push({
       date: dates[di].date,
       units: sessionUnits,
