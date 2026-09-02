@@ -87,7 +87,7 @@ exports.getStats = async (req, res) => {
 
         // 6. Lấy trạng thái user (API Key, Chữ ký)
         const userRes = await pool.query(
-            `SELECT username, full_name, role, gemini_api_key, signature, signature_filename, department, department_id, expires_at 
+            `SELECT username, full_name, role, gemini_api_key, signature, signature_filename, department, department_id, expires_at, tokens_used 
              FROM users 
              WHERE id = $1`,
             [userId]
@@ -191,7 +191,8 @@ exports.getStats = async (req, res) => {
                 role: user.role,
                 hasGeminiKey: Boolean(user.gemini_api_key && user.gemini_api_key.trim()),
                 hasSignature: Boolean(user.signature),
-                expires_at: user.expires_at
+                expires_at: user.expires_at,
+                tokens_used: parseInt(user.tokens_used) || 0
             },
             adminStats: systemStats,
             stats: {
