@@ -4237,10 +4237,7 @@ ${textContent}`;
       }, 500);
       
       try {
-          raw = await Promise.race([
-              callOpenAI(prompt),
-              new Promise((_, reject) =&gt; setTimeout(() =&gt; reject(new Error(&quot;Quá thời gian kết nối (Timeout 90s). Vui lòng thử lại!&quot;)), 90000))
-          ]);
+          raw = await callOpenAI(prompt);
       } finally {
           clearInterval(statusInterval);
       }
