@@ -208,7 +208,9 @@ exports.me = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-    let { full_name, department, phone, email, avatar } = req.body;
+    let { full_name, department_id, department, phone, email, avatar } = req.body;
+    department = department_id !== undefined ? department_id : department;
+    if (department === '') department = null;
     try {
         // Nếu avatar là chuỗi Base64 mới, ta upload lên Drive
         if (avatar && avatar.startsWith('data:image')) {
