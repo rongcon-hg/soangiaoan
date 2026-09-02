@@ -7,7 +7,57 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js">
+        function renderAdminCharts(adminStats) {
+            // Render Pie Chart for Status
+            const ctxStatus = document.getElementById('statusChart');
+            if (ctxStatus && adminStats.statusCounts) {
+                if (window.statusChartInstance) window.statusChartInstance.destroy();
+                window.statusChartInstance = new Chart(ctxStatus, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Đã duyệt', 'Chờ duyệt', 'Đã từ chối', 'Bản nháp'],
+                        datasets: [{
+                            data: [
+                                adminStats.statusCounts.APPROVED || 0,
+                                adminStats.statusCounts.PENDING || 0,
+                                adminStats.statusCounts.REJECTED || 0,
+                                adminStats.statusCounts.DRAFT || 0
+                            ],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#94a3b8'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+
+            // Render Top Contributors Table
+            const tbody = document.getElementById('top-contributors-tbody');
+            if (tbody && adminStats.topContributors) {
+                if (adminStats.topContributors.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:15px; color:#94a3b8;">Chưa có dữ liệu giáo án</td></tr>';
+                } else {
+                    let html = '';
+                    adminStats.topContributors.forEach(c => {
+                        html += `
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:10px; font-weight:500;">${escapeHtml(c.full_name || c.username)}</td>
+                                <td style="padding:10px; color:#64748b; font-size:0.9rem;">${escapeHtml(c.department_name || 'Chưa phân khoa')}</td>
+                                <td style="padding:10px; text-align:center; color:#10b981; font-weight:bold;">${c.approved_count}</td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                }
+            }
+        }
+
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
@@ -244,6 +294,43 @@
         </div>
     </div>
 
+    <!-- Admin Analytics Section (Phase 2) -->
+    <div id="admin-analytics-section" style="display:none; margin-bottom:24px;">
+        <h3 style="margin-bottom:16px; font-size:1.2rem; color:var(--primary);"><i class="fas fa-shield-alt"></i> Bảng điều khiển Quản trị viên (Admin & Manager)</h3>
+        <div class="charts-grid">
+            <!-- Chart: Lesson Status -->
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-chart-pie" style="color:#0284c7"></i> Trạng thái Giáo án trên Hệ thống
+                </div>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- List: Top Contributors -->
+            <div class="chart-box">
+                <div class="chart-title">
+                    <i class="fas fa-trophy" style="color:#eab308"></i> Top 5 Giáo viên tích cực nhất (Đã duyệt)
+                </div>
+                <div class="table-responsive" style="border:none; margin-top:10px;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#f8fafc; text-align:left;">
+                                <th style="padding:10px; border-bottom:1px solid #e2e8f0; font-size:0.85rem;">Giáo viên</th>
+                                <th style="padding:10px; border-bottom:1px solid #e2e8f0; font-size:0.85rem;">Đơn vị</th>
+                                <th style="padding:10px; border-bottom:1px solid #e2e8f0; font-size:0.85rem; text-align:center;">Giáo án (Đạt)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-contributors-tbody">
+                            <tr><td colspan="3" style="text-align:center; padding:15px; color:#94a3b8;">Đang tải dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Charts Row -->
     <div class="charts-grid">
         <!-- Chart 1: Doughnut Phân bổ Hệ Đào tạo -->
@@ -425,6 +512,13 @@
                 }
 
                 if (data.adminStats) {
+                    // Show Phase 2 Admin Analytics Section
+                    const adminSect = document.getElementById("admin-analytics-section");
+                    if (adminSect) {
+                        adminSect.style.display = 'block';
+                        renderAdminCharts(data.adminStats);
+                    }
+                    
                     const kpiGrid = document.querySelector(".kpi-grid");
                     if (kpiGrid && !document.getElementById("admin-stats-container")) {
                         const container = document.createElement("div");

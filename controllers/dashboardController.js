@@ -96,7 +96,7 @@ exports.getStats = async (req, res) => {
 
         // 7. Thống kê Admin toàn hệ thống (nếu là Admin)
         let systemStats = null;
-        if (userRole === "Admin") {
+        if (userRole === "Admin" || userRole === "Manager") {
             const allUsersCount = await pool.query(`SELECT COUNT(*) as c FROM users`);
             const allProjectsCount = await pool.query(`SELECT COUNT(*) as c FROM projects`);
             const allSchedulesCount = await pool.query(`SELECT COUNT(*) as c FROM schedules`);
@@ -110,11 +110,34 @@ exports.getStats = async (req, res) => {
                 GROUP BY month ORDER BY month ASC
             `);
             
+            // --- THỐNG KÊ CHI TIẾT PHASE 2 ---
+            const statusCountsRes = await pool.query(`SELECT status, COUNT(*) as count FROM lessons WHERE lesson_data IS NOT NULL AND lesson_data != '' GROUP BY status`);
+            const statusCounts = { DRAFT: 0, PENDING: 0, APPROVED: 0, REJECTED: 0 };
+            statusCountsRes.rows.forEach(r => {
+                const st = r.status || 'DRAFT';
+                if (statusCounts[st] !== undefined) statusCounts[st] = parseInt(r.count);
+                else statusCounts[st] = parseInt(r.count);
+            });
+            
+            const topContributorsRes = await pool.query(`
+                SELECT u.full_name, u.username, d.name as department_name, COUNT(l.id) as approved_count
+                FROM lessons l
+                JOIN projects p ON l.project_id = p.id
+                JOIN users u ON p.user_id = u.id
+                LEFT JOIN departments d ON u.department_id = d.id
+                WHERE l.status = 'APPROVED'
+                GROUP BY u.id, d.name
+                ORDER BY approved_count DESC
+                LIMIT 5
+            `);
+
             systemStats = {
                 monthlyStats: {
                     labels: monthlyStatsRes.rows.map(r => r.month),
                     data: monthlyStatsRes.rows.map(r => parseInt(r.count))
                 },
+                statusCounts,
+                topContributors: topContributorsRes.rows,
                 totalUsers: parseInt(allUsersCount.rows[0]?.c || 0),
                 totalProjects: parseInt(allProjectsCount.rows[0]?.c || 0),
                 totalSchedules: parseInt(allSchedulesCount.rows[0]?.c || 0),

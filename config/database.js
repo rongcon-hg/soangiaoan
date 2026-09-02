@@ -201,4 +201,28 @@ pool.on('connect', async (client) => {
     }
 });
 
+
+let auditMigrated = false;
+pool.on('connect', async (client) => {
+    if (!auditMigrated) {
+        auditMigrated = true;
+        try {
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS audit_logs (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                    action VARCHAR(255) NOT NULL,
+                    target_type VARCHAR(50),
+                    target_id INTEGER,
+                    details JSONB,
+                    ip_address VARCHAR(45),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            `);
+        } catch(e) {
+            console.error('Audit migration warning:', e.message);
+        }
+    }
+});
+
 module.exports = pool;

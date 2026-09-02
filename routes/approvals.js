@@ -3,6 +3,7 @@ const router = express.Router();
 const { sendMail } = require('../utils/mailer');
 const pool = require('../config/database');
 const authenticateToken = require('../middlewares/auth');
+const auditLog = require('../middlewares/audit');
 
 const isManager = (req, res, next) => {
     if (req.user.role !== 'Admin' && req.user.role !== 'Manager') {
@@ -12,7 +13,7 @@ const isManager = (req, res, next) => {
 };
 
 // Gửi duyệt giáo án (Dành cho User)
-router.post('/submit', authenticateToken, async (req, res) => {
+router.post('/submit', authenticateToken, auditLog('SUBMIT_LESSON', req => ({ targetType: 'lesson', targetId: req.body.project_id, details: { tt: req.body.schedule_tt } })), async (req, res) => {
     try {
         const { project_id, schedule_tt } = req.body;
         
@@ -113,7 +114,7 @@ router.get('/pending', authenticateToken, isManager, async (req, res) => {
 });
 
 // Duyệt / Từ chối
-router.post('/:id/review', authenticateToken, isManager, async (req, res) => {
+router.post('/:id/review', authenticateToken, isManager, auditLog('REVIEW_LESSON', req => ({ targetType: 'lesson', targetId: req.params.id, details: { status: req.body.status } })), async (req, res) => {
     try {
         const { status, comment } = req.body;
         if (!['APPROVED', 'REJECTED'].includes(status)) {

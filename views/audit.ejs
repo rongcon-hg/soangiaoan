@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử Hoạt động - Hệ thống Giáo án điện tử</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .audit-table th, .audit-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .audit-table th { background: #f8fafc; font-weight: 600; color: #475569; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .badge-submit { background: #dbeafe; color: #1e40af; }
+        .badge-review { background: #fef3c7; color: #b45309; }
+        .badge-other { background: #f1f5f9; color: #475569; }
+    </style>
+</head>
+<body>
+    <div id="alert-box"></div>
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-history" style="color:var(--primary); margin-right:8px;"></i> Lịch sử Hoạt động (Audit Logs)</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="audit-table" style="width:100%; border-collapse:collapse; min-width:800px;">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Thời gian</th>
+                        <th style="width: 15%;">Người dùng</th>
+                        <th style="width: 15%;">Hành động</th>
+                        <th style="width: 10%;">Đối tượng</th>
+                        <th style="width: 10%;">ID Đối tượng</th>
+                        <th style="width: 25%;">Chi tiết</th>
+                        <th style="width: 10%;">IP</th>
+                    </tr>
+                </thead>
+                <tbody id="audit-tbody">
+                    <tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/layout.js"></script>
+    <script>
+        async function loadAuditLogs() {
+            try {
+                const res = await fetch(API_URL + '/audit', { headers: getHeaders() });
+                if (res.status === 403 || res.status === 401) {
+                    document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Bạn không có quyền truy cập trang này.</td></tr>';
+                    return;
+                }
+                const logs = await res.json();
+                
+                const tbody = document.getElementById('audit-tbody');
+                if (!logs || logs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Chưa có dữ liệu lịch sử hoạt động.</td></tr>';
+                    return;
+                }
+                
+                let html = '';
+                logs.forEach(log => {
+                    const date = new Date(log.created_at).toLocaleString('vi-VN');
+                    let badgeClass = 'badge-other';
+                    if (log.action.includes('SUBMIT')) badgeClass = 'badge-submit';
+                    if (log.action.includes('REVIEW')) badgeClass = 'badge-review';
+                    
+                    const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details) : log.details;
+                    
+                    html += `
+                        <tr>
+                            <td>${date}</td>
+                            <td style="font-weight:500;">${escapeHtml(log.full_name || log.username || 'System')}</td>
+                            <td><span class="badge ${badgeClass}">${escapeHtml(log.action)}</span></td>
+                            <td>${escapeHtml(log.target_type || '')}</td>
+                            <td>${log.target_id || ''}</td>
+                            <td style="color:#64748b; font-family:monospace; font-size:0.8rem; word-break:break-all;">${escapeHtml(detailsStr || '')}</td>
+                            <td style="font-size:0.8rem; color:#94a3b8;">${escapeHtml(log.ip_address || '')}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Lỗi tải dữ liệu.</td></tr>';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initSidebar();
+            checkAuth();
+            
+            // Allow layout.js to render user first
+            setTimeout(() => {
+                if (currentUser && currentUser.role !== 'Admin') {
+                    document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Chỉ Admin mới có quyền xem trang này.</td></tr>';
+                } else {
+                    loadAuditLogs();
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

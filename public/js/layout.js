@@ -28,6 +28,9 @@ const sidebarHTML = `
         <a href="/library" class="nav-item" id="nav-library" title="Thư viện Giáo án">
             <i class="fas fa-book-open"></i> <span class="nav-item-text">Thư viện Giáo án</span>
         </a>
+        <a href="/calendar" class="nav-item" id="nav-calendar" title="Lịch biểu Giáo án">
+            <i class="fas fa-calendar-alt"></i> <span class="nav-item-text">Lịch biểu Giáo án</span>
+        </a>
         <a href="/approvals" class="nav-item" id="nav-approvals" style="display:none" title="Phê duyệt Giáo án">
             <i class="fas fa-check-double"></i> <span class="nav-item-text">Phê duyệt Giáo án</span>
         </a>
