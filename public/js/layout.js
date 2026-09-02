@@ -441,7 +441,7 @@ async function loadNotifications() {
                          n.type === 'error' ? '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i>' : 
                          '<i class="fas fa-info-circle" style="color:#3b82f6;"></i>';
             html += `
-                <div style="padding:12px 15px; border-bottom:1px solid #f1f5f9; background:${bg}; display:flex; gap:12px; align-items:flex-start; font-size:13px; line-height:1.4;">
+                <div onclick="readSingleNotification(${n.id}, '${n.link || ''}')" style="cursor:pointer; padding:12px 15px; border-bottom:1px solid #f1f5f9; background:${bg}; display:flex; gap:12px; align-items:flex-start; font-size:13px; line-height:1.4; transition: background 0.2s;">
                     <div style="margin-top:2px;">${icon}</div>
                     <div>
                         <div style="color:#334155; margin-bottom:4px;">${n.message}</div>
@@ -467,11 +467,11 @@ window.readSingleNotification = async function(id, link) {
         // Hide dropdown
         document.getElementById('notif-dropdown').classList.remove('show');
         
+        loadNotifications();
+        
         if (link && link !== 'null' && link !== '') {
-            window.location.href = link;
-        } else {
-            // If no link, just reload notifications to update UI
-            loadNotifications();
+            // Slight delay so badge updates before redirect (in case of same-page anchor)
+            setTimeout(() => { window.location.href = link; }, 100);
         }
     } catch(e) {
         console.error('Lỗi đánh dấu đã đọc', e);
