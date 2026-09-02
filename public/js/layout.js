@@ -191,7 +191,7 @@ function toggleDarkMode(e) {
     updateDarkModeUI(isDark);
     
     // Broadcast to iframes (for planner/schedule)
-    document.querySelectorAll('iframe').forEach(iframe =&gt; {
+    document.querySelectorAll('iframe').forEach(iframe => {
         if(iframe.contentWindow) {
             iframe.contentWindow.postMessage({ type: 'TOGGLE_DARK_MODE', isDark }, '*');
         }
@@ -237,7 +237,7 @@ function initDarkMode() {
     document.head.appendChild(style);
     
     // Slight delay to update UI after sidebar is injected
-    setTimeout(() =&gt; updateDarkModeUI(isDark), 50);
+    setTimeout(() => updateDarkModeUI(isDark), 50);
 }
 document.addEventListener('DOMContentLoaded', initDarkMode);
 // ----------------------
