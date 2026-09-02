@@ -2070,7 +2070,15 @@ function renderScheduleTable() {
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_kt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.KT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'KT', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;content&quot;&gt;${content}
    &lt;div style=&quot;margin-top:8px&quot;&gt;
-     &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#16469d; color:#fff;&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
+     ${(function(){
+         const saved = (window.savedLessons||[]).find(l=&gt;l.schedule_tt == (si+1));
+         if(saved) {
+             const statusStr = saved.status === 'APPROVED' ? 'Đã duyệt' : (saved.status === 'PENDING' ? 'Chờ duyệt' : (saved.status === 'REJECTED' ? 'Bị từ chối' : 'Đã soạn'));
+             const bgColor = saved.status === 'APPROVED' ? '#059669' : (saved.status === 'PENDING' ? '#d97706' : (saved.status === 'REJECTED' ? '#dc2626' : '#16a34a'));
+             return `&lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:${bgColor}; color:#fff; border-radius:4px; border:none; cursor:pointer;&quot;&gt;&lt;i class=&quot;fas fa-check-circle&quot; style=&quot;margin-right:4px;&quot;&gt;&lt;/i&gt;SOẠN GIÁO ÁN BUỔI NÀY &lt;span style=&quot;font-size:11px; margin-left:2px;&quot;&gt;(${statusStr})&lt;/span&gt;&lt;/button&gt;`;
+         }
+         return `&lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#16469d; color:#fff; border-radius:4px; border:none; cursor:pointer;&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;`;
+     })()}
    &lt;/div&gt;
    &lt;/td&gt;
    &lt;td class=&quot;absent&quot;&gt;&lt;/td&gt;
@@ -5390,12 +5398,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     currentProject = await res.json();
                     
                     const iframe = document.getElementById("scheduleFrame");
+                    // Fetch saved lessons to highlight in Schedule UI
+                    let savedLessons = [];
+                    try {
+                        const savedRes = await fetch(API_URL + '/lessons/' + projectId + '/lessons', { headers: getHeaders() });
+                        if(savedRes.ok) savedLessons = await savedRes.json();
+                    } catch(e) { console.error("Lỗi tải DS giáo án đã lưu", e); }
+                    
                     const sendData = () => {
                         if(currentProject.program_data) {
                             const pdata = Object.assign({}, currentProject.program_data, {
                                 system_type: currentProject.system_type,
                                 class_name: currentProject.class_name
                             });
+                            
+                            pdata.savedLessons = savedLessons;
                             
                             // Fallback courseInfo if missing or empty
                             if (!pdata.courseInfo) {
@@ -5417,6 +5434,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             iframe.contentWindow.postMessage({
                                 type: "LOAD_PROJECT_STATE",
                                 payload: {
+                                    savedLessons: savedLessons,
                                     courseInfo: {
                                         name: currentProject.name,
                                         code: currentProject.course_code,
