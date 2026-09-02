@@ -297,7 +297,7 @@
 
     <!-- Admin Analytics Section (Phase 2) -->
     <div id="admin-analytics-section" style="display:none; margin-bottom:24px;">
-        <h3 style="margin-bottom:16px; font-size:1.2rem; color:var(--primary);"><i class="fas fa-shield-alt"></i> Bảng điều khiển Quản trị viên (Admin & Manager)</h3>
+        <h3 id="admin-dashboard-title" style="margin-bottom:16px; font-size:1.2rem; color:var(--primary);"><i class="fas fa-shield-alt"></i> Bảng điều khiển Quản trị viên</h3>
         <div class="charts-grid">
             <!-- Chart: Lesson Status -->
             <div class="chart-box">
@@ -513,6 +513,11 @@
                 }
 
                 if (data.adminStats) {
+                    const titleEl = document.getElementById('admin-dashboard-title');
+                    if (titleEl) {
+                        titleEl.innerHTML = `<i class="fas fa-shield-alt"></i> Bảng điều khiển ${data.user.role === 'Admin' ? 'Quản trị viên (Admin)' : 'Trưởng đơn vị (Manager)'}`;
+                    }
+                    
                     // Show Phase 2 Admin Analytics Section
                     const adminSect = document.getElementById("admin-analytics-section");
                     if (adminSect) {

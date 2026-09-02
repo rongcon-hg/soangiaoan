@@ -87,7 +87,7 @@ exports.getStats = async (req, res) => {
 
         // 6. Lấy trạng thái user (API Key, Chữ ký)
         const userRes = await pool.query(
-            `SELECT username, full_name, role, gemini_api_key, signature, signature_filename, department, expires_at 
+            `SELECT username, full_name, role, gemini_api_key, signature, signature_filename, department, department_id, expires_at 
              FROM users 
              WHERE id = $1`,
             [userId]
@@ -119,17 +119,32 @@ exports.getStats = async (req, res) => {
                 else statusCounts[st] = parseInt(r.count);
             });
             
-            const topContributorsRes = await pool.query(`
-                SELECT u.full_name, u.username, d.name as department_name, COUNT(l.id) as approved_count
-                FROM lessons l
-                JOIN projects p ON l.project_id = p.id
-                JOIN users u ON p.user_id = u.id
-                LEFT JOIN departments d ON u.department_id = d.id
-                WHERE l.status = 'APPROVED'
-                GROUP BY u.id, d.name
-                ORDER BY approved_count DESC
-                LIMIT 5
-            `);
+            let topContributorsRes;
+            if (userRole === "Manager" && user.department_id) {
+                topContributorsRes = await pool.query(`
+                    SELECT u.full_name, u.username, d.name as department_name, COUNT(l.id) as approved_count
+                    FROM lessons l
+                    JOIN projects p ON l.project_id = p.id
+                    JOIN users u ON p.user_id = u.id
+                    LEFT JOIN departments d ON u.department_id = d.id
+                    WHERE l.status = 'APPROVED' AND u.department_id = $1
+                    GROUP BY u.id, d.name
+                    ORDER BY approved_count DESC
+                    LIMIT 5
+                `, [user.department_id]);
+            } else {
+                topContributorsRes = await pool.query(`
+                    SELECT u.full_name, u.username, d.name as department_name, COUNT(l.id) as approved_count
+                    FROM lessons l
+                    JOIN projects p ON l.project_id = p.id
+                    JOIN users u ON p.user_id = u.id
+                    LEFT JOIN departments d ON u.department_id = d.id
+                    WHERE l.status = 'APPROVED'
+                    GROUP BY u.id, d.name
+                    ORDER BY approved_count DESC
+                    LIMIT 5
+                `);
+            }
 
             systemStats = {
                 monthlyStats: {
