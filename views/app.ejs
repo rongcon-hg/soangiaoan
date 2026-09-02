@@ -5098,8 +5098,8 @@ async function exportPdf(){
 
   const quizNode = clone.querySelector('.quiz-section');
   const slideNode = clone.querySelector('.slide-section');
-  let quizHtml = "";
-  let slideHtml = "";
+  let quizHtml = &quot;&quot;;
+  let slideHtml = &quot;&quot;;
   
   if(quizNode) { quizHtml = quizNode.outerHTML; quizNode.remove(); }
   if(slideNode) { slideHtml = slideNode.outerHTML; slideNode.remove(); }
@@ -5111,23 +5111,23 @@ async function exportPdf(){
     await html2pdf().set(opt).from(clone).save();
 
     if(quizHtml) {
-      const qDiv = document.createElement("div");
+      const qDiv = document.createElement(&quot;div&quot;);
       qDiv.innerHTML = quizHtml;
       qDiv.prepend(pdfStyle.cloneNode(true));
-      opt.filename = filename.replace(".pdf", "_CauHoi.pdf");
+      opt.filename = filename.replace(&quot;.pdf&quot;, &quot;_CauHoi.pdf&quot;);
       await html2pdf().set(opt).from(qDiv).save();
     }
 
     if(slideHtml) {
-      const sDiv = document.createElement("div");
+      const sDiv = document.createElement(&quot;div&quot;);
       sDiv.innerHTML = slideHtml;
       sDiv.prepend(pdfStyle.cloneNode(true));
-      opt.filename = filename.replace(".pdf", "_Slide.pdf");
+      opt.filename = filename.replace(&quot;.pdf&quot;, &quot;_Slide.pdf&quot;);
       await html2pdf().set(opt).from(sDiv).save();
     }
   } catch(e) {
     console.error(e);
-    alert("Lỗi khi xuất file PDF: " + (e?.message || e));
+    alert(&quot;Lỗi khi xuất file PDF: &quot; + (e?.message || e));
   } finally {
     if(btn) { btn.innerHTML = origText; btn.disabled = false; }
   }
