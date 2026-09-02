@@ -239,9 +239,6 @@
             <div class="hero-badge" id="badge-gemini" onclick="window.location.href='/settings#gemini'" style="cursor:pointer;" title="Trạng thái cấu hình AI Gemini - Bấm để cập nhật">
                 <i class="fas fa-brain"></i> <span id="badge-gemini-text">Đang kiểm tra AI...</span>
             </div>
-            <div class="hero-badge" id="badge-token" style="cursor:default;" title="Tổng số lượng Token AI hệ thống đã tiêu thụ">
-                <i class="fas fa-coins" style="color:#fbbf24;"></i> <span id="badge-token-text">Đang tính Token...</span>
-            </div>
             <div class="hero-badge" id="badge-signature" onclick="window.location.href='/settings#signature'" style="cursor:pointer;" title="Trạng thái chữ ký điện tử - Bấm để cập nhật">
                 <i class="fas fa-signature"></i> <span id="badge-sig-text">Đang kiểm tra chữ ký...</span>
             </div>
@@ -477,10 +474,7 @@
                     geminiText.innerText = "AI Gemini: Dùng chung hệ thống";
                 }
                 
-                const tokenText = document.getElementById("badge-token-text");
-                if (tokenText) {
-                    tokenText.innerHTML = `Đã dùng: <b>${(data.user.tokens_used || 0).toLocaleString()}</b> tokens`;
-                }
+                // Token removed as per request
 
                 const sigBadge = document.getElementById("badge-signature");
                 const sigText = document.getElementById("badge-sig-text");
