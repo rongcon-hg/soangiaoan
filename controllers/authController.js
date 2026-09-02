@@ -128,6 +128,7 @@ exports.login = async (req, res) => {
 
         await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP').catch(()=>{});
         await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+        req.user = user; // Attach for audit log
         const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
         res.json({ token, user: { id: user.id, username: user.username, role: user.role, gemini_api_key: user.gemini_api_key } });
     } catch (error) {

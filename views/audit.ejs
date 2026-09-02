@@ -7,38 +7,62 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
         <style>
-        .audit-table th, .audit-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
-        .audit-table th { background: #f8fafc; font-weight: 600; color: #475569; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
-        .badge-submit { background: #dbeafe; color: #1e40af; }
-        .badge-review { background: #fef3c7; color: #b45309; }
-        .badge-other { background: #f1f5f9; color: #475569; }
-        .page-btn { padding: 6px 12px; margin: 0 2px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; color:#475569; }
-        .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-        .page-btn:hover:not(.active) { background: #f1f5f9; }
-    </style>
+    .audit-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+    .audit-table th, .audit-table td { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; text-align: left; }
+    .audit-table th { background: #f8fafc; font-weight: 600; color: #475569; position: sticky; top: 0; z-index: 10; }
+    .audit-table tbody tr { transition: background-color 0.15s; }
+    .audit-table tbody tr:hover { background-color: #f8fafc; }
+    
+    .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+    .badge-submit { background: #dbeafe; color: #1e40af; }
+    .badge-review { background: #fef3c7; color: #b45309; }
+    .badge-login { background: #d1fae5; color: #065f46; }
+    .badge-create { background: #e0e7ff; color: #3730a3; }
+    .badge-delete { background: #fee2e2; color: #991b1b; }
+    .badge-save { background: #f3e8ff; color: #6b21a8; }
+    .badge-other { background: #f1f5f9; color: #475569; }
+    
+    .page-btn { padding: 6px 14px; margin: 0 3px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; cursor: pointer; color:#475569; transition: all 0.2s; font-size:0.9rem; }
+    .page-btn.active { background: #0ea5e9; color: #fff; border-color: #0ea5e9; }
+    .page-btn:hover:not(.active) { background: #f1f5f9; }
+    
+    .audit-toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 15px; }
+    .audit-toolbar .form-control { border-radius: 6px; padding: 8px 12px; border: 1px solid #cbd5e1; outline: none; }
+    .audit-toolbar .form-control:focus { border-color: #0ea5e9; }
+    
+    .table-container { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-top: 15px; }
+    .table-responsive { overflow-x: auto; max-height: calc(100vh - 250px); overflow-y: auto; }
+    
+    @media (max-width: 768px) {
+        .audit-toolbar { flex-direction: column; align-items: stretch; }
+        .audit-toolbar .form-control { width: 100% !important; }
+        .audit-toolbar button { width: 100%; justify-content: center; }
+        .card-header { flex-direction: column; align-items: flex-start; }
+    }
+</style>
 </head>
 <body>
     <div id="alert-box"></div>
     <div class="card">
         <div class="card-header" style="flex-wrap: wrap; gap: 16px;">
             <h3 class="card-title"><i class="fas fa-history" style="color:var(--primary); margin-right:8px;"></i> Lịch sử Hoạt động (Audit Logs)</h3>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                <input type="text" id="audit-search" class="form-control" placeholder="Tìm kiếm tài khoản, chi tiết..." style="width:200px;" onkeyup="if(event.key === 'Enter') loadAuditLogs(1)">
-                <select id="audit-action-filter" class="form-control" style="width:180px;" onchange="loadAuditLogs(1)">
+            <div class="audit-toolbar">
+                <input type="text" id="audit-search" class="form-control" placeholder="Tìm kiếm tài khoản, chi tiết..." style="width:220px;" onkeyup="if(event.key === 'Enter') loadAuditLogs(1)">
+                <select id="audit-action-filter" class="form-control" style="width:200px;" onchange="loadAuditLogs(1)">
                     <option value="">-- Tất cả hành động --</option>
                     <option value="LOGIN">Đăng nhập (LOGIN)</option>
+                    <option value="CREATE_PROJECT">Tạo thư mục (CREATE_PROJECT)</option>
+                    <option value="DELETE_PROJECT">Xóa thư mục (DELETE_PROJECT)</option>
+                    <option value="SAVE_SCHEDULE">Lưu tiến độ (SAVE_SCHEDULE)</option>
+                    <option value="SAVE_LESSON">Lưu giáo án (SAVE_LESSON)</option>
                     <option value="SUBMIT_LESSON">Trình ký (SUBMIT)</option>
                     <option value="REVIEW_LESSON">Phê duyệt (REVIEW)</option>
-                    <option value="CREATE_PROJECT">Tạo thư mục (CREATE)</option>
-                    <option value="UPDATE_LESSON">Cập nhật (UPDATE)</option>
-                    <option value="DELETE_LESSON">Xóa (DELETE)</option>
-                    <option value="AI_GENERATE">Tạo AI (AI_GENERATE)</option>
                 </select>
                 <button class="btn btn-primary" onclick="loadAuditLogs(1)"><i class="fas fa-search"></i> Tìm</button>
                 <button class="btn btn-secondary" onclick="openDeleteAuditModal()" style="color:#ef4444; border-color:#fca5a5;"><i class="fas fa-trash-alt"></i> Xoá bớt</button>
             </div>
         </div>
+        <div class="table-container">
         <div class="table-responsive">
             <table class="audit-table" style="width:100%; border-collapse:collapse; min-width:800px;">
                 <thead>
@@ -56,6 +80,7 @@
                     <tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
                 </tbody>
             </table>
+        </div>
         </div>
         <div id="audit-pagination" style="display:flex; justify-content:center; gap:8px; padding:16px;">
             <!-- Pagination buttons will go here -->
@@ -150,6 +175,10 @@
                     let badgeClass = 'badge-other';
                     if (log.action.includes('SUBMIT')) badgeClass = 'badge-submit';
                     if (log.action.includes('REVIEW')) badgeClass = 'badge-review';
+                    if (log.action === 'LOGIN') badgeClass = 'badge-login';
+                    if (log.action.includes('CREATE')) badgeClass = 'badge-create';
+                    if (log.action.includes('DELETE')) badgeClass = 'badge-delete';
+                    if (log.action.includes('SAVE')) badgeClass = 'badge-save';
                     
                     const detailsStr = typeof log.details === 'object' ? JSON.stringify(log.details) : log.details;
                     

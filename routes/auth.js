@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const auditLog = require('../middlewares/audit');
 const authenticateToken = require('../middlewares/auth');
 
 router.post('/register', authController.register);
-router.post('/login', authController.login);
+router.post('/login', auditLog('LOGIN', req => ({ targetType: 'user', details: { username: req.body.username } })), authController.login);
 router.post('/verify-otp', authController.verifyOtp);
 router.post('/forgot-password', authController.forgotPassword);
 router.get('/me', authenticateToken, authController.me);
