@@ -4226,7 +4226,7 @@ ${textContent}`;
       $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
       $(&quot;#aiStatus&quot;).textContent=&quot;Gemini đang tạo câu hỏi trắc nghiệm và bài tập...&quot;;
       
-      let raw = "";
+      let raw = &quot;&quot;;
       const statusInterval = setInterval(() =&gt; {
           if(btn &amp;&amp; $(&quot;#aiStatus&quot;)) {
               const text = $(&quot;#aiStatus&quot;).textContent;
