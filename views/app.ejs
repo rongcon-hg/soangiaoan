@@ -84,6 +84,7 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 
 
     .download-btn-mobile { margin-left: auto; }
+    .btn-text { white-space: nowrap; }
     @media(max-width: 1250px) { .btn-text { display: none !important; } button.secondary { padding: 8px 10px !important; } }
     @media(max-width: 768px) {
         .download-btn-mobile { margin-left: 0; width: 100%; justify-content: center; margin-top: 10px; }
@@ -2623,7 +2624,7 @@ document.getElementById(&quot;tbody&quot;).innerHTML=&quot;&quot;;
       <h2>BƯỚC 2. SOẠN GIÁO ÁN TỪ SỔ ĐẦU BÀI</h2>
       <p>Bước 2 để trống hoàn toàn cho đến khi Bước 1 tải chương trình, chia lịch và chọn một buổi học. Khi đó Môn học – Mã môn, Bài/Chương/Phần, Loại giáo án, Số tiết và Tổng thời gian được truyền/tính trực tiếp từ đúng buổi trong Sổ đầu bài và bị khóa, không cho chọn lại.</p>
     </div>
-    <div class="actions"><button class="secondary" onclick="switchTab(1)" title="Quay lại" style="display:inline-flex;align-items:center;gap:6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> <span class="btn-text">Quay lại</span></button></div>
+    <div class="actions"><button class="secondary" onclick="switchTab(1)" title="Quay lại" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> <span class="btn-text">Quay lại</span></button></div>
   </div>
   <div id="transferStatus"></div>
   <iframe id="plannerFrame" srcdoc="&lt;!doctype html&gt;
@@ -2801,6 +2802,7 @@ body.dark-mode .ai-btn { border: 1px solid #3b82f6; }
 
     .note{background:#fffceb;border:1px solid #f2df91;padding:10px;border-radius:9px;font-size:13px}
     button { display: inline-flex; align-items: center; gap: 6px; justify-content: center; } button svg { flex-shrink: 0; }
+    .btn-text { white-space: nowrap; }
     @media(max-width:1250px) { .btn-text { display: none !important; } .btn { padding: 9px !important; } }
     @media(max-width:1000px){.grid{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.preview-wrap{overflow:auto}}
     @media print{
