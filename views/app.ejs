@@ -2484,6 +2484,21 @@ function sendSessionToPlanner(index){
    });
  }
 
+ // SỬA LỖI: Ưu tiên dùng nội dung tuỳ chỉnh nếu người dùng đã ghi đè
+ if (s.isManual &amp;&amp; s.manualText) {
+     items.length = 0; // Xoá danh sách cũ
+     const lines = s.manualText.split('\n').map(x =&gt; x.trim()).filter(Boolean);
+     lines.forEach(x =&gt; items.push(x));
+     
+     lessonGroups.length = 0;
+     lessonGroups.push({
+         lesson: lines.length &gt; 0 ? lines[0] : &quot;Nội dung điều chỉnh thủ công&quot;,
+         items: lines,
+         objectives: [],
+         objectivesText: ''
+     });
+ }
+
  const payload={
    source:&quot;so-dau-bai&quot;,
    courseName:course.name||&quot;&quot;,
