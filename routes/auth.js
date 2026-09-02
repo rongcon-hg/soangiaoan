@@ -12,6 +12,7 @@ router.post('/apikey', authenticateToken, authController.updateApiKey);
 router.put('/profile', authenticateToken, authController.updateProfile);
 router.post('/signature', authenticateToken, authController.updateSignature);
 router.put('/settings', authenticateToken, authController.updateSettings);
+router.post('/usage', authenticateToken, authController.logUsage);
 router.post('/test-drive', authenticateToken, authController.testDriveConnection);
 
 router.post('/test-smtp', authenticateToken, authController.testSmtpConnection);

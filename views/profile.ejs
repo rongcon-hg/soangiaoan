@@ -174,8 +174,10 @@ window.customConfirm = async function(msg) {
 
                 const expContent = document.getElementById('profile-expiry-content');
                 if (expContent) {
+                    const tokenHtml = user.tokens_used ? `<div style="margin-top:15px; padding-top:15px; border-top:1px dashed #cbd5e1;"><i class="fas fa-coins" style="color:#eab308; margin-right:5px;"></i> Token AI đã dùng: <b>${user.tokens_used.toLocaleString()}</b> tokens</div>` : '';
+
                     if (user.role === 'Admin') {
-                        expContent.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:4px 10px; border-radius:6px;"><i class="fas fa-shield-alt"></i> Tài khoản Quản trị viên</span> <span>Thời hạn: <b>Vô thời hạn</b></span></div>';
+                        expContent.innerHTML = '<div style="display:flex; align-items:center; gap:8px;"><span style="background:#eff6ff; color:#1d4ed8; font-weight:700; padding:4px 10px; border-radius:6px;"><i class="fas fa-shield-alt"></i> Tài khoản Quản trị viên</span> <span>Thời hạn: <b>Vô thời hạn</b></span></div>' + tokenHtml;
                     } else if (user.expires_at) {
                         const expDate = new Date(user.expires_at);
                         const now = new Date();
@@ -194,9 +196,9 @@ window.customConfirm = async function(msg) {
 
                         expContent.innerHTML = '<div>Trạng thái: ' + statusHtml + '</div>' +
                                               '<div>Ngày hết hạn sử dụng: <b style="color:var(--primary); font-size:1.02rem;">' + expFormatted + '</b></div>' +
-                                              '<div style="margin-top:6px; font-size:0.85rem; color:#64748b;">Khi gần hết hạn hoặc đã hết hạn, Thầy/Cô hãy bấm nút <b>[Gửi yêu cầu gia hạn]</b> để thông báo cho Quản trị viên kích hoạt thêm thời gian sử dụng nhé!</div>';
+                                              '<div style="margin-top:6px; font-size:0.85rem; color:#64748b;">Khi gần hết hạn hoặc đã hết hạn, Thầy/Cô hãy bấm nút <b>[Gửi yêu cầu gia hạn]</b> để thông báo cho Quản trị viên kích hoạt thêm thời gian sử dụng nhé!</div>' + tokenHtml;
                     } else {
-                        expContent.innerHTML = '<div>Thời hạn sử dụng: <b>1 tháng kể từ ngày kích hoạt</b></div>';
+                        expContent.innerHTML = '<div>Thời hạn sử dụng: <b>1 tháng kể từ ngày kích hoạt</b></div>' + tokenHtml;
                     }
                 }
 

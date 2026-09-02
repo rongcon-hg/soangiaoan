@@ -165,7 +165,7 @@ exports.me = async (req, res) => {
     try {
         let user;
         try {
-            const query = `SELECT id, username, role, gemini_api_key, full_name, department, department_id, phone, email, avatar, signature, signature_filename, settings, expires_at FROM users WHERE id = $1`;
+            const query = `SELECT id, username, role, gemini_api_key, full_name, department, department_id, phone, email, avatar, signature, signature_filename, settings, expires_at, tokens_used FROM users WHERE id = $1`;
             const result = await pool.query(query, [req.user.id]);
             user = result.rows[0];
         } catch (colErr) {
@@ -668,5 +668,25 @@ exports.restoreBackup = async (req, res) => {
         res.json({ message: 'Khôi phục dữ liệu thành công!' });
     } catch(err) {
         res.status(500).json({ error: err.message });
+    }
+};
+
+exports.logUsage = async (req, res) => {
+    try {
+        const { tokens, feature } = req.body;
+        if (!tokens || isNaN(tokens)) return res.json({ success: false });
+        
+        // Add column tokens_used if it doesn't exist yet
+        try {
+            await pool.query(`ALTER TABLE users ADD COLUMN tokens_used INTEGER DEFAULT 0`);
+        } catch(e) {} // Ignore if already exists
+
+        await pool.query('UPDATE users SET tokens_used = COALESCE(tokens_used, 0) + $1 WHERE id = $2', [parseInt(tokens), req.user.id]);
+        
+        // In the future, we can insert into audit_logs here
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Error logging token usage:", error);
+        res.status(500).json({ error: error.message });
     }
 };
