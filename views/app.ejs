@@ -2292,19 +2292,19 @@ function removeSessionByDate(dateKeyStr, extId) {
 
 async function addExtraSession() {
     const { value: formValues } = await Swal.fire({
-        title: '<h3 style="margin:0;font-size:1.25rem;color:#1e293b;"><i class="fas fa-calendar-plus" style="color:#0284c7;margin-right:8px;"></i>Thêm lịch đột xuất</h3>',
+        title: '<h3 style=\'margin:0;font-size:1.25rem;color:#1e293b;\'><i class=\'fas fa-calendar-plus\' style=\'color:#0284c7;margin-right:8px;\'></i>Thêm lịch đột xuất</h3>',
         html: `
-            <div style="text-align:left; font-size:14px; margin-top:10px; display:flex; flex-direction:column; gap:12px;">
+            <div style='text-align:left; font-size:14px; margin-top:10px; display:flex; flex-direction:column; gap:12px;'>
                 <div>
-                    <label style="font-weight:600; color:#475569; display:block; margin-bottom:4px;">Ngày dạy (chọn hoặc gõ trực tiếp):</label>
-                    <input type="date" id="extraDate" style="width:100%; box-sizing:border-box; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; outline:none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
+                    <label style='font-weight:600; color:#475569; display:block; margin-bottom:4px;'>Ngày dạy (chọn hoặc gõ trực tiếp):</label>
+                    <input type='date' id='extraDate' style='width:100%; box-sizing:border-box; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; outline:none;' onfocus='this.style.borderColor=&quot;#0284c7&quot;' onblur='this.style.borderColor=&quot;#cbd5e1&quot;'>
                 </div>
                 <div>
-                    <label style="font-weight:600; color:#475569; display:block; margin-bottom:4px;">Tổng số tiết:</label>
-                    <input type="number" id="extraPeriods" min="1" max="10" value="1" style="width:100%; box-sizing:border-box; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; outline:none;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#cbd5e1'">
+                    <label style='font-weight:600; color:#475569; display:block; margin-bottom:4px;'>Tổng số tiết:</label>
+                    <input type='number' id='extraPeriods' min='1' max='10' value='1' style='width:100%; box-sizing:border-box; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; outline:none;' onfocus='this.style.borderColor=&quot;#0284c7&quot;' onblur='this.style.borderColor=&quot;#cbd5e1&quot;'>
                 </div>
-                <div style="font-size:11.5px; color:#b91c1c; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;">
-                    <i class="fas fa-info-circle" style="margin-right:4px;"></i> Việc chèn thêm buổi học sẽ tự động đẩy lùi (dồn) nội dung bài giảng của các buổi phía sau.
+                <div style='font-size:11.5px; color:#b91c1c; background:#fef2f2; padding:8px 10px; border-radius:6px; border:1px solid #fecaca; line-height:1.4;'>
+                    <i class='fas fa-info-circle' style='margin-right:4px;'></i> Việc chèn thêm buổi học sẽ tự động đẩy lùi (dồn) nội dung bài giảng của các buổi phía sau.
                 </div>
             </div>
         `,
@@ -2313,8 +2313,8 @@ async function addExtraSession() {
         showCancelButton: true,
         confirmButtonColor: '#0ea5e9',
         cancelButtonColor: '#64748b',
-        confirmButtonText: '<i class="fas fa-check" style="margin-right:5px;"></i> Thêm lịch',
-        cancelButtonText: '<i class="fas fa-times" style="margin-right:5px;"></i> Hủy',
+        confirmButtonText: '<i class=\'fas fa-check\' style=\'margin-right:5px;\'></i> Thêm lịch',
+        cancelButtonText: '<i class=\'fas fa-times\' style=\'margin-right:5px;\'></i> Hủy',
         preConfirm: () => {
             const dt = document.getElementById('extraDate').value;
             if(!dt) { Swal.showValidationMessage('Vui lòng chọn hoặc nhập ngày!'); return false; }
