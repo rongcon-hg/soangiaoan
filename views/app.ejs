@@ -1763,6 +1763,7 @@ function weekdayName(d){
 let exclusions=[];
 
 function dateKey(d){
+ if (typeof d === 'string') d = new Date(d);
  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,&quot;0&quot;)}-${String(d.getDate()).padStart(2,&quot;0&quot;)}`;
 }
 
