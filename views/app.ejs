@@ -620,6 +620,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;/div&gt;
 &lt;div style=&quot;margin-top:12px;display:flex;gap:10px;flex-wrap:wrap&quot;&gt;
 &lt;button type=&quot;button&quot; onclick=&quot;buildSchedule()&quot;&gt;CHIA LỊCH&lt;/button&gt;
+&lt;button type=&quot;button&quot; style=&quot;background:#0284c7; color:#fff;&quot; onclick=&quot;addExtraSession()&quot;&gt;&lt;i class=&quot;fas fa-calendar-plus&quot;&gt;&lt;/i&gt; THÊM LỊCH&lt;/button&gt;
 &lt;button type=&quot;button&quot; onclick=&quot;manualSaveSchedule()&quot; style=&quot;background:#059669;color:#fff;&quot;&gt;💾 LƯU SỔ ĐẦU BÀI&lt;/button&gt;
 &lt;button type=&quot;button&quot; class=&quot;export&quot; onclick=&quot;exportExcel()&quot;&gt;XUẤT EXCEL&lt;/button&gt;
 &lt;button type=&quot;button&quot; class=&quot;export&quot; style=&quot;background:#dc2626;&quot; onclick=&quot;exportPDF()&quot;&gt;&lt;i class=&quot;fas fa-file-pdf&quot;&gt;&lt;/i&gt; XUẤT PDF&lt;/button&gt;
@@ -681,6 +682,7 @@ function saveStateToBackend(showToast) {
         textbookData: textbookData,
         exclusions: exclusions,
         scheduleSettings: scheduleSettings,
+        extraSessions: window.extraSessions || [],
         generatedSchedule: currentSessions
     };
     
@@ -705,6 +707,7 @@ window.addEventListener(&quot;message&quot;, e => {
         if (!payload) return;
         
         window.savedLessons = payload.savedLessons || [];
+        window.extraSessions = payload.extraSessions || [];
         
         if (payload.courseInfo) {
             course = payload.courseInfo;
@@ -1904,6 +1907,14 @@ function nextScheduledDates(start, slots, needed){
         dates.push({ date:new Date(d), weekday:wd, periods:periods });
       }
     }
+    
+    // Inject extra sessions for this date
+    const key = dateKey(d);
+    const extrasToday = (window.extraSessions || []).filter(x =&gt; x.date === key);
+    for(const ext of extrasToday) {
+      dates.push({ date:new Date(d), weekday:wd, periods: ext.periods, isExtra: true, extId: ext.id });
+    }
+
     d.setDate(d.getDate()+1);
     guard++;
   }
@@ -2047,9 +2058,11 @@ function updateScheduleProgression() {
       date: dates[di].date,
       units: sessionUnits,
       overrideCounts: overridesForThis,
-      isManual: !!overridesForThis || !!(s_old && s_old.manualContent),
+      isManual: !!overridesForThis || !!(s_old &amp;&amp; s_old.manualContent),
       manualContent: s_old ? s_old.manualContent : null,
-      manualText: s_old ? s_old.manualText : null
+      manualText: s_old ? s_old.manualText : null,
+      isExtra: dates[di].isExtra,
+      extId: dates[di].extId
     });
     cursor += cap;
     di++;
@@ -2138,7 +2151,9 @@ function renderScheduleTable() {
    }
    
    tr.innerHTML=`&lt;td class=&quot;stt&quot;&gt;${si+1}&lt;/td&gt;
-   &lt;td class=&quot;date&quot;&gt;${fmt(dt)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(dt)}&lt;/span&gt;&lt;/td&gt;
+   &lt;td class=&quot;date&quot;&gt;${fmt(dt)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(dt)}&lt;/span&gt;
+   ${s.isExtra ? `&lt;br&gt;&lt;button type=&quot;button&quot; onclick=&quot;removeExtraSession(${s.extId})&quot; style=&quot;margin-top:4px; font-size:10px; padding:2px 4px; background:#ef4444; color:#fff; border-radius:3px;&quot;&gt;Xóa lịch này&lt;/button&gt;` : ''}
+   &lt;/td&gt;
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_lt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.LT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'LT', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_th_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.TH||0}&quot; onchange=&quot;onPeriodChange(${si}, 'TH', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_kt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.KT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'KT', this.value)&quot;&gt;&lt;/td&gt;
@@ -2155,6 +2170,56 @@ function renderScheduleTable() {
  });
 }
 
+
+window.extraSessions = [];
+
+async function addExtraSession() {
+    const { value: formValues } = await Swal.fire({
+        title: 'Thêm lịch dạy đột xuất',
+        html: `
+            &lt;div style=&quot;text-align:left; margin-bottom:10px;&quot;&gt;
+                &lt;label style=&quot;font-weight:bold;&quot;&gt;Ngày dạy:&lt;/label&gt;
+                &lt;input type=&quot;date&quot; id=&quot;extraDate&quot; class=&quot;swal2-input&quot; style=&quot;width:100%; max-width:100%; margin-top:5px;&quot;&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;text-align:left;&quot;&gt;
+                &lt;label style=&quot;font-weight:bold;&quot;&gt;Số tiết:&lt;/label&gt;
+                &lt;input type=&quot;number&quot; id=&quot;extraPeriods&quot; class=&quot;swal2-input&quot; min=&quot;1&quot; max=&quot;10&quot; value=&quot;1&quot; style=&quot;width:100%; max-width:100%; margin-top:5px;&quot;&gt;
+            &lt;/div&gt;
+            &lt;div style=&quot;font-size:12px; color:#ef4444; margin-top:15px; text-align:left;&quot;&gt;
+                &lt;i class=&quot;fas fa-exclamation-triangle&quot;&gt;&lt;/i&gt; Lưu ý: Nếu bạn đã lưu giáo án cho các buổi sau ngày này, việc chèn thêm buổi học sẽ làm lệch số thứ tự (Buổi) của các giáo án đã lưu.
+            &lt;/div&gt;
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonColor: '#0284c7',
+        confirmButtonText: 'Thêm lịch',
+        cancelButtonText: 'Hủy',
+        preConfirm: () =&gt; {
+            const dt = document.getElementById('extraDate').value;
+            const p = parseInt(document.getElementById('extraPeriods').value, 10);
+            if(!dt) { Swal.showValidationMessage('Vui lòng chọn ngày!'); return false; }
+            if(isNaN(p) || p &lt;= 0) { Swal.showValidationMessage('Số tiết không hợp lệ!'); return false; }
+            return { date: dt, periods: p };
+        }
+    });
+
+    if (formValues) {
+        if(!window.extraSessions) window.extraSessions = [];
+        window.extraSessions.push({
+            id: Date.now(),
+            date: formValues.date,
+            periods: formValues.periods
+        });
+        updateScheduleProgression();
+    }
+}
+
+function removeExtraSession(id) {
+    if(window.extraSessions) {
+        window.extraSessions = window.extraSessions.filter(x =&gt; x.id !== id);
+        updateScheduleProgression();
+    }
+}
 
 function buildSchedule(){
  if(!programSequence.length){
