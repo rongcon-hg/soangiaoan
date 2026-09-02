@@ -187,6 +187,32 @@ input,select{font:inherit;padding:8px;border:1px solid #b8c2d0;border-radius:7px
 button{font:inherit;border:0;border-radius:8px;padding:10px 14px;font-weight:700;background:#16469d;color:#fff;cursor:pointer}
 button.export{background:#15803d}
 button.gray{background:#64748b}
+
+/* Dark Mode for Schedule Frame */
+body.dark-mode {
+    --bg: #0f172a; --text: #e2e8f0; --border: #334155;
+    background: var(--bg); color: var(--text);
+}
+body.dark-mode .card { background: #1e293b; color: #e2e8f0; }
+body.dark-mode .section-title { color: #60a5fa; }
+body.dark-mode th { background: #0f172a !important; color: #f8fafc !important; border-color: var(--border) !important; }
+body.dark-mode td { border-color: var(--border) !important; background: transparent !important; color: var(--text) !important; }
+body.dark-mode input, body.dark-mode select { background: #0f172a; color: #e2e8f0; border-color: var(--border); }
+body.dark-mode .notice, body.dark-mode .warning { background: #334155; border-color: #475569; color: #e2e8f0; }
+
+/* Print CSS for Schedule Frame */
+@media print {
+    body { background: #fff !important; color: #000 !important; }
+    header, .wrap &gt; .card:not(:last-child), .no-print, button, .section-title, .hint { display: none !important; }
+    .card { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; background: #fff !important; }
+    .sheet-wrap { overflow: visible !important; }
+    .sheet { width: 100% !important; page-break-inside: auto; }
+    .sheet tr { page-break-inside: avoid; page-break-after: auto; }
+    .sheet th { background: #fff !important; color: #000 !important; border: 1px solid #000 !important; }
+    .sheet td { border: 1px solid #000 !important; color: #000 !important; }
+    .sheet input { border: none !important; background: transparent !important; color: #000 !important; }
+}
+
 .notice{background:#ecfdf5;border:1px solid #86efac;color:#166534;padding:10px;border-radius:8px;margin-top:10px}
 .warning{background:#fff7ed;border:1px solid #fdba74;color:#9a3412;padding:10px;border-radius:8px;margin-top:10px}
 .filebox{border:2px dashed #9db2d0;border-radius:10px;padding:14px;background:#f8fbff}
@@ -596,6 +622,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;button type=&quot;button&quot; onclick=&quot;buildSchedule()&quot;&gt;CHIA LỊCH&lt;/button&gt;
 &lt;button type=&quot;button&quot; onclick=&quot;manualSaveSchedule()&quot; style=&quot;background:#059669;color:#fff;&quot;&gt;💾 LƯU SỔ ĐẦU BÀI&lt;/button&gt;
 &lt;button type=&quot;button&quot; class=&quot;export&quot; onclick=&quot;exportExcel()&quot;&gt;XUẤT EXCEL&lt;/button&gt;
+&lt;button type=&quot;button&quot; class=&quot;export&quot; style=&quot;background:#dc2626;&quot; onclick=&quot;exportPDF()&quot;&gt;&lt;i class=&quot;fas fa-file-pdf&quot;&gt;&lt;/i&gt; XUẤT PDF&lt;/button&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 
@@ -2300,6 +2327,23 @@ function sendSessionToPlanner(index){
 
  parent.postMessage({type:&quot;OPEN_LESSON_PLAN_FROM_SCHEDULE&quot;,payload},&quot;*&quot;);
 }
+
+function exportPDF() {
+    window.print();
+}
+
+// Dark Mode Listener for iframe
+window.addEventListener('message', e =&gt; {
+    if(e.data?.type === 'TOGGLE_DARK_MODE') {
+        if(e.data.isDark) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+    }
+});
+function checkInitialDarkMode() {
+    if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+}
+document.addEventListener('DOMContentLoaded', checkInitialDarkMode);
+
 function exportExcel(){
  const originalTable = document.getElementById(&quot;mainTable&quot;);
  const clone = originalTable.cloneNode(true);
@@ -2502,6 +2546,20 @@ table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%}
     .checkitem{display:flex;gap:8px;align-items:flex-start;margin:5px 0}
     .checkitem input{width:auto;margin-top:4px}
     .pill{display:inline-block;padding:3px 8px;border-radius:999px;background:var(--soft);color:var(--primary);font-size:12px}
+
+/* Dark Mode for Planner Frame */
+body.dark-mode {
+    --bg: #0f172a; --text: #e2e8f0; --border: #334155; --primary: #3b82f6;
+    background: var(--bg) !important; color: var(--text) !important;
+}
+body.dark-mode .card, body.dark-mode .panel, body.dark-mode .left, body.dark-mode .preview-wrap { background: #1e293b !important; border-color: var(--border) !important; color: #e2e8f0 !important; }
+body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #0f172a !important; color: #e2e8f0 !important; border-color: var(--border) !important; }
+body.dark-mode th { background: #0f172a !important; color: #f8fafc !important; border-color: var(--border) !important; }
+body.dark-mode td { border-color: var(--border) !important; background: transparent !important; color: var(--text) !important; }
+body.dark-mode .status { background: transparent !important; }
+body.dark-mode .content[contenteditable='true'] { background: #0f172a !important; color: #e2e8f0 !important; }
+body.dark-mode .ai-btn { border: 1px solid #3b82f6; }
+
     .note{background:#fffceb;border:1px solid #f2df91;padding:10px;border-radius:9px;font-size:13px}
     button { display: inline-flex; align-items: center; gap: 6px; justify-content: center; } button svg { flex-shrink: 0; }
     @media(max-width:1250px) { .btn-text { display: none !important; } .btn { padding: 9px !important; } }
@@ -4021,6 +4079,18 @@ function modelPriority(models, preferred){
 }
 
 function sleep(ms){return new Promise(r=&gt;setTimeout(r,ms))}
+
+
+window.addEventListener('message', e =&gt; {
+    if(e.data?.type === 'TOGGLE_DARK_MODE') {
+        if(e.data.isDark) document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+    }
+});
+function checkInitialDarkMode() {
+    if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+}
+document.addEventListener('DOMContentLoaded', checkInitialDarkMode);
 
 async function generateWithGemini(key,model,prompt){
   const url=`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;

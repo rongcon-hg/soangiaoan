@@ -46,6 +46,9 @@ const sidebarHTML = `
             <a href="/settings" class="nav-item" id="nav-settings" title="Cấu hình hệ thống">
                 <i class="fas fa-cog"></i> <span class="nav-item-text">Cấu hình hệ thống</span>
             </a>
+            <a href="#" class="nav-item" id="nav-darkmode" onclick="toggleDarkMode(event)" title="Chế độ ban đêm">
+                <i class="fas fa-moon"></i> <span class="nav-item-text">Chế độ tối</span>
+            </a>
             <a href="#" class="nav-item" onclick="logout()" style="color:var(--danger);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="Đăng xuất">
                 <i class="fas fa-sign-out-alt" style="color:var(--danger);"></i> <span class="nav-item-text">Đăng xuất</span>
             </a>
@@ -178,6 +181,66 @@ function injectLayout(pageId, pageTitle) {
         } catch(e) {}
     }
 }
+
+
+// --- DARK MODE LOGIC ---
+function toggleDarkMode(e) {
+    if(e) e.preventDefault();
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    updateDarkModeUI(isDark);
+    
+    // Broadcast to iframes (for planner/schedule)
+    document.querySelectorAll('iframe').forEach(iframe =&gt; {
+        if(iframe.contentWindow) {
+            iframe.contentWindow.postMessage({ type: 'TOGGLE_DARK_MODE', isDark }, '*');
+        }
+    });
+}
+
+function updateDarkModeUI(isDark) {
+    const btn = document.getElementById('nav-darkmode');
+    if(btn) {
+        btn.innerHTML = isDark 
+            ? '<i class="fas fa-sun" style="color:#f59e0b;"></i> <span class="nav-item-text">Chế độ sáng</span>'
+            : '<i class="fas fa-moon"></i> <span class="nav-item-text">Chế độ tối</span>';
+    }
+}
+
+function initDarkMode() {
+    const isDark = localStorage.getItem('theme') === 'dark';
+    if(isDark) document.body.classList.add('dark-mode');
+    
+    // Inject global Dark Mode CSS
+    const style = document.createElement('style');
+    style.innerHTML = `
+        body.dark-mode {
+            --bg: #0f172a; --white: #1e293b; --text: #e2e8f0; --text-light: #94a3b8; --border: #334155;
+            background-color: var(--bg); color: var(--text);
+        }
+        body.dark-mode .sidebar { background: var(--white); border-right: 1px solid var(--border); }
+        body.dark-mode .nav-item { color: var(--text); }
+        body.dark-mode .nav-item:hover { background: #334155; }
+        body.dark-mode .nav-item.active { background: #3b82f6; color: #fff; }
+        body.dark-mode .top-header { background: var(--white); border-bottom: 1px solid var(--border); }
+        body.dark-mode .stat-card, body.dark-mode .card, body.dark-mode .panel { background: var(--white); border-color: var(--border); color: var(--text); }
+        body.dark-mode table, body.dark-mode th, body.dark-mode td { border-color: var(--border) !important; color: var(--text) !important; }
+        body.dark-mode th { background-color: #0f172a !important; color: #f8fafc !important; }
+        body.dark-mode tr:hover { background-color: #334155 !important; }
+        body.dark-mode input, body.dark-mode select, body.dark-mode textarea { background: #0f172a; color: #e2e8f0; border: 1px solid var(--border); }
+        body.dark-mode .swal2-popup { background: var(--white); color: var(--text); }
+        body.dark-mode .swal2-title, body.dark-mode .swal2-html-container { color: var(--text); }
+        body.dark-mode .modal-content { background: var(--white); color: var(--text); }
+        body.dark-mode .modal-header, body.dark-mode .modal-footer { border-color: var(--border); }
+        body.dark-mode .btn-secondary { background: #334155; color: #e2e8f0; border-color: #475569; }
+    `;
+    document.head.appendChild(style);
+    
+    // Slight delay to update UI after sidebar is injected
+    setTimeout(() =&gt; updateDarkModeUI(isDark), 50);
+}
+document.addEventListener('DOMContentLoaded', initDarkMode);
+// ----------------------
 
 function toggleSidebar() {
     const sidebar = document.getElementById('app-sidebar') || document.querySelector('.sidebar');
