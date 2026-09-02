@@ -225,6 +225,7 @@ function initDarkMode() {
         body.dark-mode .nav-item.active { background: #3b82f6; color: #fff; }
         body.dark-mode .top-header { background: var(--white); border-bottom: 1px solid var(--border); }
         body.dark-mode .stat-card, body.dark-mode .card, body.dark-mode .panel { background: var(--white); border-color: var(--border); color: var(--text); }
+        body.dark-mode table { background-color: var(--bg) !important; }
         body.dark-mode table, body.dark-mode th, body.dark-mode td { border-color: var(--border) !important; color: var(--text) !important; }
         body.dark-mode th { background-color: #0f172a !important; color: #f8fafc !important; }
         body.dark-mode tr:hover { background-color: #334155 !important; }
