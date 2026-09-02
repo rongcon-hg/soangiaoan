@@ -578,7 +578,7 @@ Giáo án:
 ${currentLessonHtmlForAI.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')}`;
 
                 // Mặc định gọi model pro
-                const model = 'gemini-1.5-pro';
+                const model = localStorage.getItem('giaoan_gemini_model') || 'gemini-3.7-flash';
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                 
                 const res = await fetch(url, {

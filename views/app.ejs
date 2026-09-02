@@ -5362,7 +5362,7 @@ document.addEventListener("DOMContentLoaded", () => {
     checkAuth().then(async u => { 
         if(!u) return;
         window.GEMINI_KEY = u.gemini_api_key || u.admin_gemini_api_key; 
-        window.GEMINI_MODEL = u.gemini_model || "gemini-1.5-pro";
+        window.GEMINI_MODEL = u.gemini_model || "gemini-3.7-flash";
         window.CURRENT_USER = u;
         window.USER_SIGNATURE = u.signature || "";
         window.USER_NAME = u.full_name || u.username || "";
