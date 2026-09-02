@@ -1907,7 +1907,8 @@ function nextScheduledDates(start, slots, needed){
 
   while(dates.length&lt;needed &amp;&amp; guard&lt;3000){
     const wd=d.getDay();
-    if(slotsByDay.has(wd) &amp;&amp; !isExcludedDate(d)){
+    const currentKey = dateKey(d);
+    if(slotsByDay.has(wd) &amp;&amp; !isExcludedDate(d) &amp;&amp; !window.deletedDates.includes(currentKey)){
       const daySlots = slotsByDay.get(wd);
       for(const periods of daySlots) {
         dates.push({ date:new Date(d), weekday:wd, periods:periods });
@@ -2077,14 +2078,89 @@ function updateScheduleProgression() {
   currentSessions = newSessions;
   renderScheduleTable();
   if(typeof saveStateToBackend === 'function') saveStateToBackend();
-  if(typeof Swal !== 'undefined') {
-    Swal.fire({
-      text: &quot;Đã cập nhật lại nội dung và tiến độ toàn bộ Sổ đầu bài thành công!&quot;,
-      icon: &quot;success&quot;,
-      confirmButtonColor: &quot;#16469d&quot;
-    });
+  
+  // VALIDATION LOGIC
+  let requiredLT = 0, requiredTH = 0, requiredKT = 0;
+  units.forEach(u =&gt; {
+      if(u.type === 'LT') requiredLT++;
+      else if(u.type === 'TH') requiredTH++;
+      else if(u.type === 'KT') requiredKT++;
+  });
+  
+  let allocatedLT = 0, allocatedTH = 0, allocatedKT = 0;
+  currentSessions.forEach(s =&gt; {
+      if (s.overrideCounts) {
+          allocatedLT += (s.overrideCounts.LT || 0);
+          allocatedTH += (s.overrideCounts.TH || 0);
+          allocatedKT += (s.overrideCounts.KT || 0);
+      } else if (s.units) {
+          s.units.forEach(u =&gt; {
+              if(u.type === 'LT') allocatedLT++;
+              else if(u.type === 'TH') allocatedTH++;
+              else if(u.type === 'KT') allocatedKT++;
+          });
+      }
+  });
+
+  const isMatched = (requiredLT === allocatedLT) &amp;&amp; (requiredTH === allocatedTH) &amp;&amp; (requiredKT === allocatedKT);
+  
+  if (!isMatched) {
+      const warningHtml = `
+          &lt;div style=&quot;text-align:left; font-size:14.5px;&quot;&gt;
+              &lt;div style=&quot;background:#fef2f2; border-left:4px solid #ef4444; padding:10px; margin-bottom:15px; color:#991b1b; font-weight:500;&quot;&gt;
+                  &lt;i class=&quot;fas fa-exclamation-circle&quot;&gt;&lt;/i&gt; Phát hiện chênh lệch số tiết phân bổ trên lịch so với Chương trình quy đổi (Bước 3)!
+              &lt;/div&gt;
+              &lt;table style=&quot;width:100%; border-collapse:collapse; margin-bottom:15px;&quot;&gt;
+                  &lt;tr style=&quot;background:#f8fafc;&quot;&gt;
+                      &lt;th style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:left;&quot;&gt;Loại tiết&lt;/th&gt;
+                      &lt;th style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:center;&quot;&gt;Yêu cầu&lt;/th&gt;
+                      &lt;th style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:center;&quot;&gt;Đã phân bổ&lt;/th&gt;
+                  &lt;/tr&gt;
+                  &lt;tr&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0;&quot;&gt;Lý thuyết (LT)&lt;/td&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:center; font-weight:bold;&quot;&gt;${requiredLT}&lt;/td&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:center; font-weight:bold; color:${requiredLT===allocatedLT?'#16a34a':'#ef4444'};&quot;&gt;${allocatedLT}&lt;/td&gt;
+                  &lt;/tr&gt;
+                  &lt;tr&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0;&quot;&gt;Thực hành (TH)&lt;/td&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:center; font-weight:bold;&quot;&gt;${requiredTH}&lt;/td&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:center; font-weight:bold; color:${requiredTH===allocatedTH?'#16a34a':'#ef4444'};&quot;&gt;${allocatedTH}&lt;/td&gt;
+                  &lt;/tr&gt;
+                  &lt;tr&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0;&quot;&gt;Kiểm tra (KT)&lt;/td&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:center; font-weight:bold;&quot;&gt;${requiredKT}&lt;/td&gt;
+                      &lt;td style=&quot;padding:8px; border:1px solid #e2e8f0; text-align:center; font-weight:bold; color:${requiredKT===allocatedKT?'#16a34a':'#ef4444'};&quot;&gt;${allocatedKT}&lt;/td&gt;
+                  &lt;/tr&gt;
+              &lt;/table&gt;
+              &lt;p style=&quot;font-size:13.5px; color:#475569; margin:0;&quot;&gt;
+                  👉 &lt;b&gt;Gợi ý xử lý:&lt;/b&gt; Bạn hãy thêm lịch đột xuất, xóa bớt dòng lịch thừa, hoặc chỉnh sửa số tiết trong từng buổi học cho đến khi tổng số tiết bằng đúng yêu cầu.
+              &lt;/p&gt;
+          &lt;/div&gt;
+      `;
+      if(typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: &quot;Cảnh báo Lịch giảng dạy&quot;,
+          html: warningHtml,
+          width: 550,
+          showCloseButton: true,
+          confirmButtonText: &quot;Đã hiểu, tôi sẽ điều chỉnh&quot;,
+          confirmButtonColor: &quot;#f59e0b&quot;
+        });
+      } else {
+        alert(`Cảnh báo chênh lệch số tiết!\nYêu cầu: LT ${requiredLT}, TH ${requiredTH}, KT ${requiredKT}\nĐã phân bổ: LT ${allocatedLT}, TH ${allocatedTH}, KT ${allocatedKT}`);
+      }
   } else {
-    alert(&quot;Đã cập nhật lại nội dung và tiến độ toàn bộ Sổ đầu bài thành công!&quot;);
+      if(typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: &quot;Phân bổ thành công!&quot;,
+          text: &quot;Đã cập nhật lại nội dung và tiến độ toàn bộ Sổ đầu bài. Tổng số tiết trên lịch khớp hoàn toàn với quy đổi.&quot;,
+          icon: &quot;success&quot;,
+          confirmButtonText: &quot;Tuyệt vời&quot;,
+          confirmButtonColor: &quot;#16469d&quot;
+        });
+      } else {
+        alert(&quot;Đã cập nhật lại nội dung và tiến độ toàn bộ Sổ đầu bài thành công!&quot;);
+      }
   }
 }
 
@@ -2158,7 +2234,7 @@ function renderScheduleTable() {
    
    tr.innerHTML=`&lt;td class=&quot;stt&quot;&gt;${si+1}&lt;/td&gt;
    &lt;td class=&quot;date&quot;&gt;${fmt(dt)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(dt)}&lt;/span&gt;
-   ${s.isExtra ? `&lt;br&gt;&lt;button type=&quot;button&quot; onclick=&quot;removeExtraSession(${s.extId})&quot; style=&quot;margin-top:4px; font-size:10px; padding:2px 4px; background:#ef4444; color:#fff; border-radius:3px;&quot;&gt;Xóa lịch này&lt;/button&gt;` : ''}
+      &lt;br&gt;&lt;button type=&quot;button&quot; onclick=&quot;removeSessionByDate('${dateKey(dt)}', ${s.isExtra ? s.extId : 'null'})&quot; style=&quot;margin-top:4px; font-size:10px; padding:4px 6px; background:#fee2e2; color:#ef4444; border:1px solid #fca5a5; border-radius:4px; cursor:pointer;&quot; title=&quot;Xoá ngày này khỏi lịch trình&quot;&gt;&lt;i class=&quot;fas fa-trash-alt&quot;&gt;&lt;/i&gt; Xóa bớt&lt;/button&gt;
    &lt;/td&gt;
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_lt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.LT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'LT', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_th_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.TH||0}&quot; onchange=&quot;onPeriodChange(${si}, 'TH', this.value)&quot;&gt;&lt;/td&gt;
@@ -2178,6 +2254,18 @@ function renderScheduleTable() {
 
 
 window.extraSessions = [];
+window.deletedDates = []; // Track deleted dates
+
+function removeSessionByDate(dateKeyStr, extId) {
+    if(confirm('Bạn có chắc chắn muốn xoá lịch ngày này khỏi tiến độ không?')) {
+        if (extId) {
+            window.extraSessions = window.extraSessions.filter(x => x.id !== extId);
+        } else {
+            window.deletedDates.push(dateKeyStr);
+        }
+        updateScheduleProgression();
+    }
+}
 
 async function addExtraSession() {
     const { value: formValues } = await Swal.fire({
