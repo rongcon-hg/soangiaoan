@@ -341,6 +341,7 @@
                             <div class="action-buttons">
                                 <button onclick="openPreviewModal('${l.project_id}', '${l.schedule_tt}')" class="btn btn-secondary btn-action btn-sm" title="Xem trước"><i class="fas fa-eye"></i> <span class="hide-text-mobile">Xem</span></button>
                                 <button onclick="downloadPdf('${l.project_id}', '${l.schedule_tt}')" class="btn btn-success btn-action btn-sm" style="background-color: #10b981; border-color: #10b981;" title="Tải file PDF về máy"><i class="fas fa-download"></i> <span class="hide-text-mobile">Tải</span></button>
+                                <button onclick="cloneLesson('${l.project_id}', '${l.schedule_tt}')" class="btn btn-action btn-sm" style="background-color: #f59e0b; color: #fff; border:none;" title="Nhân bản giáo án này vào Sổ đầu bài của bạn"><i class="fas fa-copy"></i> <span class="hide-text-mobile">Nhân bản</span></button>
                                 ${currentUser && (currentUser.username === l.username || currentUser.role === 'Admin') ? `<button onclick="unshareLesson('${l.project_id}', '${l.schedule_tt}')" class="btn btn-danger btn-action btn-sm" style="background-color: #ef4444; border-color: #ef4444;" title="Gỡ giáo án khỏi thư viện"><i class="fas fa-unlink"></i> <span class="hide-text-mobile">Hủy</span></button>` : ''}
                             </div>
                         </td>
