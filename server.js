@@ -45,6 +45,7 @@ app.use('/api/approvals', require('./routes/approvals'));
 app.use('/api/departments', require('./routes/departments'));
 app.use('/api/library', require('./routes/library'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/audit', require('./routes/audit'));
 
 // Middleware to cache EJS views at the Edge for 1 hour to save Vercel Serverless CPU
 const cacheView = (req, res, next) => {

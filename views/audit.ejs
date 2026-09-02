@@ -6,20 +6,38 @@
     <title>Lịch sử Hoạt động - Hệ thống Giáo án điện tử</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/style.css">
-    <style>
+        <style>
         .audit-table th, .audit-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
         .audit-table th { background: #f8fafc; font-weight: 600; color: #475569; }
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
         .badge-submit { background: #dbeafe; color: #1e40af; }
         .badge-review { background: #fef3c7; color: #b45309; }
         .badge-other { background: #f1f5f9; color: #475569; }
+        .page-btn { padding: 6px 12px; margin: 0 2px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; color:#475569; }
+        .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .page-btn:hover:not(.active) { background: #f1f5f9; }
     </style>
 </head>
 <body>
     <div id="alert-box"></div>
     <div class="card">
-        <div class="card-header">
+        <div class="card-header" style="flex-wrap: wrap; gap: 16px;">
             <h3 class="card-title"><i class="fas fa-history" style="color:var(--primary); margin-right:8px;"></i> Lịch sử Hoạt động (Audit Logs)</h3>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <input type="text" id="audit-search" class="form-control" placeholder="Tìm kiếm tài khoản, chi tiết..." style="width:200px;" onkeyup="if(event.key === 'Enter') loadAuditLogs(1)">
+                <select id="audit-action-filter" class="form-control" style="width:180px;" onchange="loadAuditLogs(1)">
+                    <option value="">-- Tất cả hành động --</option>
+                    <option value="LOGIN">Đăng nhập (LOGIN)</option>
+                    <option value="SUBMIT_LESSON">Trình ký (SUBMIT)</option>
+                    <option value="REVIEW_LESSON">Phê duyệt (REVIEW)</option>
+                    <option value="CREATE_PROJECT">Tạo thư mục (CREATE)</option>
+                    <option value="UPDATE_LESSON">Cập nhật (UPDATE)</option>
+                    <option value="DELETE_LESSON">Xóa (DELETE)</option>
+                    <option value="AI_GENERATE">Tạo AI (AI_GENERATE)</option>
+                </select>
+                <button class="btn btn-primary" onclick="loadAuditLogs(1)"><i class="fas fa-search"></i> Tìm</button>
+                <button class="btn btn-secondary" onclick="openDeleteAuditModal()" style="color:#ef4444; border-color:#fca5a5;"><i class="fas fa-trash-alt"></i> Xoá bớt</button>
+            </div>
         </div>
         <div class="table-responsive">
             <table class="audit-table" style="width:100%; border-collapse:collapse; min-width:800px;">
@@ -39,20 +57,87 @@
                 </tbody>
             </table>
         </div>
+        <div id="audit-pagination" style="display:flex; justify-content:center; gap:8px; padding:16px;">
+            <!-- Pagination buttons will go here -->
+        </div>
     </div>
+
+    <!-- Modal Xoá Lịch sử -->
+    <div id="delete-audit-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#fff; padding:24px; border-radius:8px; width:400px; max-width:90%;">
+            <h3 style="margin-top:0; color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Xoá Lịch sử Hoạt động</h3>
+            <p>Chọn mốc thời gian muốn giữ lại. Các dữ liệu cũ hơn sẽ bị xoá vĩnh viễn.</p>
+            <div class="form-group">
+                <select id="delete-audit-days" class="form-control">
+                    <option value="30">Giữ lại 30 ngày gần nhất</option>
+                    <option value="60">Giữ lại 60 ngày gần nhất</option>
+                    <option value="90">Giữ lại 90 ngày gần nhất</option>
+                    <option value="180">Giữ lại 6 tháng gần nhất</option>
+                    <option value="all">Xoá toàn bộ (Làm sạch CSDL)</option>
+                </select>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button class="btn btn-secondary" onclick="closeDeleteAuditModal()">Hủy</button>
+                <button class="btn btn-primary" style="background:#ef4444; border-color:#ef4444;" onclick="executeDeleteAudit()">Xác nhận Xoá</button>
+            </div>
+        </div>
+    </div>
+
 
     <script src="/js/api.js"></script>
     <script src="/js/layout.js"></script>
     <script>
-        async function loadAuditLogs() {
+        let currentAuditPage = 1;
+        
+        function openDeleteAuditModal() {
+            document.getElementById('delete-audit-modal').style.display = 'flex';
+        }
+        function closeDeleteAuditModal() {
+            document.getElementById('delete-audit-modal').style.display = 'none';
+        }
+        
+        async function executeDeleteAudit() {
+            const val = document.getElementById('delete-audit-days').value;
+            const keepDays = val === 'all' ? undefined : parseInt(val);
+            
+            if(!confirm('Bạn có chắc chắn muốn xoá dữ liệu không? Hành động này không thể hoàn tác!')) return;
+            
             try {
-                const res = await fetch(API_URL + '/audit', { headers: getHeaders() });
+                const res = await fetch(API_URL + '/audit', {
+                    method: 'DELETE',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ keepDays })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    showAlert(data.message || 'Xoá thành công', 'success');
+                    closeDeleteAuditModal();
+                    loadAuditLogs(1);
+                } else {
+                    showAlert(data.error || 'Lỗi khi xoá', 'error');
+                }
+            } catch(e) {
+                showAlert('Lỗi kết nối', 'error');
+            }
+        }
+
+        async function loadAuditLogs(page = 1) {
+            currentAuditPage = page;
+            const search = document.getElementById('audit-search').value;
+            const action = document.getElementById('audit-action-filter').value;
+            
+            try {
+                document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</td></tr>';
+                const url = `${API_URL}/audit?page=${page}&limit=20&search=${encodeURIComponent(search)}&action=${encodeURIComponent(action)}`;
+                const res = await fetch(url, { headers: getHeaders() });
                 if (res.status === 403 || res.status === 401) {
                     document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Bạn không có quyền truy cập trang này.</td></tr>';
                     return;
                 }
-                const logs = await res.json();
-                
+                const responseData = await res.json();
+                const logs = responseData.data || [];
+                const pagination = responseData.pagination || { totalPages: 1 };
+
                 const tbody = document.getElementById('audit-tbody');
                 if (!logs || logs.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">Chưa có dữ liệu lịch sử hoạt động.</td></tr>';
@@ -81,6 +166,21 @@
                     `;
                 });
                 tbody.innerHTML = html;
+                
+                // Render pagination
+                let pHtml = '';
+                if(pagination.totalPages > 1) {
+                    for(let i=1; i<=pagination.totalPages; i++) {
+                        // Show first, last, current, and +/- 2 pages
+                        if(i === 1 || i === pagination.totalPages || (i >= page - 2 && i <= page + 2)) {
+                            pHtml += `<button class="btn btn-sm ${i === page ? 'btn-primary' : 'btn-secondary'}" onclick="loadAuditLogs(${i})">${i}</button>`;
+                        } else if(i === page - 3 || i === page + 3) {
+                            pHtml += `<span>...</span>`;
+                        }
+                    }
+                }
+                document.getElementById('audit-pagination').innerHTML = pHtml;
+                
             } catch (err) {
                 console.error(err);
                 document.getElementById('audit-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#ef4444;">Lỗi tải dữ liệu.</td></tr>';
