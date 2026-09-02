@@ -67,6 +67,25 @@ exports.getLessonByTT = async (req, res) => {
     }
 };
 
+exports.getExportData = async (req, res) => {
+    const projectId = req.params.projectId;
+    try {
+        // Fetch project metadata
+        const projRes = await pool.query(`SELECT p.*, u.full_name, u.department FROM projects p JOIN users u ON p.user_id = u.id WHERE p.id = $1`, [projectId]);
+        if (projRes.rows.length === 0) return res.status(404).json({ error: 'Project not found' });
+        
+        // Fetch all lesson_data for this project ordered by schedule_tt
+        const lessonsRes = await pool.query(`SELECT schedule_tt, lesson_data FROM lessons WHERE project_id = $1 AND lesson_data IS NOT NULL AND lesson_data != '' ORDER BY schedule_tt ASC`, [projectId]);
+        
+        res.json({
+            project: projRes.rows[0],
+            lessons: lessonsRes.rows
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.getAllLessonsByProject = async (req, res) => {
     const projectId = req.params.projectId;
     

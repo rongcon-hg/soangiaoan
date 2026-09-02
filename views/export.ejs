@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xuất Hàng Loạt Giáo Án</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="/js/api.js"></script>
+    <style>
+        body { margin:0; background:#eef3f9; font-family:"Times New Roman", Times, serif; color:#172033; }
+        * { box-sizing:border-box; }
+        
+        #loading-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 9999; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; font-family: "Be Vietnam Pro", sans-serif;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid #16469d;
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* A4 Page styles */
+        @page { size: A4 portrait; margin: 20mm 15mm 20mm 20mm; }
+        .paper {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            padding: 20mm 15mm 20mm 20mm;
+            background: #fff;
+            border: 1px solid #cfd6df;
+            box-shadow: 0 5px 18px rgba(0,0,0,.06);
+            page-break-after: always;
+        }
+        .paper *{box-sizing:border-box}
+        .paper table{max-width:100%;table-layout:fixed;border-collapse:collapse}
+        .paper td,.paper th{word-break:normal;overflow-wrap:anywhere}
+        .ga-title{text-align:center;font-weight:bold;font-size:14pt;margin:6px 0}
+        .meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+        .meta div{min-height:28px}
+        table.ga{width:100%;border-collapse:collapse;margin-top:12px;border:1.2px solid #111}
+        table.ga th:nth-child(1),table.ga td:nth-child(1){width:5%}
+        table.ga th:nth-child(2),table.ga td:nth-child(2){width:41%}
+        table.ga th:nth-child(3),table.ga td:nth-child(3){width:22%}
+        table.ga th:nth-child(4),table.ga td:nth-child(4){width:22%}
+        table.ga th:nth-child(5),table.ga td:nth-child(5){width:10%}
+        table.ga th,table.ga td{border:1.2px solid #111;padding:5px;vertical-align:top;font-size:12pt;line-height:1.22;color:#000;background:#fff}
+        table.ga th{text-align:center}
+        table.ga td.time{width:10%;text-align:center}
+        table.ga td.tt{width:5%;text-align:center}
+        .editable{min-height:28px}
+        .activity{width:22%}
+        .content{width:41%}
+        .sum{font-weight:bold}
+        .section-title{font-weight:bold;margin:10px 0 5px;font-size:12pt}
+        .footer-sign-table{width:100%;border-collapse:collapse;margin-top:28px}
+        .footer-sign-table td{border:none!important;text-align:center;vertical-align:top;padding:0}
+        .top-template{width:100%;border-collapse:collapse;margin-bottom:0}
+        .top-template td{border:none!important;padding:6px 8px;vertical-align:middle}
+        .top-template .logo-cell{width:28%;height:76px}
+        .top-template .appendix-cell{text-align:center;height:76px;line-height:1.2}
+        .top-template .appendix-title{font-weight:bold;font-size:16px}
+        .top-template .appendix-note{font-style:italic;font-size:14px}
+        .meta-template{width:93%;margin:0 auto;border-collapse:collapse}
+        .meta-template td{border:none!important;padding:6px 8px;vertical-align:top}
+        .meta-template .left-meta{width:40%;font-weight:bold}
+        .meta-template .right-meta{width:60%;line-height:1.2}
+        .lesson-heading{margin-top:16px;font-size:12pt;line-height:1.2}
+        .lesson-main-title{font-weight:bold}
+        .lesson-outline{margin:4px 0 0 46px;padding-left:22px;font-weight:bold}
+        .lesson-outline li{padding-left:4px;margin:2px 0}.exact-outline{margin:4px 0 0 46px;font-weight:bold}.exact-outline-item{margin:2px 0}
+        .lesson-group{margin-top:3px}
+        .lesson-group-title{font-weight:bold;margin-top:3px}
+        .lesson-group .exact-outline-item{margin-left:20px;font-weight:bold;line-height:1.25}
+        
+        .ai-tools { display: none !important; }
+        input.time-input { border: none !important; background: transparent !important; pointer-events: none; width: auto !important; padding: 0 !important; font-size: 12pt; text-align: center; }
+        
+        /* Cover Page */
+        .cover-page {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; min-height: 250mm;
+        }
+        .cover-department { font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 60px; }
+        .cover-title { font-size: 42px; font-weight: bold; margin-bottom: 40px; color: #000; text-transform: uppercase; }
+        .cover-course { font-size: 32px; font-weight: bold; color: #16469d; margin-bottom: 60px; }
+        .cover-details { font-size: 20px; text-align: left; line-height: 2; border: 2px solid #000; padding: 30px; border-radius: 12px; width: 80%; }
+
+        @media print {
+            body { background: #fff; margin: 0; }
+            .paper {
+                width: 100%; min-height: auto; margin: 0; padding: 0;
+                border: none; box-shadow: none; page-break-after: always;
+            }
+            .paper table { page-break-inside: auto; }
+            .paper tr { page-break-inside: avoid; page-break-after: auto; }
+            .paper thead { display: table-header-group; }
+            .paper tfoot { display: table-footer-group; }
+            #loading-screen { display: none !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <h2 id="loading-text" style="color: #16469d;">Đang tổng hợp Giáo án...</h2>
+        <p style="color: #64748b;">Vui lòng chờ trong giây lát. Hệ thống đang tải và gộp các bài học.</p>
+    </div>
+
+    <!-- Toolbar for manual trigger if popup blocked -->
+    <div class="no-print" style="position:fixed; top:20px; right:20px; z-index:1000; background:#fff; padding:15px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.1); font-family:'Be Vietnam Pro';">
+        <button onclick="window.print()" style="background:#16469d; color:#fff; border:none; padding:10px 15px; border-radius:6px; font-weight:bold; cursor:pointer;"><i class="fas fa-print"></i> In / Lưu PDF</button>
+        <button onclick="window.close()" style="background:#64748b; color:#fff; border:none; padding:10px 15px; border-radius:6px; font-weight:bold; cursor:pointer; margin-left:10px;"><i class="fas fa-times"></i> Đóng</button>
+    </div>
+
+    <div id="document-container">
+        <!-- Content will be injected here -->
+    </div>
+
+    <script>
+        async function loadAndExport() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const projectId = urlParams.get('id');
+                if (!projectId) throw new Error("Không tìm thấy mã Môn học.");
+
+                const res = await fetch(API_URL + '/lessons/' + projectId + '/export-data', { headers: getHeaders() });
+                if (!res.ok) throw new Error("Lỗi tải dữ liệu. Vui lòng thử lại.");
+                
+                const data = await res.json();
+                const proj = data.project;
+                const lessons = data.lessons;
+
+                if (!lessons || lessons.length === 0) {
+                    throw new Error("Môn học này chưa có giáo án nào được lưu để xuất.");
+                }
+
+                document.getElementById('loading-text').innerText = `Đang gộp ${lessons.length} giáo án...`;
+
+                let html = '';
+                
+                // 1. Generate Cover Page
+                html += `
+                <div class="paper">
+                    <div class="cover-page">
+                        <div class="cover-department">UBND THÀNH PHỐ HỒ CHÍ MINH<br>TRƯỜNG CAO ĐẲNG NGHỀ QUẢN LÝ VÀ CÔNG NGHỆ<br>---oOo---</div>
+                        <div class="cover-title">TẬP GIÁO ÁN ĐIỆN TỬ</div>
+                        <div class="cover-course">${proj.name}</div>
+                        <div class="cover-details">
+                            <b>Giảng viên:</b> ${proj.full_name || 'Chưa cập nhật'}<br>
+                            <b>Khoa/Đơn vị:</b> ${proj.department || 'Chưa cập nhật'}<br>
+                            <b>Mã môn học/Mô-đun:</b> ${proj.course_code || '---'}<br>
+                            <b>Hệ đào tạo:</b> ${proj.system_type || '---'}<br>
+                            <b>Lớp:</b> ${proj.class_name || '---'}<br>
+                            <b>Tổng số giờ:</b> ${proj.total_hours || 0} giờ<br>
+                            <b>Năm học:</b> ${new Date().getFullYear()} - ${new Date().getFullYear() + 1}
+                        </div>
+                    </div>
+                </div>`;
+
+                // 2. Append all lessons
+                for (const l of lessons) {
+                    // Extract HTML from lesson_data (it's the innerHTML of #paper)
+                    let lessonContent = l.lesson_data;
+                    // Sometimes saved with surrounding wrapper if they copied outerHTML, but usually just innerHTML
+                    html += `
+                    <div class="paper">
+                        ${lessonContent}
+                    </div>`;
+                }
+
+                document.getElementById('document-container').innerHTML = html;
+
+                // Hide loading
+                document.getElementById('loading-screen').style.display = 'none';
+
+                // Trigger print dialog automatically after a short delay for images/fonts to render
+                setTimeout(() => {
+                    window.print();
+                }, 1000);
+
+            } catch (err) {
+                document.getElementById('loading-screen').innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size:48px; color:#ef4444; margin-bottom:20px;"></i>
+                    <h2 style="color:#ef4444;">Lỗi Xuất File</h2>
+                    <p>${err.message}</p>
+                    <button onclick="window.close()" style="background:#64748b; color:#fff; border:none; padding:10px 20px; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:20px;">Đóng trang này</button>
+                `;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check auth
+            if (!localStorage.getItem('giaoan_token')) {
+                window.location.href = '/login';
+                return;
+            }
+            loadAndExport();
+        });
+    </script>
+</body>
+</html>

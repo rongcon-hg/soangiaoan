@@ -11,6 +11,7 @@ router.post('/:projectId/schedule', lessonController.saveSchedule);
 
 // Giáo án
 router.get('/:projectId/lessons', lessonController.getAllLessonsByProject);
+router.get('/:projectId/export-data', lessonController.getExportData);
 router.get('/:projectId/lessons/:tt', lessonController.getLessonByTT);
 router.post('/:projectId/lessons/:tt', lessonController.saveLesson);
 

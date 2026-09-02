@@ -63,6 +63,7 @@ app.get('/departments', cacheView, (req, res) => res.render('departments'));
 app.get('/audit', cacheView, (req, res) => res.render('audit'));
 app.get('/library', cacheView, (req, res) => res.render('library'));
 app.get('/app', cacheView, (req, res) => res.render('app'));
+app.get('/export', cacheView, (req, res) => res.render('export'));
 app.get('/', cacheView, (req, res) => res.render('index'));
 
 // Route chính trả về index.html (Dashboard)
