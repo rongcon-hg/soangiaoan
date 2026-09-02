@@ -4206,6 +4206,64 @@ function showAICompare(cell,oldText,newText){
   };
   $(&quot;#aiCancel&quot;).onclick=closeModal;
 }
+async function runQuizAI() {
+  if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước khi sinh câu hỏi.&quot;);
+  const btn = document.getElementById(&quot;btnQuizAI&quot;);
+  const originalHtml = btn ? btn.innerHTML : &quot;&quot;;
+  if(btn) { btn.innerHTML = &quot;⏳ Đang tạo câu hỏi...&quot;; btn.disabled = true; }
+  
+  try {
+      const textContent = document.getElementById(&quot;paper&quot;).innerText || document.getElementById(&quot;paper&quot;).textContent;
+      const prompt = `Dựa vào nội dung giáo án dưới đây, hãy tạo ra 1 phần "Bài tập và Đề kiểm tra" bao gồm:
+1. 5 câu hỏi trắc nghiệm (A, B, C, D) có đánh dấu sẵn đáp án đúng.
+2. 1-2 bài tập thực hành/tình huống bám sát mục tiêu bài học.
+Hãy trả về ĐÚNG VÀ CHỈ định dạng HTML thuần (không markdown, không bao trong \`\`\`html) bao gồm các thẻ <h3>, <ul>, <li>, <b> phù hợp để chèn thẳng vào trang web.
+
+Nội dung giáo án:
+${textContent}`;
+      
+      $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Gemini đang tạo câu hỏi trắc nghiệm và bài tập...&quot;;
+      
+      const raw = await callOpenAI(prompt);
+      const htmlContent = cleanAIText(raw);
+      
+      const div = document.createElement(&quot;div&quot;);
+      div.className = &quot;quiz-section&quot;;
+      div.style.marginTop = &quot;20px&quot;;
+      div.innerHTML = `&lt;h3 style="color:#6d28d9; margin-top:20px; font-weight:bold; font-size:16px; text-transform:uppercase;"&gt;BÀI TẬP VÀ ĐỀ KIỂM TRA (AI SINH TỰ ĐỘNG)&lt;/h3&gt;` + htmlContent;
+      
+      const paper = document.getElementById(&quot;paper&quot;);
+      const signDiv = paper.querySelector(&quot;.signature&quot;) || paper.querySelector(&quot;table:last-of-type&quot;)?.nextElementSibling;
+      if(signDiv) {
+          paper.insertBefore(div, signDiv);
+      } else {
+          paper.appendChild(div);
+      }
+      
+      $(&quot;#aiStatus&quot;).className=&quot;status success&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Đã tạo bộ câu hỏi thành công!&quot;;
+      
+      if(typeof Swal !== 'undefined') {
+          Swal.fire({
+              title: 'Hoàn tất!',
+              text: 'Đã sinh bộ câu hỏi và bài tập thành công ở cuối giáo án.',
+              icon: 'success',
+              confirmButtonColor: '#16469d'
+          });
+      } else {
+          alert(&quot;Đã sinh bộ câu hỏi thành công!&quot;);
+      }
+  } catch(e) {
+      console.error(e);
+      $(&quot;#aiStatus&quot;).className=&quot;status err&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Lỗi tạo câu hỏi: &quot;+(e.message||e);
+      alert(&quot;Lỗi khi tạo bộ câu hỏi: &quot; + (e.message||e));
+  } finally {
+      if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+  }
+}
+
 async function runWholeAI(){
   if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước.&quot;);
   const btn=document.getElementById(&quot;btnAIWhole&quot;);
@@ -5292,6 +5350,7 @@ $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&g
   $(&quot;#btnTestAI&quot;).onclick=testGeminiConnection;
   $(&quot;#btnRefreshModels&quot;).onclick=refreshGeminiModels;
   $(&quot;#btnAIWhole&quot;).onclick=runWholeAI;
+  $(&quot;#btnQuizAI&quot;).onclick=runQuizAI;
   loadAISettings();
   syncUserInfo();
   if (window.parent && window.parent._lastSchedulePayload) {
