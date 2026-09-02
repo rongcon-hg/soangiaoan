@@ -9,15 +9,48 @@ router.get('/', authenticateToken, async (req, res) => {
         const result = await pool.query(`
             SELECT l.id as lesson_id, l.project_id, l.schedule_tt, l.updated_at, l.pdf_link,
                    p.name as project_name, p.system_type,
-                   u.full_name as author_name, u.username, d.name as department_name
+                   u.full_name as author_name, u.username, d.name as department_name,
+                   s.schedule_data
             FROM lessons l
             JOIN projects p ON l.project_id = p.id
             JOIN users u ON p.user_id = u.id
             LEFT JOIN departments d ON u.department_id = d.id
+            LEFT JOIN schedules s ON s.project_id = p.id
             WHERE l.is_public = true
             ORDER BY l.updated_at DESC
         `);
-        res.json(result.rows);
+        
+        const rows = result.rows.map(row => {
+            let gaType = "Lý thuyết"; // Default
+            try {
+                if (row.schedule_data) {
+                    const schedArr = typeof row.schedule_data === 'string' ? JSON.parse(row.schedule_data) : row.schedule_data;
+                    const session = Array.isArray(schedArr) ? schedArr.find(s => parseInt(s.tt) === row.schedule_tt) : null;
+                    if (session) {
+                        const lt = Number(session.lt) || 0;
+                        const th = Number(session.th) || 0;
+                        const kt = Number(session.kt) || 0;
+                        if (lt > 0 && th > 0) gaType = "Tích hợp";
+                        else if (th > 0 || kt > 0) gaType = "Thực hành";
+                    } else if (schedArr && schedArr.sessions) {
+                        const session2 = schedArr.sessions.find(s => parseInt(s.scheduleTT || s.tt) === row.schedule_tt);
+                        if (session2) {
+                            const lt = Number(session2.lt) || 0;
+                            const th = Number(session2.th) || 0;
+                            const kt = Number(session2.kt) || 0;
+                            if (lt > 0 && th > 0) gaType = "Tích hợp";
+                            else if (th > 0 || kt > 0) gaType = "Thực hành";
+                        }
+                    }
+                }
+            } catch(e) {}
+            
+            delete row.schedule_data;
+            row.ga_type = gaType;
+            return row;
+        });
+        
+        res.json(rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
