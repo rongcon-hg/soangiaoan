@@ -2036,7 +2036,7 @@ function updateScheduleProgression() {
         KT: Math.max(0, parseInt(ktInput.value, 10) || 0)
       };
     }
-    const k = dateKey(s.date) + (s.isExtra ? "_ext_" + s.extId : "");
+    const k = dateKey(s.date) + (s.isExtra ? '_ext_' + s.extId : '');
     oldSessionsByDate.set(k, s);
   });
 
