@@ -61,7 +61,6 @@ app.get('/users', cacheView, (req, res) => res.render('users'));
 app.get('/approvals', cacheView, (req, res) => res.render('approvals'));
 app.get('/departments', cacheView, (req, res) => res.render('departments'));
 app.get('/audit', cacheView, (req, res) => res.render('audit'));
-app.get('/calendar', cacheView, (req, res) => res.render('calendar'));
 app.get('/library', cacheView, (req, res) => res.render('library'));
 app.get('/app', cacheView, (req, res) => res.render('app'));
 app.get('/', cacheView, (req, res) => res.render('index'));
