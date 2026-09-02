@@ -50,7 +50,7 @@
                 <table class="table" style="width:100%;">
                     <thead>
                         <tr>
-                            <th style="width:50px;">ID</th>
+                            <th style="width:50px;">STT</th>
                             <th>Tên đơn vị</th>
                             <th>Ngày tạo</th>
                             <th style="text-align:right; width:120px;">Thao tác</th>
@@ -88,10 +88,10 @@
                 }
 
                 let html = '';
-                data.forEach(d => {
+                data.forEach((d, index) => {
                     html += `
                         <tr>
-                            <td style="color:#64748b;">#${d.id}</td>
+                            <td style="color:#64748b; font-weight:bold;">${index + 1}</td>
                             <td><b style="color:#334155;">${escapeHtml(d.name)}</b></td>
                             <td style="color:#64748b;">${new Date(d.created_at).toLocaleDateString('vi-VN')}</td>
                             <td style="text-align:right; white-space:nowrap;">
