@@ -317,13 +317,13 @@
                 const authorStr = escapeHtml(l.author_name || l.username);
                 const dateStr = new Date(l.updated_at).toLocaleDateString('vi-VN');
                 
-                html += `
-                    let gaTypeStyle = 'background:#f1f5f9; color:#475569;';
-                    if (l.ga_type === 'Lý thuyết') gaTypeStyle = 'background:#dbeafe; color:#1d4ed8;';
-                    else if (l.ga_type === 'Thực hành') gaTypeStyle = 'background:#dcfce3; color:#15803d;';
-                    else if (l.ga_type === 'Tích hợp') gaTypeStyle = 'background:#f3e8ff; color:#7e22ce;';
 
-                    html += `
+                let gaTypeStyle = 'background:#f1f5f9; color:#475569;';
+                if (l.ga_type === 'Lý thuyết') gaTypeStyle = 'background:#dbeafe; color:#1d4ed8;';
+                else if (l.ga_type === 'Thực hành') gaTypeStyle = 'background:#dcfce3; color:#15803d;';
+                else if (l.ga_type === 'Tích hợp') gaTypeStyle = 'background:#f3e8ff; color:#7e22ce;';
+
+                html += `
                     <tr>
                         <td style="text-align:center; font-weight:bold; color:#64748b;">${startIndex + index + 1}</td>
                         <td>
