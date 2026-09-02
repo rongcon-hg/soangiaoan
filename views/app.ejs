@@ -677,6 +677,8 @@ window.addEventListener(&quot;message&quot;, e => {
         const payload = e.data.payload;
         if (!payload) return;
         
+        window.savedLessons = payload.savedLessons || [];
+        
         if (payload.courseInfo) {
             course = payload.courseInfo;
             if (payload.system_type) course.systemType = payload.system_type;
@@ -2063,6 +2065,17 @@ function renderScheduleTable() {
 
    const dt = new Date(s.date);
    const tr=document.createElement(&quot;tr&quot;);
+   
+   // Check saved status to color the row
+   const saved = (window.savedLessons||[]).find(l=&gt;l.schedule_tt == (si+1));
+   if (saved) {
+       let rowColor = 'rgba(16, 185, 129, 0.1)'; // Default: Đã soạn (Xanh ngọc nhạt)
+       if (saved.status === 'APPROVED') rowColor = 'rgba(16, 185, 129, 0.2)'; // Đã duyệt (Xanh lá đậm hơn xíu)
+       else if (saved.status === 'PENDING') rowColor = 'rgba(245, 158, 11, 0.15)'; // Chờ duyệt (Cam nhạt)
+       else if (saved.status === 'REJECTED') rowColor = 'rgba(239, 68, 68, 0.1)'; // Từ chối (Đỏ nhạt)
+       tr.style.backgroundColor = rowColor;
+   }
+   
    tr.innerHTML=`&lt;td class=&quot;stt&quot;&gt;${si+1}&lt;/td&gt;
    &lt;td class=&quot;date&quot;&gt;${fmt(dt)}&lt;br&gt;&lt;span style=&quot;font-size:11px;color:#64748b&quot;&gt;${weekdayName(dt)}&lt;/span&gt;&lt;/td&gt;
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_lt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.LT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'LT', this.value)&quot;&gt;&lt;/td&gt;
@@ -2070,15 +2083,8 @@ function renderScheduleTable() {
    &lt;td class=&quot;small&quot;&gt;&lt;input id=&quot;p_kt_${si}&quot; type=&quot;number&quot; min=&quot;0&quot; max=&quot;15&quot; class=&quot;period-input&quot; value=&quot;${c.KT||0}&quot; onchange=&quot;onPeriodChange(${si}, 'KT', this.value)&quot;&gt;&lt;/td&gt;
    &lt;td class=&quot;content&quot;&gt;${content}
    &lt;div style=&quot;margin-top:8px&quot;&gt;
-     ${(function(){
-         const saved = (window.savedLessons||[]).find(l=&gt;l.schedule_tt == (si+1));
-         if(saved) {
-             const statusStr = saved.status === 'APPROVED' ? 'Đã duyệt' : (saved.status === 'PENDING' ? 'Chờ duyệt' : (saved.status === 'REJECTED' ? 'Bị từ chối' : 'Đã soạn'));
-             const bgColor = saved.status === 'APPROVED' ? '#059669' : (saved.status === 'PENDING' ? '#d97706' : (saved.status === 'REJECTED' ? '#dc2626' : '#16a34a'));
-             return `&lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:${bgColor}; color:#fff; border-radius:4px; border:none; cursor:pointer;&quot;&gt;&lt;i class=&quot;fas fa-check-circle&quot; style=&quot;margin-right:4px;&quot;&gt;&lt;/i&gt;SOẠN GIÁO ÁN BUỔI NÀY &lt;span style=&quot;font-size:11px; margin-left:2px;&quot;&gt;(${statusStr})&lt;/span&gt;&lt;/button&gt;`;
-         }
-         return `&lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#16469d; color:#fff; border-radius:4px; border:none; cursor:pointer;&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;`;
-     })()}
+     &lt;button type=&quot;button&quot; onclick=&quot;sendSessionToPlanner(${si})&quot; style=&quot;padding:6px 9px;font-size:12px;background:#16469d; color:#fff; border-radius:4px; border:none; cursor:pointer;&quot;&gt;SOẠN GIÁO ÁN BUỔI NÀY&lt;/button&gt;
+     ${saved ? `&lt;span style=&quot;font-size:11px; margin-left:8px; font-weight:600; color:${saved.status === 'APPROVED' ? '#059669' : (saved.status === 'PENDING' ? '#d97706' : (saved.status === 'REJECTED' ? '#dc2626' : '#16a34a'))};&quot;&gt;&lt;i class=&quot;fas fa-check-circle&quot; style=&quot;margin-right:3px;&quot;&gt;&lt;/i&gt;${saved.status === 'APPROVED' ? 'Đã duyệt' : (saved.status === 'PENDING' ? 'Chờ duyệt' : (saved.status === 'REJECTED' ? 'Bị từ chối' : 'Đã soạn'))}&lt;/span&gt;` : ''}
    &lt;/div&gt;
    &lt;/td&gt;
    &lt;td class=&quot;absent&quot;&gt;&lt;/td&gt;
