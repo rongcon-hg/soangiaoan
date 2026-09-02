@@ -25,22 +25,36 @@ router.get('/', authenticateToken, async (req, res) => {
             try {
                 if (row.schedule_data) {
                     const schedArr = typeof row.schedule_data === 'string' ? JSON.parse(row.schedule_data) : row.schedule_data;
-                    const session = Array.isArray(schedArr) ? schedArr.find(s => parseInt(s.tt) === row.schedule_tt) : null;
+                    const session = Array.isArray(schedArr) ? (schedArr.find(s => parseInt(s.tt || s.scheduleTT) === row.schedule_tt) || schedArr[row.schedule_tt - 1]) : null;
+
+                    let targetSession = null;
                     if (session) {
-                        const lt = Number(session.lt) || 0;
-                        const th = Number(session.th) || 0;
-                        const kt = Number(session.kt) || 0;
+                        targetSession = session;
+                    } else if (schedArr && schedArr.sessions) {
+                        targetSession = schedArr.sessions.find(s => parseInt(s.scheduleTT || s.tt) === row.schedule_tt);
+                    }
+                    
+                    if (targetSession) {
+                        let lt = 0, th = 0, kt = 0;
+                        if (targetSession.overrideCounts) {
+                            lt = Number(targetSession.overrideCounts.LT) || 0;
+                            th = Number(targetSession.overrideCounts.TH) || 0;
+                            kt = Number(targetSession.overrideCounts.KT) || 0;
+                        } else if (targetSession.units) {
+                            targetSession.units.forEach(u => {
+                                if (u.type === 'LT') lt++;
+                                else if (u.type === 'TH') th++;
+                                else if (u.type === 'KT') kt++;
+                            });
+                        } else {
+                            // Fallback if stored differently
+                            lt = Number(targetSession.lt) || Number(targetSession.LT) || 0;
+                            th = Number(targetSession.th) || Number(targetSession.TH) || 0;
+                            kt = Number(targetSession.kt) || Number(targetSession.KT) || 0;
+                        }
+                        
                         if (lt > 0 && th > 0) gaType = "Tích hợp";
                         else if (th > 0 || kt > 0) gaType = "Thực hành";
-                    } else if (schedArr && schedArr.sessions) {
-                        const session2 = schedArr.sessions.find(s => parseInt(s.scheduleTT || s.tt) === row.schedule_tt);
-                        if (session2) {
-                            const lt = Number(session2.lt) || 0;
-                            const th = Number(session2.th) || 0;
-                            const kt = Number(session2.kt) || 0;
-                            if (lt > 0 && th > 0) gaType = "Tích hợp";
-                            else if (th > 0 || kt > 0) gaType = "Thực hành";
-                        }
                     }
                 }
             } catch(e) {}

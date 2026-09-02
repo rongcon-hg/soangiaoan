@@ -85,9 +85,9 @@
                                 sessions = schedDetail.schedule_data.sessions;
                             }
                             
-                            sessions.forEach(sess => {
+                            sessions.forEach((sess, index) => {
                                 // Sometimes property is 'tt', sometimes 'scheduleTT'
-                                const tt = sess.scheduleTT || sess.tt;
+                                const tt = sess.scheduleTT || sess.tt || (index + 1);
                                 if (sess.date) {
                                     // Parse DD/MM/YYYY
                                     const parts = sess.date.split('/');
