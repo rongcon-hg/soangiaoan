@@ -1935,7 +1935,7 @@ function nextScheduledDates(start, slots, needed){
     const key = dateKey(d);
     const extrasToday = (window.extraSessions || []).filter(x =&gt; x.date === key);
     for(const ext of extrasToday) {
-      dates.push({ date:new Date(d), weekday:wd, periods: ext.periods, isExtra: true, extId: ext.id });
+      dates.push({ date:new Date(d), weekday:wd, periods: ext.periods, isExtra: true, extId: ext.id, extOverrideCounts: ext.overrideCounts });
     }
 
     d.setDate(d.getDate()+1);
@@ -2294,29 +2294,59 @@ async function addExtraSession() {
     const { value: formValues } = await Swal.fire({
         title: 'Thêm lịch dạy đột xuất',
         html: `
-            &lt;div style=&quot;text-align:left; margin-bottom:10px;&quot;&gt;
-                &lt;label style=&quot;font-weight:bold;&quot;&gt;Ngày dạy:&lt;/label&gt;
-                &lt;input type=&quot;date&quot; id=&quot;extraDate&quot; class=&quot;swal2-input&quot; style=&quot;width:100%; max-width:100%; margin-top:5px;&quot;&gt;
-            &lt;/div&gt;
-            &lt;div style=&quot;text-align:left;&quot;&gt;
-                &lt;label style=&quot;font-weight:bold;&quot;&gt;Số tiết:&lt;/label&gt;
-                &lt;input type=&quot;number&quot; id=&quot;extraPeriods&quot; class=&quot;swal2-input&quot; min=&quot;1&quot; max=&quot;10&quot; value=&quot;1&quot; style=&quot;width:100%; max-width:100%; margin-top:5px;&quot;&gt;
-            &lt;/div&gt;
-            &lt;div style=&quot;font-size:12px; color:#ef4444; margin-top:15px; text-align:left;&quot;&gt;
-                &lt;i class=&quot;fas fa-exclamation-triangle&quot;&gt;&lt;/i&gt; Lưu ý: Nếu bạn đã lưu giáo án cho các buổi sau ngày này, việc chèn thêm buổi học sẽ làm lệch số thứ tự (Buổi) của các giáo án đã lưu.
-            &lt;/div&gt;
+            <div style="text-align:left; margin-bottom:10px;">
+                <label style="font-weight:bold;">Ngày dạy (vd: 20/07/2026 hoặc 2026-07-20):</label>
+                <input type="text" id="extraDate" class="swal2-input" placeholder="dd/mm/yyyy" style="width:100%; max-width:100%; margin-top:5px;">
+            </div>
+            <div style="text-align:left; display:flex; gap:10px;">
+                <div style="flex:1">
+                    <label style="font-weight:bold; font-size:13px;">Lý thuyết (tiết):</label>
+                    <input type="number" id="extraLT" class="swal2-input" min="0" max="10" value="1" style="width:100%; margin-top:5px; padding:0 10px;">
+                </div>
+                <div style="flex:1">
+                    <label style="font-weight:bold; font-size:13px;">Thực hành (tiết):</label>
+                    <input type="number" id="extraTH" class="swal2-input" min="0" max="10" value="0" style="width:100%; margin-top:5px; padding:0 10px;">
+                </div>
+                <div style="flex:1">
+                    <label style="font-weight:bold; font-size:13px;">Kiểm tra (tiết):</label>
+                    <input type="number" id="extraKT" class="swal2-input" min="0" max="10" value="0" style="width:100%; margin-top:5px; padding:0 10px;">
+                </div>
+            </div>
+            <div style="font-size:12px; color:#ef4444; margin-top:15px; text-align:left;">
+                <i class="fas fa-exclamation-triangle"></i> Lưu ý: Nếu bạn đã lưu giáo án cho các buổi sau ngày này, việc chèn thêm buổi học sẽ làm lệch số thứ tự (Buổi) của các giáo án đã lưu.
+            </div>
         `,
         focusConfirm: false,
         showCancelButton: true,
         confirmButtonColor: '#0284c7',
         confirmButtonText: 'Thêm lịch',
         cancelButtonText: 'Hủy',
-        preConfirm: () =&gt; {
-            const dt = document.getElementById('extraDate').value;
-            const p = parseInt(document.getElementById('extraPeriods').value, 10);
-            if(!dt) { Swal.showValidationMessage('Vui lòng chọn ngày!'); return false; }
-            if(isNaN(p) || p &lt;= 0) { Swal.showValidationMessage('Số tiết không hợp lệ!'); return false; }
-            return { date: dt, periods: p };
+        preConfirm: () => {
+            let dt = document.getElementById('extraDate').value.trim();
+            if(!dt) { Swal.showValidationMessage('Vui lòng chọn hoặc nhập ngày!'); return false; }
+            
+            // Parse dd/mm/yyyy or yyyy-mm-dd
+            let parsedDate = null;
+            if (dt.includes('/')) {
+                const parts = dt.split('/');
+                if (parts.length === 3) {
+                    parsedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                }
+            } else {
+                parsedDate = dt; // assume yyyy-mm-dd
+            }
+            
+            if (!parsedDate || isNaN(new Date(parsedDate).getTime())) {
+                Swal.showValidationMessage('Ngày không hợp lệ! Vui lòng nhập chuẩn dd/mm/yyyy'); return false;
+            }
+
+            const lt = parseInt(document.getElementById('extraLT').value, 10) || 0;
+            const th = parseInt(document.getElementById('extraTH').value, 10) || 0;
+            const kt = parseInt(document.getElementById('extraKT').value, 10) || 0;
+            const p = lt + th + kt;
+
+            if(p <= 0) { Swal.showValidationMessage('Tổng số tiết phải lớn hơn 0!'); return false; }
+            return { date: parsedDate, periods: p, lt, th, kt };
         }
     });
 
@@ -2325,7 +2355,8 @@ async function addExtraSession() {
         window.extraSessions.push({
             id: Date.now(),
             date: formValues.date,
-            periods: formValues.periods
+            periods: formValues.periods,
+            overrideCounts: { LT: formValues.lt, TH: formValues.th, KT: formValues.kt }
         });
         updateScheduleProgression();
     }
