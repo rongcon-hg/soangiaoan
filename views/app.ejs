@@ -4214,7 +4214,7 @@ async function runQuizAI() {
   
   try {
       const textContent = document.getElementById(&quot;paper&quot;).innerText || document.getElementById(&quot;paper&quot;).textContent;
-      const prompt = `Dựa vào nội dung giáo án dưới đây, hãy tạo ra 1 phần "Bài tập và Đề kiểm tra" bao gồm:
+      const prompt = `Dựa vào nội dung giáo án dưới đây, hãy tạo ra 1 phần &quot;Bài tập và Đề kiểm tra&quot; bao gồm:
 1. 5 câu hỏi trắc nghiệm (A, B, C, D) có đánh dấu sẵn đáp án đúng.
 2. 1-2 bài tập thực hành/tình huống bám sát mục tiêu bài học.
 Hãy trả về ĐÚNG VÀ CHỈ định dạng HTML thuần (không markdown, không bao trong \`\`\`html) bao gồm các thẻ <h3>, <ul>, <li>, <b> phù hợp để chèn thẳng vào trang web.
@@ -4231,7 +4231,7 @@ ${textContent}`;
       const div = document.createElement(&quot;div&quot;);
       div.className = &quot;quiz-section&quot;;
       div.style.marginTop = &quot;20px&quot;;
-      div.innerHTML = `&lt;h3 style="color:#6d28d9; margin-top:20px; font-weight:bold; font-size:16px; text-transform:uppercase;"&gt;BÀI TẬP VÀ ĐỀ KIỂM TRA (AI SINH TỰ ĐỘNG)&lt;/h3&gt;` + htmlContent;
+      div.innerHTML = `&lt;h3 style=&quot;color:#6d28d9; margin-top:20px; font-weight:bold; font-size:16px; text-transform:uppercase;&quot;&gt;BÀI TẬP VÀ ĐỀ KIỂM TRA (AI SINH TỰ ĐỘNG)&lt;/h3&gt;` + htmlContent;
       
       const paper = document.getElementById(&quot;paper&quot;);
       const signDiv = paper.querySelector(&quot;.signature&quot;) || paper.querySelector(&quot;table:last-of-type&quot;)?.nextElementSibling;
