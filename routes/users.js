@@ -300,4 +300,21 @@ router.post('/notifications/read', authenticateToken, async (req, res) => {
 });
 
 
+// POST /api/users/admin/notify-all
+router.post('/admin/notify-all', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const { message, link } = req.body;
+        if (!message) return res.status(400).json({ error: 'Nội dung thông báo không được để trống' });
+
+        const result = await pool.query(`
+            INSERT INTO notifications (user_id, message, type, link)
+            SELECT id, $1, 'SYSTEM', $2 FROM users
+        `, [message, link || '']);
+        
+        res.json({ message: `Đã gửi thông báo đến ${result.rowCount} người dùng.` });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

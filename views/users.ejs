@@ -252,6 +252,7 @@ window.customConfirm = async function(msg) {
                 <button class="btn btn-secondary" onclick="downloadTemplate()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-file-excel"></i> <span class="hide-text-mobile">Mẫu Import</span></button>
                 <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-upload"></i> <span class="hide-text-mobile">Import</span></button>
                 <button class="btn btn-secondary" onclick="exportUsers()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-download"></i> <span class="hide-text-mobile">Export</span></button>
+                <button class="btn btn-secondary" onclick="openNotifyModal()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0; background:#8b5cf6; color:#fff; border-color:#8b5cf6;"><i class="fas fa-bullhorn"></i> <span class="hide-text-mobile">Gửi thông báo</span></button>
                 <button class="btn btn-primary" onclick="openNewUserForm()" style="white-space:nowrap; padding:8px 12px; font-size:0.85rem; flex-shrink:0;"><i class="fas fa-user-plus"></i> <span>Thêm thành viên</span></button>
             </div>
             <input type="file" id="import-file" accept=".xlsx, .xls" style="display:none;" onchange="importUsers(event)">
@@ -696,6 +697,56 @@ window.customConfirm = async function(msg) {
                 Swal.fire('Lỗi', e.message, 'error');
             } finally {
                 event.target.value = '';
+            }
+        }
+
+        async function openNotifyModal() {
+            const { value: formValues } = await Swal.fire({
+                title: '<h3 style="margin:0;font-size:1.2rem;color:#1e293b;"><i class="fas fa-bullhorn" style="color:#8b5cf6;margin-right:8px;"></i>Gửi thông báo toàn hệ thống</h3>',
+                html: `
+                    <div style="text-align:left; font-size:14px; margin-top:10px; display:flex; flex-direction:column; gap:12px;">
+                        <div>
+                            <label style="font-weight:600; color:#475569; display:block; margin-bottom:4px;">Nội dung thông báo: <span style="color:red">*</span></label>
+                            <textarea id="notifyMsg" rows="3" style="width:100%; box-sizing:border-box; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; outline:none; resize:none;" placeholder="Ví dụ: Hệ thống sẽ bảo trì vào 22h tối nay..." onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#cbd5e1'"></textarea>
+                        </div>
+                        <div>
+                            <label style="font-weight:600; color:#475569; display:block; margin-bottom:4px;">Đường dẫn đính kèm (không bắt buộc):</label>
+                            <input type="text" id="notifyLink" placeholder="https://..." style="width:100%; box-sizing:border-box; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; outline:none;" onfocus="this.style.borderColor='#8b5cf6'" onblur="this.style.borderColor='#cbd5e1'">
+                        </div>
+                    </div>
+                `,
+                width: '450px',
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonColor: '#8b5cf6',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: '<i class="fas fa-paper-plane" style="margin-right:5px;"></i> Gửi đi',
+                cancelButtonText: '<i class="fas fa-times" style="margin-right:5px;"></i> Hủy',
+                preConfirm: () => {
+                    const msg = document.getElementById('notifyMsg').value.trim();
+                    const lnk = document.getElementById('notifyLink').value.trim();
+                    if(!msg) { Swal.showValidationMessage('Vui lòng nhập nội dung thông báo!'); return false; }
+                    return { message: msg, link: lnk };
+                }
+            });
+
+            if (formValues) {
+                try {
+                    Swal.fire({ title: 'Đang gửi thông báo...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+                    const res = await fetch(API_URL + '/users/admin/notify-all', {
+                        method: 'POST',
+                        headers: getHeaders(),
+                        body: JSON.stringify(formValues)
+                    });
+                    const data = await res.json();
+                    if(res.ok) {
+                        Swal.fire('Thành công!', data.message, 'success');
+                    } else {
+                        Swal.fire('Lỗi', data.error || 'Có lỗi xảy ra', 'error');
+                    }
+                } catch(e) {
+                    Swal.fire('Lỗi', 'Không thể kết nối đến máy chủ', 'error');
+                }
             }
         }
 
