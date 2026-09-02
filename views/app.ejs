@@ -689,6 +689,7 @@ function saveStateToBackend(showToast) {
         exclusions: exclusions,
         scheduleSettings: scheduleSettings,
         extraSessions: window.extraSessions || [],
+        deletedDates: window.deletedDates || [],
         generatedSchedule: currentSessions
     };
     
@@ -714,6 +715,7 @@ window.addEventListener(&quot;message&quot;, e => {
         
         window.savedLessons = payload.savedLessons || [];
         window.extraSessions = payload.extraSessions || [];
+        window.deletedDates = payload.deletedDates || [];
         
         if (payload.courseInfo) {
             course = payload.courseInfo;
