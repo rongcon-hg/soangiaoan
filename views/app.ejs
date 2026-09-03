@@ -581,6 +581,10 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
     &lt;label&gt;Ngày bắt đầu&lt;/label&gt;
     &lt;input id=&quot;startDate&quot; type=&quot;date&quot; value=&quot;2026-07-07&quot; onchange=&quot;if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
   &lt;/div&gt;
+  &lt;div class=&quot;field-box field-date&quot;&gt;
+    &lt;label&gt;Ngày kết thúc (tùy chọn)&lt;/label&gt;
+    &lt;input id=&quot;endDate&quot; type=&quot;date&quot; onchange=&quot;if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
+  &lt;/div&gt;
   &lt;div class=&quot;field-box field-count&quot;&gt;
     &lt;label&gt;Số buổi học / tuần&lt;/label&gt;
     &lt;input id=&quot;weeklyCount&quot; type=&quot;number&quot; value=&quot;2&quot; min=&quot;1&quot; max=&quot;7&quot; onchange=&quot;renderWeeklySlots()&quot;&gt;
@@ -671,6 +675,7 @@ let textbookData = { fileName: &quot;&quot;, text: &quot;&quot;, driveLink: &quo
 function saveStateToBackend(showToast) {
     const scheduleSettings = {
         startDate: document.getElementById(&quot;startDate&quot;).value,
+        endDate: document.getElementById(&quot;endDate&quot;) ? document.getElementById(&quot;endDate&quot;).value : &quot;&quot;,
         slotCount: document.getElementById(&quot;weeklyCount&quot;).value,
         slots: []
     };
@@ -768,6 +773,7 @@ window.addEventListener(&quot;message&quot;, e => {
         // Restore scheduleConfig
         if (payload.scheduleSettings) {
             if(payload.scheduleSettings.startDate) document.getElementById(&quot;startDate&quot;).value = payload.scheduleSettings.startDate;
+            if(payload.scheduleSettings.endDate &amp;&amp; document.getElementById(&quot;endDate&quot;)) document.getElementById(&quot;endDate&quot;).value = payload.scheduleSettings.endDate;
             if(payload.scheduleSettings.slotCount) {
                 document.getElementById(&quot;weeklyCount&quot;).value = payload.scheduleSettings.slotCount;
                 renderWeeklySlots(); // render inputs
@@ -1224,22 +1230,7 @@ function parseProgramTable(htmlText, detailMap){
  return sequence;
 }
 
-function recalcAssessments(){
- programSequence.forEach(x=&gt;{
-   if(x.kind!==&quot;assessment&quot;) return;
-   if(x.assessmentType === &quot;Lý thuyết&quot;){
-     x.periodsKT=Number(x.rawHours)||1;
-     x.periodsTH=0;
-     x.periodsLT=0;
-     x.periods=x.periodsKT;
-   } else {
-     const converted=Math.ceil(x.rawHours*60/45);
-     x.assessmentType=&quot;Thực hành&quot;;
-     x.periodsKT=converted&gt;0 ? 1 : 0;
-     x.periodsTH=Math.max(0,converted-x.periodsKT);
-     x.periodsLT=0;
-     x.periods=converted;
-   }
+function recalcAssessments(){}
  });
 }
 
