@@ -2629,8 +2629,8 @@ function exportExcel(){
    span.textContent = inp.value;
    inp.replaceWith(span);
  });
- clone.querySelectorAll("button").forEach(btn => btn.remove());
- clone.querySelectorAll(".export-hide").forEach(el => el.remove());
+ clone.querySelectorAll('button').forEach(btn => btn.remove());
+ clone.querySelectorAll('.export-hide').forEach(el => el.remove());
  
  const wb = XLSX.utils.table_to_book(clone, {sheet: 'Sổ đầu bài', raw: true});
  XLSX.writeFile(wb, 'So_dau_bai_' + (course.code || 'mon_hoc') + '.xlsx');
@@ -5138,7 +5138,7 @@ async function exportPdf(){
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
-    .paper { width: 183mm !important; max-width: 183mm !important; min-height: auto !important; margin: 0 !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; background: #ffffff !important; font-family: "Times New Roman", Times, serif !important; }
+    .paper { width: 183mm !important; max-width: 183mm !important; min-height: auto !important; margin: 0 !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; background: #ffffff !important; font-family: 'Times New Roman', Times, serif !important; }
       max-width: 170mm !important;
       min-height: auto !important;
       margin: 0 !important;
