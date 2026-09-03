@@ -4754,7 +4754,7 @@ ${textContent}`;
       const div = document.createElement(&quot;div&quot;);
       div.className = &quot;quiz-section&quot;;
       div.style.marginTop = &quot;20px&quot;;
-      div.innerHTML = `&lt;h3 style=&quot;color:#6d28d9; margin-top:20px; font-weight:bold; font-size:16px; text-transform:uppercase;&quot;&gt;BÀI TẬP VÀ ĐỀ KIỂM TRA (AI SINH TỰ ĐỘNG)&lt;/h3&gt;` + htmlContent;
+      div.innerHTML = `&lt;h3 class=&quot;section-title&quot; style=&quot;text-align:center; font-size:14pt; font-weight:bold; margin-bottom:15px; text-transform:uppercase;&quot;&gt;BÀI TẬP VÀ ĐỀ KIỂM TRA&lt;/h3&gt;` + htmlContent;
       
       const paper = document.getElementById(&quot;paper&quot;);
       div.style.pageBreakBefore = &quot;always&quot;;
@@ -5264,8 +5264,18 @@ async function exportPdf(){
     if (quizNode) quizNode.style.pageBreakBefore = 'always';
     if (slideNode) slideNode.style.pageBreakBefore = 'always';
 
+    // Đặt tên file cho trình duyệt khi in
+    const oldTitle = document.title;
+    try {
+        const filename = getExportGiaoAnFilename('pdf');
+        document.title = filename.replace(/\.pdf$/i, '');
+    } catch(e) {}
+
     // Call native print (this opens the dialog to save as PDF)
     window.print();
+
+    // Khôi phục title
+    document.title = oldTitle;
 
     // Restore page breaks
     if (rubricNode) rubricNode.style.pageBreakBefore = '';
