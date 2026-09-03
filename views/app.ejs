@@ -5120,11 +5120,11 @@ window.exportPdfAsBlob = async function() {
 };
 
 async function exportPdf(){
-  if(!$("#paper table")){alert("Hãy tạo giáo án trước.");return;}
+  if(!$('#paper table')){alert('Hãy tạo giáo án trước.');return;}
 
-  const btn = document.getElementById("btnExportPdf");
-  const origText = btn ? btn.innerHTML : "";
-  if(btn) { btn.innerHTML = "⏳ Đang chuẩn bị trang in..."; btn.disabled = true; }
+  const btn = document.getElementById('btnExportPdf');
+  const origText = btn ? btn.innerHTML : '';
+  if(btn) { btn.innerHTML = '⏳ Đang chuẩn bị trang in...'; btn.disabled = true; }
 
   try {
     // We will use native window.print() to exactly match the /export page layout
@@ -5167,7 +5167,7 @@ async function exportPdf(){
     if(btn) { btn.innerHTML = origText; btn.disabled = false; }
   } catch(e) {
     console.error(e);
-    alert("Lỗi khi xuất: " + (e?.message || e));
+    alert('Lỗi khi xuất: ' + (e?.message || e));
     if(btn) { btn.innerHTML = origText; btn.disabled = false; }
   }
 }
