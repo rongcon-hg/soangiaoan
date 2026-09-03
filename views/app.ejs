@@ -4450,7 +4450,9 @@ async function refreshGeminiModels(){
   }
 }
 function cleanAIText(t){
-  return String(t||&quot;&quot;).replace(/^```(?:html|text|markdown)?/i,&quot;&quot;).replace(/```$/,&quot;&quot;).trim();
+  let s = String(t||&quot;&quot;).replace(/^\x60\x60\x60(?:html|text|markdown)?/i,&quot;&quot;).replace(/\x60\x60\x60$/,&quot;&quot;).trim();
+  s = s.replace(/\*\*(.*?)\*\*/g, '&lt;b&gt;$1&lt;/b&gt;');
+  return s;
 }
 function rowPrompt(cell, action){
   const current=cell.querySelector(&quot;.ai-text&quot;)?.innerText.trim() || cell.innerText.trim();
@@ -4567,7 +4569,8 @@ Yêu cầu:
 - Bảng phải có đường viền viền đen (style='width:100%; border-collapse:collapse; border:1.2px solid #000;'), các ô th/td cũng phải có border (border:1px solid #000; padding:5px).
 - Cột: STT, Tiêu chí đánh giá, Điểm tối đa (thang điểm 10), Điểm đạt, Ghi chú.
 - Các tiêu chí chia làm 3 phần chuẩn: I. Chuẩn bị (2đ), II. Thực hiện quy trình thao tác (6đ), III. An toàn & 5S (2đ).
-- Các tiêu chí phải cụ thể hóa từ nội dung bài thực hành trên.`;
+- Các tiêu chí phải cụ thể hóa từ nội dung bài thực hành trên.
+- TUYỆT ĐỐI KHÔNG dùng markdown (**). Bắt buộc dùng thẻ &lt;b&gt; để in đậm chữ bên trong bảng.`;
       
       let raw = '';
       $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
@@ -4616,7 +4619,8 @@ Yêu cầu:
 - Trả về MỘT BẢNG HTML DUY NHẤT (dùng thẻ <table>, KHÔNG bọc trong markdown code block).
 - Bảng phải có đường viền viền đen (style='width:100%; border-collapse:collapse; border:1.2px solid #000;'), các ô th/td cũng phải có border (border:1px solid #000; padding:5px).
 - Cột: STT, Hiện tượng (Lỗi thường gặp), Nguyên nhân, Biện pháp phòng tránh và khắc phục.
-- Nêu ít nhất 3-5 lỗi thực tế nhất bám sát nội dung bài thực hành trên.`;
+- Nêu ít nhất 3-5 lỗi thực tế nhất bám sát nội dung bài thực hành trên.
+- TUYỆT ĐỐI KHÔNG dùng markdown (**). Bắt buộc dùng thẻ &lt;b&gt; để in đậm chữ bên trong bảng.`;
       
       let raw = '';
       $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
