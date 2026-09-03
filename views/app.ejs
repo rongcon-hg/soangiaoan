@@ -1931,18 +1931,26 @@ function nextScheduledDates(start, slots, needed, endValue = null){
   
   let endObj = endValue ? new Date(endValue + &quot;T23:59:59&quot;) : null;
 
+  let isFirstDate = true;
   while(dates.length&lt;needed &amp;&amp; guard&lt;3000){
     if (endObj &amp;&amp; d &gt; endObj) {
         break; // Stop generating dates if we passed the end date
     }
     const p = getVnParts(d); const map = {'Sun':0,'Mon':1,'Tue':2,'Wed':3,'Thu':4,'Fri':5,'Sat':6}; const wd = map[p.weekday];
     const currentKey = dateKey(d);
-    if(slotsByDay.has(wd) &amp;&amp; !isExcludedDate(d) &amp;&amp; !window.deletedDates.includes(currentKey)){
-      const daySlots = slotsByDay.get(wd);
-      for(const periods of daySlots) {
-        dates.push({ date:new Date(d), weekday:wd, periods:periods });
-      }
+    
+    if (!isExcludedDate(d) &amp;&amp; !window.deletedDates.includes(currentKey)) {
+        if(slotsByDay.has(wd)){
+            const daySlots = slotsByDay.get(wd);
+            for(const periods of daySlots) {
+                dates.push({ date:new Date(d), weekday:wd, periods:periods });
+            }
+        } else if (isFirstDate) {
+            const periods = slots.length &gt; 0 ? slots[0].periods : 1;
+            dates.push({ date:new Date(d), weekday:wd, periods:periods });
+        }
     }
+    isFirstDate = false;
     
     // Inject extra sessions for this date
     const key = dateKey(d);
