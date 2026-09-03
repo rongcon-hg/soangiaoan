@@ -2619,18 +2619,17 @@ function exportExcel(){
     alert('Thư viện xuất Excel đang tải, vui lòng thử lại sau vài giây!');
     return;
  }
- const originalTable = document.getElementById("mainTable");
+ const originalTable = document.getElementById('mainTable');
  const clone = originalTable.cloneNode(true);
- clone.querySelectorAll("input.period-input").forEach(inp => {
-   const span = document.createElement("span");
+ clone.querySelectorAll('input.period-input').forEach(inp => {
+   const span = document.createElement('span');
    span.textContent = inp.value;
    inp.replaceWith(span);
  });
- clone.querySelectorAll("button").forEach(btn => btn.remove());
+ clone.querySelectorAll('button').forEach(btn => btn.remove());
  
- // SheetJS creates true .xlsx files so there's no format warning
- const wb = XLSX.utils.table_to_book(clone, {sheet: "Sổ đầu bài", raw: true});
- XLSX.writeFile(wb, "So_dau_bai_" + (course.code || "mon_hoc") + ".xlsx");
+ const wb = XLSX.utils.table_to_book(clone, {sheet: 'Sổ đầu bài', raw: true});
+ XLSX.writeFile(wb, 'So_dau_bai_' + (course.code || 'mon_hoc') + '.xlsx');
 }
 updateCourseCards();
 renderConversionPreview();
