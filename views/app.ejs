@@ -583,7 +583,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;schedule-inline&quot;&gt;
   &lt;div class=&quot;field-box field-date&quot;&gt;
     &lt;label&gt;Ngày bắt đầu&lt;/label&gt;
-    &lt;input id=&quot;startDate&quot; type=&quot;date&quot; value=&quot;2026-07-07&quot; onchange=&quot;if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
+    &lt;input id=&quot;startDate&quot; type=&quot;date&quot; value=&quot;<%= new Date(Date.now() + 7 * 3600 * 1000).toISOString().split('T')[0] %>&quot; onchange=&quot;if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
   &lt;/div&gt;
   &lt;div class=&quot;field-box field-date&quot;&gt;
     &lt;label&gt;Ngày kết thúc (tùy chọn)&lt;/label&gt;
