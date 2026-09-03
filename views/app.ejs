@@ -1940,7 +1940,7 @@ function nextScheduledDates(start, slots, needed, endValue = null){
   let d=new Date(start);
   let guard=0;
   
-  let endObj = endValue ? new Date(endValue + "T23:59:59") : null;
+  let endObj = endValue ? new Date(endValue + &quot;T23:59:59&quot;) : null;
 
   while(dates.length&lt;needed &amp;&amp; guard&lt;3000){
     if (endObj &amp;&amp; d &gt; endObj) {
