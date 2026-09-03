@@ -1095,6 +1095,9 @@ function parseProgramTable(htmlText, detailMap){
    }
  }
 
+ let cumulativeThKtHours = 0;
+ let cumulativeThKtPeriods = 0;
+
  for(const row of rows){
    const cells=[...row.querySelectorAll(&quot;td,th&quot;)];
    if(cells.length&lt;2) continue;
