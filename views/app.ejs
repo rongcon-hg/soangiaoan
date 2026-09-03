@@ -2966,6 +2966,8 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
             &lt;button class=&quot;btn primary&quot; id=&quot;btnAIWhole&quot;&gt;Gemini hoàn thiện toàn bộ giáo án&lt;/button&gt;
             &lt;button class=&quot;btn primary&quot; id=&quot;btnQuizAI&quot;&gt;&lt;i class=&quot;fas fa-magic&quot;&gt;&lt;/i&gt; Tạo bộ câu hỏi (AI)&lt;/button&gt;
             &lt;button class=&quot;btn primary&quot; id=&quot;btnSlideAI&quot;&gt;&lt;i class=&quot;fas fa-file-powerpoint&quot;&gt;&lt;/i&gt; Dàn ý Slide&lt;/button&gt;
+            &lt;button class=&quot;btn primary&quot; id=&quot;btnRubricAI&quot;&gt;&lt;i class=&quot;fas fa-clipboard-check&quot;&gt;&lt;/i&gt; Phiếu đánh giá (AI)&lt;/button&gt;
+            &lt;button class=&quot;btn primary&quot; id=&quot;btnErrorAI&quot;&gt;&lt;i class=&quot;fas fa-exclamation-triangle&quot;&gt;&lt;/i&gt; Lỗi thường gặp (AI)&lt;/button&gt;
           &lt;/div&gt;
           &lt;div class=&quot;hint&quot;&gt;<span style='display:none'>Gemini API key được dùng trực tiếp từ trình duyệt theo yêu cầu của người dùng. Cách này tiện nhưng không an toàn nếu chia sẻ file hoặc máy.</span>&lt;/div&gt;
           &lt;div id=&quot;aiStatus&quot; class=&quot;status&quot;&gt;Gemini chưa được cấu hình.&lt;/div&gt;
@@ -4546,6 +4548,105 @@ function showAICompare(cell,oldText,newText){
   };
   $(&quot;#aiCancel&quot;).onclick=closeModal;
 }
+async function runRubricAI() {
+  if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước.&quot;);
+  const btn = document.getElementById(&quot;btnRubricAI&quot;);
+  const originalHtml = btn ? btn.innerHTML : &quot;&quot;;
+  if(btn) { btn.innerHTML = &quot;⏳ Đang tạo...&quot;; btn.disabled = true; }
+  
+  try {
+      const textContent = document.getElementById(&quot;paper&quot;).innerText || document.getElementById(&quot;paper&quot;).textContent;
+      const prompt = `
+Bạn là chuyên gia sư phạm Giáo dục nghề nghiệp.
+Dưới đây là nội dung giáo án:
+${textContent}
+
+Dựa vào nội dung bài học, hãy thiết kế một 'Phiếu đánh giá kỹ năng thực hành' (Rubric).
+Yêu cầu:
+- Trả về MỘT BẢNG HTML DUY NHẤT (dùng thẻ <table>, KHÔNG bọc trong markdown hay ```).
+- Bảng phải có đường viền viền đen (style='width:100%; border-collapse:collapse; border:1.2px solid #000;'), các ô th/td cũng phải có border (border:1px solid #000; padding:5px).
+- Cột: STT, Tiêu chí đánh giá, Điểm tối đa (thang điểm 10), Điểm đạt, Ghi chú.
+- Các tiêu chí chia làm 3 phần chuẩn: I. Chuẩn bị (2đ), II. Thực hiện quy trình thao tác (6đ), III. An toàn & 5S (2đ).
+- Các tiêu chí phải cụ thể hóa từ nội dung bài thực hành trên.`;
+      
+      let raw = '';
+      $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Gemini đang thiết kế Rubric...&quot;;
+      
+      raw = await callOpenAI(prompt);
+      
+      const htmlContent = cleanAIText(raw);
+      
+      let sec = document.querySelector('.rubric-section');
+      if(!sec) {
+        sec = document.createElement('div');
+        sec.className = 'rubric-section no-ai-extract';
+        sec.style.marginTop = '40px';
+        document.getElementById('paper').appendChild(sec);
+      }
+      sec.innerHTML = `<h3 class='section-title' style='text-align:center; font-size:14pt; font-weight:bold; margin-bottom:15px; text-transform:uppercase;'>PHIẾU ĐÁNH GIÁ KỸ NĂNG THỰC HÀNH</h3>
+` + htmlContent;
+      
+      $(&quot;#aiStatus&quot;).className=&quot;status ok&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Đã sinh Phiếu đánh giá thành công.&quot;;
+      showModal(&quot;Hoàn tất&quot;, &quot;Đã chèn Phiếu đánh giá vào cuối giáo án.&quot;);
+  } catch(e) {
+      console.error(e);
+      alert(&quot;Lỗi: &quot; + (e?.message || e));
+  } finally {
+      if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+  }
+}
+
+async function runErrorAI() {
+  if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước.&quot;);
+  const btn = document.getElementById(&quot;btnErrorAI&quot;);
+  const originalHtml = btn ? btn.innerHTML : &quot;&quot;;
+  if(btn) { btn.innerHTML = &quot;⏳ Đang phân tích...&quot;; btn.disabled = true; }
+  
+  try {
+      const textContent = document.getElementById(&quot;paper&quot;).innerText || document.getElementById(&quot;paper&quot;).textContent;
+      const prompt = `
+Bạn là chuyên gia sư phạm Giáo dục nghề nghiệp.
+Dưới đây là nội dung giáo án:
+${textContent}
+
+Hãy dự đoán và tổng hợp 'Các lỗi thường gặp, nguyên nhân và biện pháp khắc phục'.
+Yêu cầu:
+- Trả về MỘT BẢNG HTML DUY NHẤT (dùng thẻ <table>, KHÔNG bọc trong markdown hay ```).
+- Bảng phải có đường viền viền đen (style='width:100%; border-collapse:collapse; border:1.2px solid #000;'), các ô th/td cũng phải có border (border:1px solid #000; padding:5px).
+- Cột: STT, Hiện tượng (Lỗi thường gặp), Nguyên nhân, Biện pháp phòng tránh và khắc phục.
+- Nêu ít nhất 3-5 lỗi thực tế nhất bám sát nội dung bài thực hành trên.`;
+      
+      let raw = '';
+      $(&quot;#aiStatus&quot;).className=&quot;status warn&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Gemini đang phân tích lỗi thường gặp...&quot;;
+      
+      raw = await callOpenAI(prompt);
+      
+      const htmlContent = cleanAIText(raw);
+      
+      let sec = document.querySelector('.error-section');
+      if(!sec) {
+        sec = document.createElement('div');
+        sec.className = 'error-section no-ai-extract';
+        sec.style.marginTop = '40px';
+        document.getElementById('paper').appendChild(sec);
+      }
+      sec.innerHTML = `<h3 class='section-title' style='text-align:center; font-size:14pt; font-weight:bold; margin-bottom:15px; text-transform:uppercase;'>CÁC LỖI THƯỜNG GẶP VÀ CÁCH KHẮC PHỤC</h3>
+` + htmlContent;
+      
+      $(&quot;#aiStatus&quot;).className=&quot;status ok&quot;;
+      $(&quot;#aiStatus&quot;).textContent=&quot;Đã sinh bảng phân tích lỗi thành công.&quot;;
+      showModal(&quot;Hoàn tất&quot;, &quot;Đã chèn Bảng phân tích lỗi vào cuối giáo án.&quot;);
+  } catch(e) {
+      console.error(e);
+      alert(&quot;Lỗi: &quot; + (e?.message || e));
+  } finally {
+      if(btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+  }
+}
+
 async function runSlideAI() {
   if(!$(&quot;#paper table.ga&quot;)) return alert(&quot;Hãy tạo giáo án trước khi xuất dàn ý.&quot;);
   const btn = document.getElementById(&quot;btnSlideAI&quot;);
@@ -5153,8 +5254,24 @@ async function exportPdf(){
     // Wait a brief moment for styles to apply
     await new Promise(r => setTimeout(r, 100));
     
+    // Add page breaks for AI sections if they exist
+    const rubricNode = document.querySelector('.rubric-section');
+    const errorNode = document.querySelector('.error-section');
+    const quizNode = document.querySelector('.quiz-section');
+    const slideNode = document.querySelector('.slide-section');
+    if (rubricNode) rubricNode.style.pageBreakBefore = 'always';
+    if (errorNode) errorNode.style.pageBreakBefore = 'always';
+    if (quizNode) quizNode.style.pageBreakBefore = 'always';
+    if (slideNode) slideNode.style.pageBreakBefore = 'always';
+
     // Call native print (this opens the dialog to save as PDF)
     window.print();
+
+    // Restore page breaks
+    if (rubricNode) rubricNode.style.pageBreakBefore = '';
+    if (errorNode) errorNode.style.pageBreakBefore = '';
+    if (quizNode) quizNode.style.pageBreakBefore = '';
+    if (slideNode) slideNode.style.pageBreakBefore = '';
 
     // Restore everything
     replacements.forEach(r => {
@@ -5687,6 +5804,8 @@ $(&quot;#modalClose&quot;).onclick=closeModal;$(&quot;#modal&quot;).onclick=e=&g
   $(&quot;#btnAIWhole&quot;).onclick=runWholeAI;
   $(&quot;#btnQuizAI&quot;).onclick=runQuizAI;
   $(&quot;#btnSlideAI&quot;).onclick=runSlideAI;
+  $(&quot;#btnRubricAI&quot;).onclick=runRubricAI;
+  $(&quot;#btnErrorAI&quot;).onclick=runErrorAI;
   loadAISettings();
   syncUserInfo();
   if (window.parent && window.parent._lastSchedulePayload) {
