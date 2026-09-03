@@ -2892,7 +2892,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
           &lt;label&gt;Đề mục / Tiểu mục &lt;span style=&quot;color:#b42318&quot;&gt;(lấy đầy đủ từ Sổ đầu bài)&lt;/span&gt;&lt;/label&gt;
           &lt;div id=&quot;subitems&quot; class=&quot;checklist&quot;&gt;&lt;/div&gt;
 
-          &lt;div class=&quot;row2&quot;&gt;
+          &lt;div class=&quot;row2&quot; style=&quot;display:none&quot;&gt;
             &lt;div&gt;
               &lt;label&gt;Số tiết &lt;span style=&quot;color:#b42318&quot;&gt;(lấy từ Sổ đầu bài Bước 1)&lt;/span&gt;&lt;/label&gt;
               &lt;select id=&quot;periods&quot;&gt;&lt;/select&gt;
@@ -2937,11 +2937,11 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
       &lt;/div&gt;
 
       &lt;div class=&quot;card&quot; style=&quot;margin-top:16px&quot;&gt;
-        &lt;h2&gt;3. Cài đặt AI&lt;/h2&gt;
+        &lt;h2&gt;3. Trợ lý AI (Gemini)&lt;/h2&gt;
         &lt;div class=&quot;panel&quot;&gt;
           &lt;label style=&quot;display:none&quot;&gt;Google/Gemini API Key&lt;/label&gt;
           &lt;input style=&quot;display:none&quot; id=&quot;apiKey&quot; type=&quot;password&quot; placeholder=&quot;AIza... hoặc API key từ Google AI Studio&quot;&gt;
-          &lt;div class=&quot;row2&quot;&gt;
+          &lt;div class=&quot;row2&quot; style=&quot;display:none&quot;&gt;
             &lt;div&gt;
               &lt;label&gt;Model&lt;/label&gt;
               &lt;select id=&quot;aiModel&quot;&gt;
@@ -2960,9 +2960,9 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
             &lt;/div&gt;&lt;/div&gt;
           &lt;/div&gt;
           &lt;div class=&quot;toolbar&quot; style=&quot;margin-top:12px&quot;&gt;
-            &lt;button class=&quot;btn&quot; id=&quot;btnSaveAI&quot;&gt;Lưu cài đặt AI&lt;/button&gt;
-            &lt;button class=&quot;btn&quot; id=&quot;btnTestAI&quot;&gt;Kiểm tra kết nối Gemini&lt;/button&gt;
-            &lt;button class=&quot;btn&quot; id=&quot;btnRefreshModels&quot;&gt;Tải danh sách model&lt;/button&gt;
+            &lt;button class=&quot;btn&quot; id=&quot;btnSaveAI&quot; style=&quot;display:none&quot;&gt;Lưu cài đặt AI&lt;/button&gt;
+            &lt;button class=&quot;btn&quot; id=&quot;btnTestAI&quot; style=&quot;display:none&quot;&gt;Kiểm tra kết nối Gemini&lt;/button&gt;
+            &lt;button class=&quot;btn&quot; id=&quot;btnRefreshModels&quot; style=&quot;display:none&quot;&gt;Tải danh sách model&lt;/button&gt;
             &lt;button class=&quot;btn primary&quot; id=&quot;btnAIWhole&quot;&gt;Gemini hoàn thiện toàn bộ giáo án&lt;/button&gt;
             &lt;button class=&quot;btn primary&quot; id=&quot;btnQuizAI&quot;&gt;&lt;i class=&quot;fas fa-magic&quot;&gt;&lt;/i&gt; Tạo bộ câu hỏi (AI)&lt;/button&gt;
             &lt;button class=&quot;btn primary&quot; id=&quot;btnSlideAI&quot;&gt;&lt;i class=&quot;fas fa-file-powerpoint&quot;&gt;&lt;/i&gt; Dàn ý Slide&lt;/button&gt;
