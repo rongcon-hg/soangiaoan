@@ -2075,89 +2075,54 @@ function updateScheduleProgression() {
         KT: Math.max(0, parseInt(ktInput.value, 10) || 0)
       };
     }
-    const lessonKey = s.units && s.units.length > 0 ? s.units[0].lesson : "";
-    const k = dateKey(s.date) + (s.isExtra ? '_ext_' + s.extId : '') + '_' + lessonKey;
+    const k = dateKey(s.date) + (s.isExtra ? '_ext_' + s.extId : '');
     oldSessionsByDate.set(k, s);
   });
 
-  const estimatedWeeks = Math.ceil(units.length / Math.max(1, slots.reduce((s,x)=>s+x.periods,0)));
+  const estimatedWeeks = Math.ceil(units.length / Math.max(1, slots.reduce((s,x)=&gt;s+x.periods,0)));
   const needed = Math.max(estimatedWeeks * slots.length + slots.length + 50, 200);
-  const start = new Date(startValue + "T00:00:00");
+  const start = new Date(startValue + &quot;T00:00:00&quot;);
   const dates = nextScheduledDates(start, slots, needed, endValue);
 
   const newSessions = [];
   let cursor = 0, di = 0;
 
-  const lastExtraDateKey = (window.extraSessions && window.extraSessions.length > 0) 
-      ? window.extraSessions.map(e => e.date).sort().pop() 
+  const lastExtraDateKey = (window.extraSessions &amp;&amp; window.extraSessions.length &gt; 0) 
+      ? window.extraSessions.map(e =&gt; e.date).sort().pop() 
       : null;
 
-  while ((cursor < units.length || (lastExtraDateKey && dates[di] && dateKey(dates[di].date) <= lastExtraDateKey)) && di < dates.length) {
-    const dateInfo = dates[di];
-    let remainingCap = dateInfo.periods;
-    
-    while(remainingCap > 0 && cursor < units.length) {
-       const currentLesson = units[cursor].lesson;
-       const k = dateKey(dateInfo.date) + (dateInfo.isExtra ? "_ext_" + dateInfo.extId : "") + '_' + currentLesson;
-       const s_old = oldSessionsByDate.get(k);
-       
-       let capForThisSplit = remainingCap;
-       let overridesForThis = null;
-       
-       if (s_old && s_old.isManual && s_old.overrideCounts) {
-           const totalOverridden = (s_old.overrideCounts.LT || 0) + (s_old.overrideCounts.TH || 0) + (s_old.overrideCounts.KT || 0);
-           capForThisSplit = totalOverridden > 0 ? totalOverridden : remainingCap;
-           overridesForThis = { ...s_old.overrideCounts };
-       }
-       
-       let takeCount = 0;
-       for (let i = 0; i < capForThisSplit && (cursor + i) < units.length; i++) {
-           if (units[cursor + i].lesson === currentLesson) takeCount++;
-           else break;
-       }
-       
-       if (takeCount === 0) break;
-       
-       newSessions.push({
-         date: dateInfo.date,
-         units: units.slice(cursor, cursor + takeCount),
-         overrideCounts: overridesForThis,
-         isManual: !!overridesForThis || !!(s_old && s_old.manualContent),
-         manualContent: s_old ? s_old.manualContent : null,
-         manualText: s_old ? s_old.manualText : null,
-         isExtra: dateInfo.isExtra,
-         extId: dateInfo.extId
-       });
-       
-       cursor += takeCount;
-       remainingCap -= takeCount; 
+  while ((cursor &lt; units.length || (lastExtraDateKey &amp;&amp; dates[di] &amp;&amp; dateKey(dates[di].date) &lt;= lastExtraDateKey)) &amp;&amp; di &lt; dates.length) {
+    let cap;
+    let overridesForThis = null;
+
+    const k = dateKey(dates[di].date) + (dates[di].isExtra ? &quot;_ext_&quot; + dates[di].extId : &quot;&quot;);
+    const s_old = oldSessionsByDate.get(k);
+
+    if (s_old &amp;&amp; s_old.isManual &amp;&amp; s_old.overrideCounts) {
+      const totalOverridden = (s_old.overrideCounts.LT || 0) + (s_old.overrideCounts.TH || 0) + (s_old.overrideCounts.KT || 0);
+      cap = totalOverridden &gt; 0 ? totalOverridden : dates[di].periods;
+      overridesForThis = { ...s_old.overrideCounts };
+    } else {
+      cap = dates[di].periods;
     }
-    
-    if (remainingCap > 0 && cursor >= units.length && lastExtraDateKey && dateKey(dateInfo.date) <= lastExtraDateKey) {
-        const k = dateKey(dateInfo.date) + (dateInfo.isExtra ? "_ext_" + dateInfo.extId : "") + '_';
-        const s_old = oldSessionsByDate.get(k);
-        if (s_old) newSessions.push(s_old);
-    }
+
+    const sessionUnits = units.slice(cursor, Math.min(cursor + cap, units.length));
+    newSessions.push({
+      date: dates[di].date,
+      units: sessionUnits,
+      overrideCounts: overridesForThis,
+      isManual: !!overridesForThis || !!(s_old &amp;&amp; s_old.manualContent),
+      manualContent: s_old ? s_old.manualContent : null,
+      manualText: s_old ? s_old.manualText : null,
+      isExtra: dates[di].isExtra,
+      extId: dates[di].extId
+    });
+    cursor += cap;
     di++;
   }
 
-  if (cursor < units.length && newSessions.length > 0) {
-     const lastDateInfo = dates[Math.max(0, di - 1)];
-     while (cursor < units.length) {
-         const currentLesson = units[cursor].lesson;
-         let takeCount = 0;
-         for (let i = 0; (cursor + i) < units.length; i++) {
-             if (units[cursor + i].lesson === currentLesson) takeCount++;
-             else break;
-         }
-         newSessions.push({
-             date: lastDateInfo ? lastDateInfo.date : new Date(),
-             isExtra: lastDateInfo ? lastDateInfo.isExtra : false,
-             extId: lastDateInfo ? lastDateInfo.extId : null,
-             units: units.slice(cursor, cursor + takeCount)
-         });
-         cursor += takeCount;
-     }
+  if (cursor &lt; units.length &amp;&amp; newSessions.length &gt; 0) {
+      newSessions[newSessions.length - 1].units.push(...units.slice(cursor));
   }
 
   currentSessions = newSessions;
@@ -2448,50 +2413,17 @@ function buildSchedule(showToast = false){
  const sessions=[];
  let cursor=0,di=0;
  while(cursor&lt;units.length &amp;&amp; di&lt;dates.length){
-   const dateInfo = dates[di];
-   let remainingCap = dateInfo.periods;
-   
-   while(remainingCap &gt; 0 &amp;&amp; cursor &lt; units.length) {
-       const currentLesson = units[cursor].lesson;
-       let takeCount = 0;
-       for (let i = 0; i &lt; remainingCap &amp;&amp; (cursor + i) &lt; units.length; i++) {
-           if (units[cursor + i].lesson === currentLesson) {
-               takeCount++;
-           } else {
-               break;
-           }
-       }
-       if (takeCount === 0) break;
-       
-       sessions.push({
-         date: dateInfo.date,
-         isExtra: dateInfo.isExtra,
-         extId: dateInfo.extId,
-         units: units.slice(cursor, cursor + takeCount)
-       });
-       cursor += takeCount;
-       remainingCap -= takeCount;
-   }
+   const cap=dates[di].periods;
+   sessions.push({
+     date:dates[di].date,
+     units:units.slice(cursor,Math.min(cursor+cap,units.length))
+   });
+   cursor+=cap;
    di++;
  }
 
  if (cursor &lt; units.length &amp;&amp; sessions.length &gt; 0) {
-     const lastDateInfo = dates[dates.length - 1];
-     while (cursor &lt; units.length) {
-         const currentLesson = units[cursor].lesson;
-         let takeCount = 0;
-         for (let i = 0; (cursor + i) &lt; units.length; i++) {
-             if (units[cursor + i].lesson === currentLesson) takeCount++;
-             else break;
-         }
-         sessions.push({
-             date: lastDateInfo.date,
-             isExtra: lastDateInfo.isExtra,
-             extId: lastDateInfo.extId,
-             units: units.slice(cursor, cursor + takeCount)
-         });
-         cursor += takeCount;
-     }
+     sessions[sessions.length - 1].units.push(...units.slice(cursor));
  }
 
  currentSessions=sessions;
@@ -2696,7 +2628,7 @@ function exportExcel(){
  });
  clone.querySelectorAll("button").forEach(btn => btn.remove());
  
- // Thay thế thẻ br bằng khoảng trắng hoặc dấu phẩy để Excel không bị gộp dòng sai nếu cần
+ // SheetJS creates true .xlsx files so there's no format warning
  const wb = XLSX.utils.table_to_book(clone, {sheet: "Sổ đầu bài", raw: true});
  XLSX.writeFile(wb, "So_dau_bai_" + (course.code || "mon_hoc") + ".xlsx");
 }
