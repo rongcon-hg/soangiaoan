@@ -5120,176 +5120,54 @@ window.exportPdfAsBlob = async function() {
 };
 
 async function exportPdf(){
-  if(!$(&quot;#paper table&quot;)){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
+  if(!$("#paper table")){alert("Hãy tạo giáo án trước.");return;}
 
-  if(typeof html2pdf===&quot;undefined&quot;){
-    alert(&quot;Chưa tải được thư viện xuất PDF. Vui lòng kiểm tra kết nối Internet rồi thử lại.&quot;);
-    return;
-  }
-
-  const clone=getCleanPaperClone();
-  if(!clone){alert(&quot;Hãy tạo giáo án trước.&quot;);return;}
-
-  // Chèn style in trực tiếp vào trong clone
-  const pdfStyle = document.createElement(&quot;style&quot;);
-  pdfStyle.textContent = `
-    * {
-      box-sizing: border-box !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    .paper {
-      width: 100% !important;
-      max-width: 100% !important;
-      min-height: auto !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      border: 0 !important;
-      box-shadow: none !important;
-      background: #fff !important;
-      font-family: 'Times New Roman', Times, serif !important;
-      font-size: 12pt !important;
-      color: #000000 !important;
-    }
-    table {
-      width: 100% !important;
-      table-layout: fixed !important;
-      border-collapse: collapse !important;
-    }
-    .top-template td, .meta-template td {
-      border: none !important;
-      padding: 6px 8px !important;
-      vertical-align: top !important;
-    }
-    .logo-cell { width: 28% !important; }
-    .appendix-cell { text-align: center !important; line-height: 1.25 !important; }
-    .appendix-title { font-weight: bold !important; font-size: 13pt !important; }
-    .appendix-note { font-style: italic !important; font-size: 11pt !important; }
-    .meta-template .left-meta { width: 40% !important; font-weight: bold !important; }
-    .meta-template .right-meta { width: 60% !important; line-height: 1.3 !important; }
-    
-    .lesson-heading { margin-top: 14px !important; font-size: 12pt !important; line-height: 1.25 !important; }
-    .lesson-main-title { font-weight: bold !important; }
-    .lesson-group-title { font-weight: bold !important; margin-top: 4px !important; }
-    .exact-outline-item { margin-left: 20px !important; font-weight: bold !important; line-height: 1.25 !important; }
-    
-    .section-title { font-weight: bold !important; margin: 12px 0 6px !important; font-size: 12pt !important; }
-    .editable { line-height: 1.35 !important; text-align: justify !important; }
-    
-    table.ga {
-      width: 100% !important;
-      table-layout: fixed !important;
-      border-collapse: collapse !important;
-      margin-top: 10px !important;
-      border: 1.2px solid #000 !important;
-    }
-    table.ga tr {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
-    }
-    table.ga th, table.ga td {
-      border: 1.2px solid #000 !important;
-      padding: 6px 7px !important;
-      vertical-align: top !important;
-      font-size: 11.5pt !important;
-      line-height: 1.3 !important;
-      color: #000 !important;
-      word-break: normal !important;
-      overflow-wrap: break-word !important;
-    }
-    table.ga th { font-weight: bold !important; text-align: center !important; }
-    table.ga th:nth-child(1), table.ga td:nth-child(1) { width: 5% !important; text-align: center !important; }
-    table.ga th:nth-child(2), table.ga td:nth-child(2) { width: 41% !important; }
-    table.ga th:nth-child(3), table.ga td:nth-child(3) { width: 22% !important; }
-    table.ga th:nth-child(4), table.ga td:nth-child(4) { width: 22% !important; }
-    table.ga th:nth-child(5), table.ga td:nth-child(5) { width: 10% !important; text-align: center !important; }
-    
-    table.footer-sign-table {
-      width: 100% !important;
-      border-collapse: collapse !important;
-      margin-top: 28px !important;
-      page-break-inside: avoid !important;
-      border: none !important;
-    }
-    table.footer-sign-table td {
-      border: none !important;
-      text-align: center !important;
-      vertical-align: top !important;
-      padding: 4px 0 !important;
-      line-height: 1.4 !important;
-    }
-    .teacher-signature, table.footer-sign-table img {
-      width: 130px !important;
-      height: 50px !important;
-      max-width: 130px !important;
-      max-height: 50px !important;
-      object-fit: contain !important;
-      display: block !important;
-      margin: 4px auto !important;
-    }
-    .no-print, .ai-tools { display: none !important; }
-  `;
-  clone.prepend(pdfStyle);
-
-  const filename = getExportGiaoAnFilename(&quot;pdf&quot;);
-
-  const opt = {
-    margin: [15, 12, 15, 15],
-    filename: filename,
-    image: { type: &quot;jpeg&quot;, quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      logging: false
-    },
-    jsPDF: {
-      unit: &quot;mm&quot;,
-      format: &quot;a4&quot;,
-      orientation: &quot;portrait&quot;
-    },
-    pagebreak: {
-      mode: [&quot;css&quot;, &quot;legacy&quot;],
-      avoid: [&quot;tr&quot;, &quot;thead&quot;, &quot;.top-template&quot;, &quot;.meta-template&quot;, &quot;.lesson-heading&quot;, &quot;.section-title&quot;, &quot;.footer-sign-table&quot;]
-    }
-  };
-
-  const btn = document.getElementById(&quot;btnExportPdf&quot;);
-  const origText = btn ? btn.innerHTML : &quot;&quot;;
-  if(btn) { btn.innerHTML = &quot;⏳ Đang tạo file PDF...&quot;; btn.disabled = true; }
-
-  const quizNode = clone.querySelector('.quiz-section');
-  const slideNode = clone.querySelector('.slide-section');
-  let quizHtml = &quot;&quot;;
-  let slideHtml = &quot;&quot;;
-  
-  if(quizNode) { quizHtml = quizNode.outerHTML; quizNode.remove(); }
-  if(slideNode) { slideHtml = slideNode.outerHTML; slideNode.remove(); }
+  const btn = document.getElementById("btnExportPdf");
+  const origText = btn ? btn.innerHTML : "";
+  if(btn) { btn.innerHTML = "⏳ Đang chuẩn bị trang in..."; btn.disabled = true; }
 
   try {
-    if(document.fonts &amp;&amp; document.fonts.ready) {
-      await document.fonts.ready;
-    }
-    await html2pdf().set(opt).from(clone).save();
+    // We will use native window.print() to exactly match the /export page layout
 
-    if(quizHtml) {
-      const qDiv = document.createElement(&quot;div&quot;);
-      qDiv.innerHTML = quizHtml;
-      qDiv.prepend(pdfStyle.cloneNode(true));
-      opt.filename = filename.replace(&quot;.pdf&quot;, &quot;_CauHoi.pdf&quot;);
-      await html2pdf().set(opt).from(qDiv).save();
-    }
+    // 1. Convert time-inputs to span for printing
+    const inputs = document.querySelectorAll('.time-input');
+    const replacements = [];
+    inputs.forEach(inp => {
+        const span = document.createElement('span');
+        span.className = 'time-print-span';
+        span.textContent = inp.value || inp.getAttribute('value') || '';
+        span.style.fontWeight = 'bold';
+        inp.parentNode.insertBefore(span, inp);
+        inp.style.display = 'none';
+        replacements.push({ inp, span });
+    });
 
-    if(slideHtml) {
-      const sDiv = document.createElement(&quot;div&quot;);
-      sDiv.innerHTML = slideHtml;
-      sDiv.prepend(pdfStyle.cloneNode(true));
-      opt.filename = filename.replace(&quot;.pdf&quot;, &quot;_Slide.pdf&quot;);
-      await html2pdf().set(opt).from(sDiv).save();
-    }
+    // 2. Hide ai-tools and tfoot is already handled by CSS: .no-print, but let's make sure tfoot is hidden
+    const tfoots = document.querySelectorAll('table.ga tfoot');
+    tfoots.forEach(t => t.style.display = 'none');
+
+    // 3. Remove contenteditable temporarily
+    const editables = document.querySelectorAll('[contenteditable]');
+    editables.forEach(e => e.removeAttribute('contenteditable'));
+
+    // Wait a brief moment for styles to apply
+    await new Promise(r => setTimeout(r, 100));
+    
+    // Call native print (this opens the dialog to save as PDF)
+    window.print();
+
+    // Restore everything
+    replacements.forEach(r => {
+        r.span.remove();
+        r.inp.style.display = '';
+    });
+    tfoots.forEach(t => t.style.display = '');
+    editables.forEach(e => e.setAttribute('contenteditable', 'true'));
+    
+    if(btn) { btn.innerHTML = origText; btn.disabled = false; }
   } catch(e) {
     console.error(e);
-    alert(&quot;Lỗi khi xuất file PDF: &quot; + (e?.message || e));
-  } finally {
+    alert("Lỗi khi xuất: " + (e?.message || e));
     if(btn) { btn.innerHTML = origText; btn.disabled = false; }
   }
 }
