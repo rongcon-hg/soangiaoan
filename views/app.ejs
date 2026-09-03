@@ -543,7 +543,7 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;div class=&quot;kpi&quot;&gt;Tổng giờ&lt;b id=&quot;totalHours&quot;&gt;—&lt;/b&gt;&lt;/div&gt;
 &lt;div style=&quot;grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch;&quot;&gt;
   &lt;div class=&quot;kpi&quot; style=&quot;flex: 1; min-width: 300px; margin: 0; box-sizing: border-box;&quot;&gt;Sau quy đổi&lt;b id=&quot;converted&quot;&gt;—&lt;/b&gt;&lt;div id=&quot;convertedBreakdown&quot; class=&quot;breakdown&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-  &lt;div class=&quot;notice&quot; id=&quot;formulaInfo&quot; style=&quot;flex: 1; min-width: 300px; margin: 0; box-sizing: border-box;&quot;&gt;&lt;b&gt;Quy tắc:&lt;/b&gt; LT = giờ LT; TH = làm tròn lên (giờ TH × 60/45); KT = giờ KT.&lt;/div&gt;
+  &lt;div class=&quot;notice&quot; id=&quot;formulaInfo&quot; style=&quot;flex: 1; min-width: 300px; margin: 0; box-sizing: border-box;&quot;&gt;&lt;b&gt;Quy tắc:&lt;/b&gt; LT = giờ LT; Tổng tiết TH, KT = Làm tròn lên (Tổng giờ TH, KT × 60/45) phân bổ lũy kế; KT = giờ KT.&lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
@@ -854,7 +854,7 @@ function updateCourseCards(){
    convertedEl.textContent=&quot;—&quot;;
    breakdownEl.innerHTML=&quot;&quot;;
    document.getElementById(&quot;formulaInfo&quot;).innerHTML=
-     `&lt;b&gt;Quy tắc:&lt;/b&gt; LT của từng Bài = số giờ LT; TH của từng Bài = làm tròn lên (giờ TH × 60/45). Kiểm tra tự động tính như Thực hành.`;
+     `&lt;b&gt;Quy tắc:&lt;/b&gt; LT của từng Bài = số giờ LT; Tổng số tiết TH, KT toàn môn = Làm tròn lên(Tổng giờ TH, KT × 60/45) và phân bổ lũy kế vào từng bài. Kiểm tra tự động tính như Thực hành.`;
    return;
  }
 
@@ -869,7 +869,7 @@ function updateCourseCards(){
 
  document.getElementById(&quot;formulaInfo&quot;).innerHTML=
    `&lt;b&gt;Quy tắc đang áp dụng:&lt;/b&gt; quy đổi &lt;b&gt;riêng từng Bài&lt;/b&gt;. `+
-   `LT = giờ LT; TH = CEILING(giờ TH × 60/45). `+
+   `LT = giờ LT; Tổng TH, KT = CEILING(Tổng giờ TH, KT × 60/45) phân bổ lũy kế. `+
    `&lt;b&gt;Kiểm tra:&lt;/b&gt; nếu ở cột LT thì giữ nguyên số giờ = số tiết KT; nếu ở cột TH thì CEILING(giờ KT × 60/45) phân bổ 1 tiết KT + số còn lại vào TH. `+
    `&lt;b&gt;Thi kết thúc môn học không đưa vào Sổ đầu bài.&lt;/b&gt;`;
 }
@@ -1111,6 +1111,11 @@ function parseProgramTable(htmlText, detailMap){
      const ltHours=cellNumber(cells[3]);
      const thHours=cellNumber(cells[4]);
 
+     cumulativeThKtHours += thHours;
+     const currentExpectedPeriods = Math.ceil(cumulativeThKtHours * 60 / 45);
+     const thPeriodsConverted = currentExpectedPeriods - cumulativeThKtPeriods;
+     cumulativeThKtPeriods = currentExpectedPeriods;
+
      // Tên bài lưu nguyên văn từ nguồn.
      const title=name.trim();
 
@@ -1135,7 +1140,7 @@ function parseProgramTable(htmlText, detailMap){
         ltHours,
         thHours,
         ltPeriods:Math.ceil(ltHours),
-        thPeriods:Math.ceil(thHours*60/45),
+        thPeriods:thPeriodsConverted,
         items:mergedItems,
         itemCount:mergedItems.length,
         objectives: (detailMap[no] &amp;&amp; detailMap[no].objectives) || [],
@@ -1149,6 +1154,12 @@ function parseProgramTable(htmlText, detailMap){
       const rawTh=cellNumber(cells[4]);
       const rawTotal=cellNumber(cells[2]);
       const totalToConvert = rawTotal || (rawLt + rawTh);
+      
+      cumulativeThKtHours += totalToConvert;
+      const currentExpectedPeriods = Math.ceil(cumulativeThKtHours * 60 / 45);
+      const thPeriodsConverted = currentExpectedPeriods - cumulativeThKtPeriods;
+      cumulativeThKtPeriods = currentExpectedPeriods;
+
       sequence.push({
         kind:&quot;lesson&quot;,
         no: 9999 + sequence.length,
@@ -1156,7 +1167,7 @@ function parseProgramTable(htmlText, detailMap){
         ltHours: 0,
         thHours: totalToConvert,
         ltPeriods: 0,
-        thPeriods: Math.ceil(totalToConvert*60/45),
+        thPeriods: thPeriodsConverted,
         items: [],
         itemCount: 0
       });
@@ -1188,7 +1199,11 @@ function parseProgramTable(htmlText, detailMap){
          periods:rawHours
        });
      } else {
-       const autoPeriods=Math.ceil(rawHours*60/45);
+       cumulativeThKtHours += rawHours;
+       const autoPeriods=Math.ceil(cumulativeThKtHours*60/45);
+       const thPeriodsConverted = autoPeriods - cumulativeThKtPeriods;
+       cumulativeThKtPeriods = autoPeriods;
+
        sequence.push({
          kind:&quot;assessment&quot;,
          title:name.trim(),
@@ -1196,8 +1211,8 @@ function parseProgramTable(htmlText, detailMap){
          assessmentType:&quot;Thực hành&quot;,
          periodsLT:0,
          periodsKT:1,
-         periodsTH:Math.max(0,autoPeriods-1),
-         periods:autoPeriods
+         periodsTH:Math.max(0,thPeriodsConverted-1),
+         periods:thPeriodsConverted
        });
      }
    }
