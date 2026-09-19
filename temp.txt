@@ -1,0 +1,11 @@
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;schedule-inline&quot;&gt;
+  &lt;div class=&quot;field-box field-date&quot;&gt;
+    &lt;label&gt;Ngày bắt đầu&lt;/label&gt;
+    &lt;input id=&quot;startDate&quot; type=&quot;date&quot; value=&quot;2026-07-07&quot; onchange=&quot;if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;field-box field-date&quot;&gt;
+    &lt;label&gt;Ngày kết thúc (tùy chọn)&lt;/label&gt;
+    &lt;input id=&quot;endDate&quot; type=&quot;date&quot; onchange=&quot;if(typeof saveStateToBackend === 'function') saveStateToBackend();&quot;&gt;
