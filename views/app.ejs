@@ -5931,8 +5931,23 @@ init();
           <input type="number" id="numTracNghiem" value="20" min="0">
         </div>
         <div class="field-box">
-          <label>Số câu Thực hành / Tự luận</label>
+          <label>Câu Thực hành/Tự luận</label>
           <input type="number" id="numThucHanh" value="2" min="0">
+        </div>
+      </div>
+      
+      <div class="schedule-inline" style="margin-top:12px;">
+        <div class="field-box">
+          <label>Thời gian làm bài (phút)</label>
+          <input type="number" id="examTime" value="60" min="15" step="5">
+        </div>
+        <div class="field-box">
+          <label>Mức độ khó</label>
+          <select id="examDifficulty" style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; outline:none; background:#fff;">
+             <option value="Cơ bản">Cơ bản</option>
+             <option value="Trung bình" selected>Trung bình</option>
+             <option value="Nâng cao">Nâng cao</option>
+          </select>
         </div>
       </div>
       
@@ -6538,13 +6553,13 @@ function renderExamChapterSelection(payload) {
        return;
    }
 
-   let html = '';
+      let html = '<label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; cursor:pointer; padding:5px; border-radius:4px; background:#e2e8f0; font-weight:bold;"><input type="checkbox" id="examSelectAll" checked onchange="document.querySelectorAll(\'.exam-chapter-cb\').forEach(cb=>cb.checked=this.checked)" style="margin-top:4px;"><span style="font-size:14px; line-height:1.4; color:#1e293b;">Chọn tất cả các chương/bài</span></label>';
    lessons.forEach((item, index) => {
        let title = item.title || ("Bài " + (index+1));
        if (item.detail) title += " - " + item.detail;
        html += `
          <label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; cursor:pointer; padding:5px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
-            <input type="checkbox" class="exam-chapter-cb" value="${index}" style="margin-top:4px;">
+            <input type="checkbox" class="exam-chapter-cb" value="${index}" checked style="margin-top:4px;" onchange="document.getElementById('examSelectAll').checked = Array.from(document.querySelectorAll('.exam-chapter-cb')).every(cb => cb.checked);">
             <span style="font-size:14px; line-height:1.4;">${title}</span>
          </label>
        `;
@@ -6585,10 +6600,18 @@ async function runGenerateExam() {
    });
    
    // Get Textbook Context (limit size to avoid extreme token usage if needed, but Gemini 1.5 handles 1M tokens)
+      // Get Textbook Context (limit size to avoid extreme token usage if needed, but Gemini 1.5 handles 1M tokens)
    let textbookContext = "";
    if (window._lastSchedulePayload && window._lastSchedulePayload.textbookData) {
-       textbookContext = window._lastSchedulePayload.textbookData.substring(0, 150000); // Send first 150k chars to be safe but informative
+       // textbookData is an object { text: "...", fileName: "..." }
+       const textStr = window._lastSchedulePayload.textbookData.text || window._lastSchedulePayload.textbookData;
+       if (typeof textStr === 'string' && textStr.length > 0) {
+           textbookContext = textStr.substring(0, 150000); // Send first 150k chars to be safe
+       }
    }
+   
+   const examTime = document.getElementById("examTime") ? document.getElementById("examTime").value : "60";
+   const examDiff = document.getElementById("examDifficulty") ? document.getElementById("examDifficulty").value : "Trung bình";
    
    const prompt = `Bạn là một giảng viên cao cấp chuyên soạn đề thi môn học thuộc hệ thống Giáo dục nghề nghiệp.
 Dựa vào các chủ đề bài học sau đây (phạm vi kiến thức):
@@ -6598,6 +6621,8 @@ ${textbookContext ? "Nội dung tham khảo từ giáo trình:\n" + textbookCont
 Hãy tạo một bộ đề kiểm tra bao gồm:
 1. ${numTN} câu hỏi trắc nghiệm (có 4 đáp án A, B, C, D và ĐÁNH DẤU RÕ đáp án đúng).
 2. ${numTH} bài tập thực hành / tình huống / tự luận bám sát chuyên môn.
+- Thời gian làm bài: ${examTime} phút.
+- Mức độ khó: ${examDiff}.
 
 Yêu cầu định dạng:
 - Trả về kết quả BẰNG MỘT MÃ HTML DUY NHẤT (TUYỆT ĐỐI KHÔNG dùng markdown code block, KHÔNG dùng ký tự sao).
