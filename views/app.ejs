@@ -6538,20 +6538,32 @@ async function simpleGeminiCall(prompt) {
    for (let model of [...new Set(modelsToTry)]) {
        try {
            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-           const res = await fetch(url, {
+           let res = await fetch(url, {
                method: "POST",
                headers: {"Content-Type": "application/json"},
                body: JSON.stringify({
                    contents: [{role: "user", parts: [{text: prompt}]}],
-                   generationConfig: {
-                       temperature: 0.7,
-                   }
+                   generationConfig: { temperature: 0.7 }
                })
            });
            
+           // Tự động thử lại 1 lần nếu bị quá tải (503) hoặc rate limit (429)
+           if (res.status === 503 || res.status === 429) {
+               console.warn(`Mô hình ${model} báo bận (${res.status}), tự động thử lại sau 3 giây...`);
+               await new Promise(r => setTimeout(r, 3000));
+               res = await fetch(url, {
+                   method: "POST",
+                   headers: {"Content-Type": "application/json"},
+                   body: JSON.stringify({
+                       contents: [{role: "user", parts: [{text: prompt}]}],
+                       generationConfig: { temperature: 0.7 }
+                   })
+               });
+           }
+           
            if (!res.ok) {
-               const err = await res.json();
-               throw new Error(err.error?.message || "Lỗi khi gọi API Gemini.");
+               const err = await res.json().catch(() => ({}));
+               throw new Error(err.error?.message || `Lỗi khi gọi API Gemini (Mã lỗi: ${res.status}).`);
            }
            
            const data = await res.json();
@@ -6652,6 +6664,11 @@ async function runGenerateExam() {
    const numTH = examType !== 'trac-nghiem' ? (parseInt(document.getElementById("numThucHanh").value) || 0) : 0;
    
    if(numTN === 0 && numTH === 0) return alert("Vui lòng nhập số lượng câu hỏi!");
+   if(numTN + numTH > 50) {
+       if(!confirm("Cảnh báo: Bạn đang yêu cầu tạo " + (numTN + numTH) + " câu hỏi. Khối lượng quá lớn có thể khiến AI (Gemini) bị quá tải (lỗi 503) hoặc sinh ra kết quả bị cắt cụt. Bạn có chắc chắn muốn tiếp tục không?")) {
+           return;
+       }
+   }
    
    // Gather selected topics
    let selectedTopics = [];
