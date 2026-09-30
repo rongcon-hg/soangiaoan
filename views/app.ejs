@@ -855,6 +855,8 @@ window.addEventListener(&quot;message&quot;, e => {
                 status.innerHTML = `&lt;b&gt;Đã tải dữ liệu dự án từ máy chủ.&lt;/b&gt;`;
             }
         }
+        
+        broadcastProgramData();
     }
 });
 
@@ -1608,6 +1610,8 @@ async function readProgramFile(file){
        (missingLessons.length
         ? `&lt;br&gt;&lt;span style=&quot;color:#b45309&quot;&gt;&lt;b&gt;Cảnh báo:&lt;/b&gt; ${missingLessons.length} Bài/Chương/Phần chưa nhận diện được đề mục; cần kiểm tra file gốc.&lt;/span&gt;`
         : `&lt;br&gt;&lt;span style=&quot;color:#166534&quot;&gt;&lt;b&gt;Đã kiểm tra:&lt;/b&gt; tất cả Bài/Chương/Phần đều có dữ liệu đề mục nhận diện được · Tổng ${totalDetectedItems} đề mục.&lt;/span&gt;`);
+
+     broadcastProgramData();
    }else{
      status.innerHTML=`&lt;b&gt;Chưa nhận diện được bảng phân phối thời gian.&lt;/b&gt; Hệ thống không sử dụng dữ liệu cũ.`;
    }
@@ -5814,6 +5818,19 @@ window.addEventListener(&quot;message&quot;,e=&gt;{
     receiveScheduleSession(e.data.payload);
   }
 });
+
+// --- HELPER FOR STEP 3 ---
+function broadcastProgramData() {
+    parent.postMessage({
+        type: "UPDATE_PROGRAM_DATA",
+        payload: {
+            fullProgram: (typeof programSequence !== 'undefined' ? programSequence : []).map(x=>JSON.parse(JSON.stringify(x))),
+            textbookData: typeof textbookData !== 'undefined' ? textbookData : "",
+            courseName: typeof course !== 'undefined' ? (course.name||"") : ""
+        }
+    }, "*");
+}
+
 async function init(){
   await openDB();
   programs=[];
