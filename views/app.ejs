@@ -6506,8 +6506,27 @@ async function simpleGeminiCall(prompt) {
    const key = localStorage.getItem("giaoan_gemini_key");
    if(!key) throw new Error("Vui lòng thiết lập Google Gemini API Key trong Bước 2 (Soạn Giáo Án -> Cài đặt AI) trước khi sử dụng tính năng này.");
    
-   // Try default or fallback models
-   const modelsToTry = [localStorage.getItem("giaoan_gemini_model") || "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.5-pro"];
+   // Lấy danh sách model hợp lệ từ API để tránh lỗi 404
+   let validModels = [];
+   try {
+       const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+       const mData = await mRes.json();
+       if (mData.models) {
+           validModels = mData.models.filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")).map(m => m.name.replace('models/', ''));
+       }
+   } catch(e) {
+       console.warn("Could not fetch models:", e);
+   }
+
+   const userModel = localStorage.getItem("giaoan_gemini_model") || window.GEMINI_MODEL || "gemini-2.5-flash";
+   
+   let modelsToTry = [userModel, "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"];
+   // Nếu lấy được danh sách model hợp lệ thì lọc các model ảo ra
+   if (validModels.length > 0) {
+       modelsToTry = modelsToTry.filter(m => validModels.includes(m));
+       if (modelsToTry.length === 0) modelsToTry = [validModels[0]];
+   }
+   
    let lastErr = null;
    
    for (let model of [...new Set(modelsToTry)]) {
@@ -6674,9 +6693,9 @@ ${selectedTopics.map((t,i) => (i+1) + ". " + t).join("\n")}
 
 ${textbookContext ? "Nội dung tham khảo từ giáo trình:\n" + textbookContext + "\n\n" : ""}
 Hãy tạo một bộ đề kiểm tra bám sát nội dung trên với cấu trúc:
-${examType === 'trac-nghiem' ? `1. ${numTN} câu hỏi trắc nghiệm (có 4 đáp án A, B, C, D và ĐÁNH DẤU RÕ đáp án đúng).` : 
+${examType === 'trac-nghiem' ? `1. ${numTN} câu hỏi trắc nghiệm (có 4 đáp án A, B, C, D. KHÔNG đánh dấu, in đậm hay gạch chân đáp án đúng trực tiếp vào câu hỏi).` : 
   examType === 'tu-luan' ? `1. ${numTH} câu hỏi tự luận / bài tập thực hành / tình huống chuyên môn.` :
-  `1. PHẦN TRẮC NGHIỆM: ${numTN} câu hỏi (có 4 đáp án A, B, C, D và ĐÁNH DẤU RÕ đáp án đúng).
+  `1. PHẦN TRẮC NGHIỆM: ${numTN} câu hỏi (có 4 đáp án A, B, C, D. KHÔNG đánh dấu, in đậm hay gạch chân đáp án đúng trực tiếp vào câu hỏi).
 2. PHẦN TỰ LUẬN/THỰC HÀNH: ${numTH} câu hỏi/bài tập tình huống chuyên môn.`}
 
 - Thời gian làm bài: ${examTime} phút.
@@ -6686,8 +6705,8 @@ Yêu cầu định dạng:
 - Trả về kết quả BẰNG MỘT MÃ HTML DUY NHẤT (TUYỆT ĐỐI KHÔNG dùng markdown code block, KHÔNG dùng ký tự sao).
 - Bắt đầu luôn bằng thẻ <h2 style="text-align:center; font-weight:bold; text-transform:uppercase;">ĐỀ THI KẾT THÚC MÔN HỌC</h2>
 - Dùng thẻ <h3>, <h4>, <p>, <ul>, <li>, <b>, <i> để định dạng nội dung trực quan, chuyên nghiệp.
-- Cấu trúc đề rõ ràng: Phần I. Trắc nghiệm, Phần II. Thực hành.
-- PHẦN CUỐI CÙNG của mã HTML bắt buộc phải có <div style="page-break-before:always"></div> và phần <h2 style="text-align:center;">ĐÁP ÁN VÀ THANG ĐIỂM</h2> để giảng viên dễ chấm. Định dạng đáp án trắc nghiệm bằng thẻ <table> có border=1 rõ ràng.`;
+${examType === 'trac-nghiem' ? '- Cấu trúc đề rõ ràng, không có phần tự luận/thực hành.' : examType === 'tu-luan' ? '- Cấu trúc đề rõ ràng, không có phần trắc nghiệm.' : '- Cấu trúc đề rõ ràng: Phần I. Trắc nghiệm, Phần II. Thực hành.'}
+- PHẦN CUỐI CÙNG của mã HTML bắt buộc phải có <div style="page-break-before:always"></div> và phần <h2 style="text-align:center;">ĐÁP ÁN VÀ THANG ĐIỂM</h2> để giảng viên dễ chấm. ${examType !== 'tu-luan' ? 'Đối với phần trắc nghiệm, CHỈ HIỂN THỊ ĐÁP ÁN ĐÚNG TRONG BẢNG NÀY (sử dụng <table> có border=1 rõ ràng).' : ''}`;
 
    btn.disabled = true;
    stat.style.display = "block";
