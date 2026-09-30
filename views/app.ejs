@@ -6512,7 +6512,9 @@ async function simpleGeminiCall(prompt) {
    const key = localStorage.getItem("giaoan_gemini_key");
    if(!key) throw new Error("Vui lòng thiết lập Google Gemini API Key trong Bước 2 (Soạn Giáo Án -> Cài đặt AI) trước khi sử dụng tính năng này.");
    
-   // Lấy danh sách model hợp lệ từ API để tránh lỗi 404
+   const stat = document.getElementById("examStatus");
+   if (stat) stat.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang tải danh sách mô hình AI...";
+
    let validModels = [];
    try {
        const mRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
@@ -6526,17 +6528,24 @@ async function simpleGeminiCall(prompt) {
 
    const userModel = localStorage.getItem("giaoan_gemini_model") || window.GEMINI_MODEL || "gemini-2.5-flash";
    
-   let modelsToTry = [userModel, "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"];
-   // Nếu lấy được danh sách model hợp lệ thì lọc các model ảo ra
+   let allModels = validModels.length > 0 ? validModels : [userModel, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.5-pro", "gemini-1.5-pro"];
+   const priority = [userModel, "gemini-2.5-flash", "gemini-1.5-flash", "gemini-2.5-pro", "gemini-1.5-pro"];
+   let modelsToTry = [...new Set([...priority, ...allModels])];
+   
    if (validModels.length > 0) {
        modelsToTry = modelsToTry.filter(m => validModels.includes(m));
-       if (modelsToTry.length === 0) modelsToTry = [validModels[0]];
    }
+   if (modelsToTry.length === 0) modelsToTry = [userModel]; // Fallback
    
    let lastErr = null;
    
-   for (let model of [...new Set(modelsToTry)]) {
+   for (let model of modelsToTry) {
        try {
+           if (stat) {
+               stat.className = "status warn";
+               stat.innerHTML = `<i class='fas fa-spinner fa-spin'></i> Đang tạo đề thi bằng <b>${model}</b>... (Vui lòng đợi)`;
+           }
+           
            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
            let res = await fetch(url, {
                method: "POST",
@@ -6547,10 +6556,10 @@ async function simpleGeminiCall(prompt) {
                })
            });
            
-           // Tự động thử lại 1 lần nếu bị quá tải (503) hoặc rate limit (429)
            if (res.status === 503 || res.status === 429) {
-               console.warn(`Mô hình ${model} báo bận (${res.status}), tự động thử lại sau 3 giây...`);
+               if (stat) stat.innerHTML = `<i class='fas fa-exclamation-triangle'></i> <b>${model}</b> đang bận (Lỗi ${res.status}). Thử lại sau 3 giây...`;
                await new Promise(r => setTimeout(r, 3000));
+               if (stat) stat.innerHTML = `<i class='fas fa-spinner fa-spin'></i> Đang thử lại với <b>${model}</b>...`;
                res = await fetch(url, {
                    method: "POST",
                    headers: {"Content-Type": "application/json"},
@@ -6563,22 +6572,29 @@ async function simpleGeminiCall(prompt) {
            
            if (!res.ok) {
                const err = await res.json().catch(() => ({}));
-               throw new Error(err.error?.message || `Lỗi khi gọi API Gemini (Mã lỗi: ${res.status}).`);
+               throw new Error(err.error?.message || `Lỗi HTTP ${res.status}`);
            }
            
            const data = await res.json();
-           if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
-               return data.candidates[0].content.parts[0].text;
+           if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+               throw new Error("Không có kết quả trả về từ mô hình.");
            }
-       } catch (e) {
+           
+           return String(data.candidates[0].content.parts[0].text);
+           
+       } catch(e) {
+           console.warn(`Model ${model} failed:`, e);
            lastErr = e;
-           console.log(`Model ${model} failed:`, e.message);
-           // If it's an auth error, don't try other models
-           if (e.message.includes("API key not valid")) break;
+           if (stat) {
+               stat.innerHTML = `<i class='fas fa-sync fa-spin'></i> <b>${model}</b> lỗi. Đang tự động chuyển sang mô hình khác...`;
+           }
+           await new Promise(r => setTimeout(r, 1500));
+           
+           if (e.message && e.message.includes("API key not valid")) break;
            continue;
        }
    }
-   throw lastErr || new Error("Không nhận được nội dung từ Gemini.");
+   throw lastErr || new Error("Tất cả các mô hình AI đều bị quá tải hoặc lỗi. Vui lòng thử lại sau.");
 }
 
 // --- STEP 3: EXAM GENERATOR LOGIC ---
