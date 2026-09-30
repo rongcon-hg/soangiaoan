@@ -5822,13 +5822,13 @@ window.addEventListener(&quot;message&quot;,e=&gt;{
 // --- HELPER FOR STEP 3 ---
 function broadcastProgramData() {
     parent.postMessage({
-        type: "UPDATE_PROGRAM_DATA",
+        type: 'UPDATE_PROGRAM_DATA',
         payload: {
             fullProgram: (typeof programSequence !== 'undefined' ? programSequence : []).map(x=>JSON.parse(JSON.stringify(x))),
-            textbookData: typeof textbookData !== 'undefined' ? textbookData : "",
-            courseName: typeof course !== 'undefined' ? (course.name||"") : ""
+            textbookData: typeof textbookData !== 'undefined' ? textbookData : '',
+            courseName: typeof course !== 'undefined' ? (course.name||'') : ''
         }
-    }, "*");
+    }, '*');
 }
 
 async function init(){
