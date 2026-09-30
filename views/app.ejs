@@ -5925,21 +5925,30 @@ init();
         </div>
       </div>
       
-      <div class="schedule-inline" style="margin-top:15px;">
-        <div class="field-box">
+      <div class="field-box" style="margin-top:15px;">
+        <label>Loại đề thi</label>
+        <select id="examType" onchange="toggleExamTypeInputs()" style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; outline:none; background:#fff;">
+           <option value="ket-hop" selected>Kết hợp (Trắc nghiệm & Tự luận)</option>
+           <option value="trac-nghiem">Chỉ thi Trắc nghiệm</option>
+           <option value="tu-luan">Chỉ thi Tự luận / Thực hành</option>
+        </select>
+      </div>
+
+      <div class="schedule-inline" id="examCountBoxes" style="margin-top:12px;">
+        <div class="field-box" id="boxNumTN">
           <label>Số câu Trắc nghiệm</label>
-          <input type="number" id="numTracNghiem" value="20" min="0">
+          <input type="number" id="numTracNghiem" value="30" min="1">
         </div>
-        <div class="field-box">
+        <div class="field-box" id="boxNumTH">
           <label>Câu Thực hành/Tự luận</label>
-          <input type="number" id="numThucHanh" value="2" min="0">
+          <input type="number" id="numThucHanh" value="2" min="1">
         </div>
       </div>
       
       <div class="schedule-inline" style="margin-top:12px;">
         <div class="field-box">
           <label>Thời gian làm bài (phút)</label>
-          <input type="number" id="examTime" value="60" min="15" step="5">
+          <input type="number" id="examTime" value="90" min="15" step="5">
         </div>
         <div class="field-box">
           <label>Mức độ khó</label>
@@ -6498,7 +6507,7 @@ async function simpleGeminiCall(prompt) {
    if(!key) throw new Error("Vui lòng thiết lập Google Gemini API Key trong Bước 2 (Soạn Giáo Án -> Cài đặt AI) trước khi sử dụng tính năng này.");
    
    // Try default or fallback models
-   const modelsToTry = [localStorage.getItem("giaoan_gemini_model") || "gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"];
+   const modelsToTry = [localStorage.getItem("giaoan_gemini_model") || "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.5-pro"];
    let lastErr = null;
    
    for (let model of [...new Set(modelsToTry)]) {
@@ -6553,16 +6562,47 @@ function renderExamChapterSelection(payload) {
        return;
    }
 
-      let html = '<label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; cursor:pointer; padding:5px; border-radius:4px; background:#e2e8f0; font-weight:bold;"><input type="checkbox" id="examSelectAll" checked onchange="document.querySelectorAll(\'.exam-chapter-cb\').forEach(cb=>cb.checked=this.checked)" style="margin-top:4px;"><span style="font-size:14px; line-height:1.4; color:#1e293b;">Chọn tất cả các chương/bài</span></label>';
+      
+   function checkExamSelectAllState() {
+       const allChecked = Array.from(document.querySelectorAll('.exam-chapter-cb, .exam-sub-cb')).every(cb => cb.checked);
+       document.getElementById('examSelectAll').checked = allChecked;
+   }
+   window.toggleExamTypeInputs = function() {
+       const t = document.getElementById("examType").value;
+       document.getElementById("boxNumTN").style.display = t === 'tu-luan' ? 'none' : 'block';
+       document.getElementById("boxNumTH").style.display = t === 'trac-nghiem' ? 'none' : 'block';
+   };
+
+   let html = '<label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; cursor:pointer; padding:5px; border-radius:4px; background:#e2e8f0; font-weight:bold;"><input type="checkbox" id="examSelectAll" checked onchange="document.querySelectorAll(\'.exam-chapter-cb, .exam-sub-cb\').forEach(cb=>cb.checked=this.checked)" style="margin-top:4px;"><span style="font-size:14px; line-height:1.4; color:#1e293b;">Chọn tất cả các chương/bài</span></label>';
    lessons.forEach((item, index) => {
        let title = item.title || ("Bài " + (index+1));
        if (item.detail) title += " - " + item.detail;
+       html += `<div class="exam-chapter-group" style="margin-bottom:10px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">`;
        html += `
-         <label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; cursor:pointer; padding:5px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
-            <input type="checkbox" class="exam-chapter-cb" value="${index}" checked style="margin-top:4px;" onchange="document.getElementById('examSelectAll').checked = Array.from(document.querySelectorAll('.exam-chapter-cb')).every(cb => cb.checked);">
+         <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; padding:5px; border-radius:4px; transition:background 0.2s; font-weight:600;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+            <input type="checkbox" class="exam-chapter-cb" value="${index}" checked style="margin-top:4px;" onchange="document.querySelectorAll('.exam-sub-cb-${index}').forEach(cb=>cb.checked=this.checked); checkExamSelectAllState();">
             <span style="font-size:14px; line-height:1.4;">${title}</span>
          </label>
        `;
+       
+       if (item.items && item.items.length > 0) {
+           html += `<div style="margin-left: 24px; display:flex; flex-direction:column; gap:6px; margin-top:4px;">`;
+           item.items.forEach((sub, subIdx) => {
+               html += `
+                 <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;">
+                    <input type="checkbox" class="exam-sub-cb exam-sub-cb-${index}" data-parent="${index}" value="${subIdx}" checked style="margin-top:2px;" onchange="
+                        const parent = document.querySelector('.exam-chapter-cb[value=\'${index}\']');
+                        if(this.checked) parent.checked = true;
+                        else if(document.querySelectorAll('.exam-sub-cb-${index}:checked').length === 0) parent.checked = false;
+                        checkExamSelectAllState();
+                    ">
+                    <span style="font-size:13px; line-height:1.4; color:#475569;">${sub}</span>
+                 </label>
+               `;
+           });
+           html += `</div>`;
+       }
+       html += `</div>`;
    });
    
    // Keep user's previous selection if possible, otherwise render fresh
@@ -6582,10 +6622,11 @@ async function runGenerateExam() {
    const cbs = document.querySelectorAll(".exam-chapter-cb:checked");
    if(cbs.length === 0) return alert("Vui lòng chọn ít nhất 1 bài học/chương để tạo đề thi!");
    
-   const numTN = parseInt(document.getElementById("numTracNghiem").value) || 0;
-   const numTH = parseInt(document.getElementById("numThucHanh").value) || 0;
+   const examType = document.getElementById("examType") ? document.getElementById("examType").value : "ket-hop";
+   const numTN = examType !== 'tu-luan' ? (parseInt(document.getElementById("numTracNghiem").value) || 0) : 0;
+   const numTH = examType !== 'trac-nghiem' ? (parseInt(document.getElementById("numThucHanh").value) || 0) : 0;
    
-   if(numTN === 0 && numTH === 0) return alert("Vui lòng nhập số lượng câu hỏi trắc nghiệm hoặc thực hành!");
+   if(numTN === 0 && numTH === 0) return alert("Vui lòng nhập số lượng câu hỏi!");
    
    // Gather selected topics
    let selectedTopics = [];
@@ -6595,6 +6636,20 @@ async function runGenerateExam() {
        if(lesson) {
            let t = lesson.title;
            if (lesson.detail) t += " - " + lesson.detail;
+           
+           // Gather checked sub-items
+           const subCbs = document.querySelectorAll(`.exam-sub-cb-${idx}:checked`);
+           let subs = [];
+           subCbs.forEach(subCb => {
+               const subIdx = parseInt(subCb.value);
+               if (lesson.items && lesson.items[subIdx]) {
+                   subs.push(lesson.items[subIdx]);
+               }
+           });
+           
+           if (subs.length > 0) {
+               t += "\n   + " + subs.join("\n   + ");
+           }
            selectedTopics.push(t);
        }
    });
@@ -6618,9 +6673,12 @@ Dựa vào các chủ đề bài học sau đây (phạm vi kiến thức):
 ${selectedTopics.map((t,i) => (i+1) + ". " + t).join("\n")}
 
 ${textbookContext ? "Nội dung tham khảo từ giáo trình:\n" + textbookContext + "\n\n" : ""}
-Hãy tạo một bộ đề kiểm tra bao gồm:
-1. ${numTN} câu hỏi trắc nghiệm (có 4 đáp án A, B, C, D và ĐÁNH DẤU RÕ đáp án đúng).
-2. ${numTH} bài tập thực hành / tình huống / tự luận bám sát chuyên môn.
+Hãy tạo một bộ đề kiểm tra bám sát nội dung trên với cấu trúc:
+${examType === 'trac-nghiem' ? `1. ${numTN} câu hỏi trắc nghiệm (có 4 đáp án A, B, C, D và ĐÁNH DẤU RÕ đáp án đúng).` : 
+  examType === 'tu-luan' ? `1. ${numTH} câu hỏi tự luận / bài tập thực hành / tình huống chuyên môn.` :
+  `1. PHẦN TRẮC NGHIỆM: ${numTN} câu hỏi (có 4 đáp án A, B, C, D và ĐÁNH DẤU RÕ đáp án đúng).
+2. PHẦN TỰ LUẬN/THỰC HÀNH: ${numTH} câu hỏi/bài tập tình huống chuyên môn.`}
+
 - Thời gian làm bài: ${examTime} phút.
 - Mức độ khó: ${examDiff}.
 
