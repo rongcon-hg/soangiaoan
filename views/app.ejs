@@ -123,7 +123,10 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 <div class="hero">
   <h1>QUẢN LÝ SỔ ĐẦU BÀI & SOẠN GIÁO ÁN</h1>
   
-  <div class="steps" style="align-items:center;"><div class="step-pill">BƯỚC 1 · Lập Sổ đầu bài</div><div class="step-pill">BƯỚC 2 · Soạn giáo án theo từng buổi</div><a href="/templates/chuong_trinh_mon_hoc_mau.docx" download="chuong_trinh_mon_hoc_mau.docx" class="download-btn-mobile" style="background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; border-radius: 99px; text-decoration: none; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='var(--bg)'"><i class="fas fa-download" style="color:var(--primary)"></i> Tải file mẫu Chương trình</a></div>
+  <div class="steps" style="align-items:center;">
+<div class="step-pill" onclick="switchTab(1)" style="cursor:pointer;" title="Chuyển sang Bước 1">BƯỚC 1 · Lập Sổ đầu bài</div>
+<div class="step-pill" onclick="switchTab(2)" style="cursor:pointer;" title="Chuyển sang Bước 2">BƯỚC 2 · Soạn giáo án theo từng buổi</div>
+<div class="step-pill" onclick="switchTab(3)" style="cursor:pointer;" title="Chuyển sang Bước 3">BƯỚC 3 · Tạo Đề thi (AI)</div><a href="/templates/chuong_trinh_mon_hoc_mau.docx" download="chuong_trinh_mon_hoc_mau.docx" class="download-btn-mobile" style="background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; border-radius: 99px; text-decoration: none; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='var(--bg)'"><i class="fas fa-download" style="color:var(--primary)"></i> Tải file mẫu Chương trình</a></div>
 </div>
 
 <section class="section" id="step1">
@@ -5849,6 +5852,69 @@ init();
 &lt;/script&gt;
 &lt;/body&gt;
 &lt;/html&gt;"></iframe>
+
+</section>
+
+<section class="section" id="step3" style="display:none;">
+  <div class="section-head">
+    <div>
+      <h2>BƯỚC 3. TẠO ĐỀ KIỂM TRA & THỰC HÀNH</h2>
+      <p>Tự động sinh đề thi bám sát nội dung chương trình và giáo trình đã cung cấp.</p>
+    </div>
+    <div class="actions">
+      <button class="secondary" onclick="switchTab(2)" title="Quay lại"><i class="fas fa-arrow-left"></i> <span class="btn-text">Quay lại</span></button>
+    </div>
+  </div>
+  
+  <div class="split" style="gap:20px; align-items:flex-start;">
+    <!-- Left Panel: Settings -->
+    <div class="panel" style="flex:1;">
+      <h3><i class="fas fa-cogs" style="color:#16469d;"></i> Cấu hình Đề thi</h3>
+      
+      <div class="field-box" style="margin-top:15px;">
+        <label>Phạm vi kiến thức (Chọn các chương/bài):</label>
+        <div id="examChapterList" style="max-height:250px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:10px; background:#fff;">
+          <em style="color:#666; font-size:13px;">(Cần tải Sổ đầu bài ở Bước 1 trước)</em>
+        </div>
+      </div>
+      
+      <div class="schedule-inline" style="margin-top:15px;">
+        <div class="field-box">
+          <label>Số câu Trắc nghiệm</label>
+          <input type="number" id="numTracNghiem" value="20" min="0">
+        </div>
+        <div class="field-box">
+          <label>Số câu Thực hành / Tự luận</label>
+          <input type="number" id="numThucHanh" value="2" min="0">
+        </div>
+      </div>
+      
+      <button class="btn primary" id="btnGenerateExam" onclick="runGenerateExam()" style="width:100%; margin-top:20px; font-size:15px;">
+         <i class="fas fa-magic"></i> Tạo Đề Thi Bằng Gemini
+      </button>
+      
+      <div id="examStatus" class="status" style="margin-top:10px; display:none;"></div>
+    </div>
+    
+    <!-- Right Panel: Output -->
+    <div class="panel" style="flex:2;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+         <h3 style="margin:0;"><i class="fas fa-file-alt" style="color:#16469d;"></i> Xem trước Đề thi</h3>
+         <div class="toolbar" style="display:flex; gap:10px;">
+           <button class="btn" onclick="exportExamWord()" style="background:#2563eb;"><i class="fas fa-file-word"></i> Xuất Word</button>
+           <button class="btn" onclick="exportExamPdf()" style="background:#dc2626;"><i class="fas fa-file-pdf"></i> Xuất PDF</button>
+         </div>
+      </div>
+      
+      <div id="examPaper" class="paper" style="min-height:500px; padding:30px; border:1px solid #ccc; background:#fff; font-size:14pt; line-height:1.5;">
+        <div style="text-align:center; color:#999; margin-top:150px;">
+           <i class="fas fa-file-signature" style="font-size:40px; margin-bottom:15px; color:#cbd5e1;"></i><br>
+           Đề thi sẽ hiển thị tại đây sau khi AI xử lý xong...
+        </div>
+      </div>
+    </div>
+  </div>
+
 </section>
 </div>
 
@@ -5860,37 +5926,36 @@ init();
 function switchTab(step) {
   const step1 = document.getElementById("step1");
   const step2 = document.getElementById("step2");
+  const step3 = document.getElementById("step3");
   if(step1) step1.style.display = step === 1 ? "block" : "none";
   if(step2) step2.style.display = step === 2 ? "block" : "none";
+  if(step3) step3.style.display = step === 3 ? "block" : "none";
   
   const pills = document.querySelectorAll(".step-pill");
-  if(pills.length >= 2) {
-    if(step === 1) {
-      pills[0].style.background = "#fff";
-      pills[0].style.color = "#16469d";
-      pills[0].style.borderColor = "#fff";
-      
-      pills[1].style.background = "rgba(255,255,255,.14)";
-      pills[1].style.color = "#fff";
-      pills[1].style.borderColor = "rgba(255,255,255,.32)";
-    } else {
-      pills[1].style.background = "#fff";
-      pills[1].style.color = "#16469d";
-      pills[1].style.borderColor = "#fff";
-      
-      pills[0].style.background = "rgba(255,255,255,.14)";
-      pills[0].style.color = "#fff";
-      pills[0].style.borderColor = "rgba(255,255,255,.32)";
-      if(window._lastSchedulePayload) {
-        const pf = document.getElementById("plannerFrame");
-        if(pf && pf.contentWindow) {
-          if(typeof pf.contentWindow.receiveScheduleSession === "function") {
-            pf.contentWindow.receiveScheduleSession(window._lastSchedulePayload);
-          }
-          pf.contentWindow.postMessage({type:"LOAD_SCHEDULE_SESSION",payload:window._lastSchedulePayload},"*");
-        }
+  pills.forEach((pill, idx) => {
+      if (idx + 1 === step) {
+          pill.style.background = "#fff";
+          pill.style.color = "#16469d";
+          pill.style.borderColor = "#fff";
+      } else {
+          pill.style.background = "rgba(255,255,255,.14)";
+          pill.style.color = "#fff";
+          pill.style.borderColor = "rgba(255,255,255,.32)";
       }
-    }
+  });
+
+  if (step === 2 && window._lastSchedulePayload) {
+      const pf = document.getElementById("plannerFrame");
+      if(pf && pf.contentWindow) {
+        if(typeof pf.contentWindow.receiveScheduleSession === "function") {
+          pf.contentWindow.receiveScheduleSession(window._lastSchedulePayload);
+        }
+        pf.contentWindow.postMessage({type:"LOAD_SCHEDULE_SESSION",payload:window._lastSchedulePayload},"*");
+      }
+  }
+  
+  if (step === 3 && window._lastSchedulePayload) {
+      renderExamChapterSelection(window._lastSchedulePayload);
   }
 }
 
@@ -6327,6 +6392,253 @@ window.addEventListener("message", async e => {
         Swal.fire({ text: err.message, icon: 'error' });
     }
   };
+
+
+// --- WORD EXPORT HELPERS ---
+function buildExamWordDoc(inner) {
+  const css = `
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #000; padding: 5px; }
+    h2, h3, h4 { text-align: center; }
+  `;
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="utf-8"><title>Export HTML To Doc</title><style>${css}</style></head>
+  <body>${inner}</body></html>`;
+}
+
+function downloadExamWord(inner, filename) {
+  const doc = buildExamWordDoc(inner);
+  const blob = new Blob(["\ufeff", doc], {type:"application/msword;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+
+// --- NATIVE GEMINI CALL FOR EXAM ---
+async function simpleGeminiCall(prompt) {
+   const key = localStorage.getItem("giaoan_gemini_key");
+   if(!key) throw new Error("Vui lòng thiết lập Google Gemini API Key trong Bước 2 (Soạn Giáo Án -> Cài đặt AI) trước khi sử dụng tính năng này.");
+   
+   // Try default or fallback models
+   const modelsToTry = [localStorage.getItem("giaoan_gemini_model") || "gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-pro", "gemini-1.5-flash"];
+   let lastErr = null;
+   
+   for (let model of [...new Set(modelsToTry)]) {
+       try {
+           const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+           const res = await fetch(url, {
+               method: "POST",
+               headers: {"Content-Type": "application/json"},
+               body: JSON.stringify({
+                   contents: [{role: "user", parts: [{text: prompt}]}],
+                   generationConfig: {
+                       temperature: 0.7,
+                   }
+               })
+           });
+           
+           if (!res.ok) {
+               const err = await res.json();
+               throw new Error(err.error?.message || "Lỗi khi gọi API Gemini.");
+           }
+           
+           const data = await res.json();
+           if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts) {
+               return data.candidates[0].content.parts[0].text;
+           }
+       } catch (e) {
+           lastErr = e;
+           console.log(`Model ${model} failed:`, e.message);
+           // If it's an auth error, don't try other models
+           if (e.message.includes("API key not valid")) break;
+           continue;
+       }
+   }
+   throw lastErr || new Error("Không nhận được nội dung từ Gemini.");
+}
+
+// --- STEP 3: EXAM GENERATOR LOGIC ---
+function renderExamChapterSelection(payload) {
+   const container = document.getElementById("examChapterList");
+   if(!container) return;
+   
+   const program = payload.fullProgram;
+   if(!program || !Array.isArray(program) || program.length === 0) {
+       container.innerHTML = '<em style="color:#666; font-size:13px;">(Chưa có dữ liệu chương trình. Vui lòng lập Sổ đầu bài ở Bước 1)</em>';
+       return;
+   }
+   
+   // Only show lessons, not assessments
+   const lessons = program.filter(x => x.kind === 'lesson');
+   if(lessons.length === 0) {
+       container.innerHTML = '<em style="color:#666; font-size:13px;">(Không tìm thấy bài học nào trong chương trình)</em>';
+       return;
+   }
+
+   let html = '';
+   lessons.forEach((item, index) => {
+       let title = item.title || ("Bài " + (index+1));
+       if (item.detail) title += " - " + item.detail;
+       html += `
+         <label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; cursor:pointer; padding:5px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+            <input type="checkbox" class="exam-chapter-cb" value="${index}" style="margin-top:4px;">
+            <span style="font-size:14px; line-height:1.4;">${title}</span>
+         </label>
+       `;
+   });
+   
+   // Keep user's previous selection if possible, otherwise render fresh
+   // For now, render fresh every time to ensure sync, or just render once if not rendered
+   // We will just replace it.
+   container.innerHTML = html;
+   
+   // Store global reference for exam gen
+   window._currentExamLessons = lessons;
+}
+
+async function runGenerateExam() {
+   const btn = document.getElementById("btnGenerateExam");
+   const stat = document.getElementById("examStatus");
+   const paper = document.getElementById("examPaper");
+   
+   const cbs = document.querySelectorAll(".exam-chapter-cb:checked");
+   if(cbs.length === 0) return alert("Vui lòng chọn ít nhất 1 bài học/chương để tạo đề thi!");
+   
+   const numTN = parseInt(document.getElementById("numTracNghiem").value) || 0;
+   const numTH = parseInt(document.getElementById("numThucHanh").value) || 0;
+   
+   if(numTN === 0 && numTH === 0) return alert("Vui lòng nhập số lượng câu hỏi trắc nghiệm hoặc thực hành!");
+   
+   // Gather selected topics
+   let selectedTopics = [];
+   cbs.forEach(cb => {
+       const idx = parseInt(cb.value);
+       const lesson = window._currentExamLessons[idx];
+       if(lesson) {
+           let t = lesson.title;
+           if (lesson.detail) t += " - " + lesson.detail;
+           selectedTopics.push(t);
+       }
+   });
+   
+   // Get Textbook Context (limit size to avoid extreme token usage if needed, but Gemini 1.5 handles 1M tokens)
+   let textbookContext = "";
+   if (window._lastSchedulePayload && window._lastSchedulePayload.textbookData) {
+       textbookContext = window._lastSchedulePayload.textbookData.substring(0, 150000); // Send first 150k chars to be safe but informative
+   }
+   
+   const prompt = `Bạn là một giảng viên cao cấp chuyên soạn đề thi môn học thuộc hệ thống Giáo dục nghề nghiệp.
+Dựa vào các chủ đề bài học sau đây (phạm vi kiến thức):
+${selectedTopics.map((t,i) => (i+1) + ". " + t).join("\n")}
+
+${textbookContext ? "Nội dung tham khảo từ giáo trình:\n" + textbookContext + "\n\n" : ""}
+Hãy tạo một bộ đề kiểm tra bao gồm:
+1. ${numTN} câu hỏi trắc nghiệm (có 4 đáp án A, B, C, D và ĐÁNH DẤU RÕ đáp án đúng).
+2. ${numTH} bài tập thực hành / tình huống / tự luận bám sát chuyên môn.
+
+Yêu cầu định dạng:
+- Trả về kết quả BẰNG MỘT MÃ HTML DUY NHẤT (TUYỆT ĐỐI KHÔNG dùng markdown code block, KHÔNG dùng ký tự sao).
+- Bắt đầu luôn bằng thẻ <h2 style="text-align:center; font-weight:bold; text-transform:uppercase;">ĐỀ THI KẾT THÚC MÔN HỌC</h2>
+- Dùng thẻ <h3>, <h4>, <p>, <ul>, <li>, <b>, <i> để định dạng nội dung trực quan, chuyên nghiệp.
+- Cấu trúc đề rõ ràng: Phần I. Trắc nghiệm, Phần II. Thực hành.
+- PHẦN CUỐI CÙNG của mã HTML bắt buộc phải có <div style="page-break-before:always"></div> và phần <h2 style="text-align:center;">ĐÁP ÁN VÀ THANG ĐIỂM</h2> để giảng viên dễ chấm. Định dạng đáp án trắc nghiệm bằng thẻ <table> có border=1 rõ ràng.`;
+
+   btn.disabled = true;
+   stat.style.display = "block";
+   stat.className = "status warn";
+   stat.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Gemini đang phân tích và sinh đề thi...";
+   
+   try {
+       const raw = await simpleGeminiCall(prompt);
+       
+       let htmlContent = String(raw || "").replace(/^\`\`(?:html|text|markdown)?/i,"").replace(/\`\`\x60$/,"").trim();
+       // Convert any stray markdown bolds
+       htmlContent = htmlContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+       
+       paper.innerHTML = htmlContent;
+       stat.className = "status success";
+       stat.innerHTML = "<i class='fas fa-check-circle'></i> Đã sinh đề thi thành công!";
+   } catch(e) {
+       console.error(e);
+       stat.className = "status err";
+       stat.innerHTML = "<i class='fas fa-exclamation-triangle'></i> Lỗi: " + (e.message || e);
+       alert("Có lỗi xảy ra khi gọi AI: " + (e.message || e));
+   } finally {
+       btn.disabled = false;
+       btn.innerHTML = "<i class='fas fa-magic'></i> Tạo Đề Thi Bằng Gemini";
+   }
+}
+
+function exportExamWord() {
+    const paper = document.getElementById("examPaper");
+    if(!paper || paper.innerText.includes("Đề thi sẽ hiển thị tại đây")) return alert("Vui lòng tạo đề thi trước khi xuất file!");
+    
+    // We assume exportGiaoAnWord or downloadWord exists in the global scope (layout.js or api.js)
+    if (true) {
+        downloadExamWord(paper.innerHTML, "De_Thi_Sinh_Boi_AI.doc");
+    } else {
+        alert("Chức năng Xuất Word đang cập nhật hoặc thiếu thư viện.");
+    }
+}
+
+function exportExamPdf() {
+    const paper = document.getElementById("examPaper");
+    if(!paper || paper.innerText.includes("Đề thi sẽ hiển thị tại đây")) return alert("Vui lòng tạo đề thi trước khi xuất file!");
+    
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const hero = document.querySelector(".hero");
+    const steps = document.querySelector(".steps");
+    const leftPanel = document.querySelector("#step3 .panel:first-child");
+    const header = document.querySelector(".header"); // If any
+    const footer = document.querySelector(".footer"); // If any
+    const h2Title = document.querySelector("#step3 h2");
+    const pTitle = document.querySelector("#step3 p");
+    const actBtn = document.querySelector("#step3 .actions");
+    
+    const originalStyles = [];
+    const toHide = [step1, step2, hero, steps, leftPanel, header, footer, h2Title, pTitle, actBtn];
+    
+    toHide.forEach(el => {
+        if(el) {
+           originalStyles.push({ el: el, display: el.style.display });
+           el.style.display = 'none';
+        }
+    });
+    
+    // Add print styles dynamically
+    const printStyle = document.createElement("style");
+    printStyle.id = "examPrintStyle";
+    printStyle.innerHTML = `
+      @media print {
+         body { background: white !important; }
+         .main-content { padding: 0 !important; max-width: 100% !important; }
+         .split { display: block !important; }
+         #examPaper { border: none !important; padding: 0 !important; box-shadow: none !important; }
+      }
+    `;
+    document.head.appendChild(printStyle);
+    
+    const oldTitle = document.title;
+    document.title = "De_Thi_Sinh_Boi_AI";
+    
+    setTimeout(() => {
+        window.print();
+        
+        document.title = oldTitle;
+        const pStyle = document.getElementById("examPrintStyle");
+        if(pStyle) pStyle.remove();
+        
+        originalStyles.forEach(item => {
+            item.el.style.display = item.display;
+        });
+    }, 200);
+}
+
 </script>
 </body>
 </html>
