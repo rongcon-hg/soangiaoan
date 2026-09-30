@@ -716,6 +716,16 @@ html,body,button,input,select,textarea,option,label,table,th,td,div,span,p,h1,h2
 &lt;/div&gt;
 
 &lt;script&gt;
+function broadcastProgramData() {
+    parent.postMessage({
+        type: 'UPDATE_PROGRAM_DATA',
+        payload: {
+            fullProgram: (typeof programSequence !== 'undefined' ? programSequence : []).map(x=>JSON.parse(JSON.stringify(x))),
+            textbookData: typeof textbookData !== 'undefined' ? textbookData : '',
+            courseName: typeof course !== 'undefined' ? (course.name||'') : ''
+        }
+    }, '*');
+}
 let course = {name:&quot;&quot;,code:&quot;&quot;,total:0,lt:0,th:0,kt:0};
 let lessons = [];
 let programSequence = []; // đúng thứ tự: Bài -&gt; Kiểm tra -&gt; Bài -&gt; ... -&gt; Thi
@@ -1449,6 +1459,7 @@ async function readTextbookFile(file) {
             driveLink: textbookData?.driveLink || &quot;&quot;
         };
         status.innerHTML = `&lt;b style=&quot;color:#166534;&quot;&gt;✅ Đã đọc thành công giáo trình:&lt;/b&gt; ${escapeHtml(file.name)} (${(text.length/1000).toFixed(1)}k ký tự). Nội dung này sẽ dùng để trích xuất tự động tại Bước 2.`;
+        if(typeof broadcastProgramData === 'function') broadcastProgramData();
         if(typeof saveStateToBackend === 'function') saveStateToBackend();
     } catch(err) {
         console.error(err);
@@ -5819,17 +5830,6 @@ window.addEventListener(&quot;message&quot;,e=&gt;{
   }
 });
 
-// --- HELPER FOR STEP 3 ---
-function broadcastProgramData() {
-    parent.postMessage({
-        type: 'UPDATE_PROGRAM_DATA',
-        payload: {
-            fullProgram: (typeof programSequence !== 'undefined' ? programSequence : []).map(x=>JSON.parse(JSON.stringify(x))),
-            textbookData: typeof textbookData !== 'undefined' ? textbookData : '',
-            courseName: typeof course !== 'undefined' ? (course.name||'') : ''
-        }
-    }, '*');
-}
 
 async function init(){
   await openDB();
