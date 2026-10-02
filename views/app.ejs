@@ -5987,6 +5987,64 @@ init();
   </div>
 
 </section>
+
+
+<section class="section" id="step4" style="display:none;">
+  <div class="section-head">
+    <div>
+      <h2>BƯỚC 4. TẠO PROMPT LÀM SLIDE THUYẾT TRÌNH</h2>
+      <p>Tạo các câu lệnh (prompt) tối ưu để yêu cầu AI (Gemini/ChatGPT) sinh cấu trúc Slide bài giảng.</p>
+    </div>
+    <div class="actions">
+      <button class="secondary" onclick="switchTab(2)" title="Quay lại"><i class="fas fa-arrow-left"></i> <span class="btn-text">Quay lại</span></button>
+    </div>
+  </div>
+  
+  <div class="split" style="gap:20px; align-items:flex-start;">
+    <!-- Left Panel: Settings -->
+    <div class="panel" style="flex:1;">
+      <h3><i class="fas fa-desktop" style="color:#16469d;"></i> Cấu hình Slide</h3>
+      
+      <div class="field-box" style="margin-top:15px;">
+        <label>Phạm vi kiến thức (Chọn các chương/bài):</label>
+        <div id="slideChapterList" style="max-height:250px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:10px; background:#fff;">
+          <em style="color:#666; font-size:13px;">(Cần tải Sổ đầu bài ở Bước 1 trước)</em>
+        </div>
+      </div>
+
+      <div class="field-box" style="margin-top:15px;">
+        <label>Phong cách thiết kế / Trình bày</label>
+        <select id="slideStyle" style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; outline:none; background:#fff;">
+           <option value="chuyên nghiệp, tinh gọn, ít chữ" selected>Chuyên nghiệp, tinh gọn</option>
+           <option value="sáng tạo, nhiều hình ảnh minh họa thực tế">Sáng tạo, nhiều hình ảnh minh họa</option>
+           <option value="học thuật, chi tiết, cung cấp nhiều số liệu và định nghĩa">Học thuật, chi tiết (nhiều chữ/số liệu)</option>
+        </select>
+      </div>
+
+      <div class="field-box" style="margin-top:15px;">
+        <label>Số lượng Slide (Dự kiến)</label>
+        <input type="number" id="numSlides" value="10" min="1" max="100" style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; outline:none;">
+      </div>
+      
+      <button class="btn primary" id="btnGenerateSlide" onclick="runGenerateSlidePrompt()" style="width:100%; margin-top:20px; font-size:15px;">
+         <i class="fas fa-magic"></i> Tạo Prompt Ngay
+      </button>
+    </div>
+    
+    <!-- Right Panel: Output -->
+    <div class="panel" style="flex:2;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+         <h3 style="margin:0;"><i class="fas fa-copy" style="color:#16469d;"></i> Prompt sinh ra</h3>
+         <div class="toolbar" style="display:flex; gap:10px;">
+             <button class="btn" onclick="copySlidePrompt()" id="btnCopyPrompt" style="background:#f1f5f9; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-clone"></i> Sao chép</button>
+         </div>
+      </div>
+      <div id="slidePromptPaper" style="min-height:400px; padding:20px; border:1px solid var(--border); border-radius:8px; background:#fafafa; white-space:pre-wrap; font-family:monospace; font-size:14.5px; color:#1e293b; line-height:1.6;">Prompt sẽ hiển thị tại đây... Bạn có thể copy và dán vào ChatGPT hoặc Gemini.</div>
+    </div>
+  </div>
+</section>
+
+
 </div>
 
 <script src="/js/api.js"></script>
@@ -5998,9 +6056,11 @@ function switchTab(step) {
   const step1 = document.getElementById("step1");
   const step2 = document.getElementById("step2");
   const step3 = document.getElementById("step3");
+  const step4 = document.getElementById("step4");
   if(step1) step1.style.display = step === 1 ? "block" : "none";
   if(step2) step2.style.display = step === 2 ? "block" : "none";
   if(step3) step3.style.display = step === 3 ? "block" : "none";
+  if(step4) step4.style.display = step === 4 ? "block" : "none";
   
   const pills = document.querySelectorAll(".step-pill");
   pills.forEach((pill, idx) => {
@@ -6596,6 +6656,112 @@ async function simpleGeminiCall(prompt) {
    }
    throw lastErr || new Error("Tất cả các mô hình AI đều bị quá tải hoặc lỗi. Vui lòng thử lại sau.");
 }
+
+
+// --- STEP 4: SLIDE PROMPT GENERATOR LOGIC ---
+function renderSlideChapterSelection(payload) {
+   const container = document.getElementById("slideChapterList");
+   if(!container) return;
+   
+   const program = payload.fullProgram;
+   if(!program || !Array.isArray(program) || program.length === 0) {
+       container.innerHTML = '<em style="color:#666; font-size:13px;">(Chưa có dữ liệu chương trình. Vui lòng lập Sổ đầu bài ở Bước 1)</em>';
+       return;
+   }
+   
+   const lessons = program.filter(x => x.kind === 'lesson');
+   if(lessons.length === 0) {
+       container.innerHTML = '<em style="color:#666; font-size:13px;">(Không tìm thấy bài học nào)</em>';
+       return;
+   }
+   
+   let html = '<div style="margin-bottom:8px;"><label><input type="checkbox" id="slideCbAll" checked onchange="toggleAllSlideCbs(this)"> <b>Chọn tất cả các chương/bài</b></label></div>';
+   
+   lessons.forEach((l, idx) => {
+       html += `<div style="margin-left:8px; margin-bottom:5px;">
+           <label><input type="checkbox" class="slide-chapter-cb" value="${idx}" checked onchange="toggleSlideSubCbs(${idx})"> <b>${escapeHtml(l.title)}</b></label>
+       </div>`;
+       
+       if (l.items && l.items.length > 0) {
+           html += `<div id="slideSubBox_${idx}" style="margin-left:28px; margin-bottom:8px; display:flex; flex-direction:column; gap:4px;">`;
+           l.items.forEach((sub, subIdx) => {
+               html += `<label style="font-size:13.5px;"><input type="checkbox" class="slide-sub-cb-${idx}" value="${subIdx}" checked> ${escapeHtml(sub)}</label>`;
+           });
+           html += `</div>`;
+       }
+   });
+   
+   container.innerHTML = html;
+}
+
+function toggleAllSlideCbs(master) {
+   const cbs = document.querySelectorAll('.slide-chapter-cb');
+   cbs.forEach(cb => {
+       cb.checked = master.checked;
+       toggleSlideSubCbs(cb.value);
+   });
+}
+
+function toggleSlideSubCbs(idx) {
+   const master = document.querySelector(`.slide-chapter-cb[value="${idx}"]`);
+   const subs = document.querySelectorAll(`.slide-sub-cb-${idx}`);
+   subs.forEach(s => s.checked = master ? master.checked : false);
+}
+
+function runGenerateSlidePrompt() {
+   const paper = document.getElementById("slidePromptPaper");
+   const cbs = document.querySelectorAll(".slide-chapter-cb:checked");
+   if(cbs.length === 0) return alert("Vui lòng chọn ít nhất 1 bài học/chương để tạo prompt!");
+   
+   let selectedTopics = [];
+   cbs.forEach(cb => {
+       const idx = parseInt(cb.value);
+       const lesson = window._currentExamLessons[idx];
+       if(lesson) {
+           let t = lesson.title;
+           if (lesson.detail) t += " - " + lesson.detail;
+           const subCbs = document.querySelectorAll(`.slide-sub-cb-${idx}:checked`);
+           let subs = [];
+           subCbs.forEach(subCb => {
+               const subIdx = parseInt(subCb.value);
+               if (lesson.items && lesson.items[subIdx]) subs.push(lesson.items[subIdx]);
+           });
+           if (subs.length > 0) t += "\n   + " + subs.join("\n   + ");
+           selectedTopics.push(t);
+       }
+   });
+   
+   const numSlides = document.getElementById("numSlides").value || 10;
+   const slideStyle = document.getElementById("slideStyle").value || "chuyên nghiệp, tinh gọn";
+   
+   const promptText = `Bạn là một chuyên gia thiết kế bài giảng trình chiếu (Presentation Designer) và một giảng viên dày dặn kinh nghiệm.
+Dựa vào khung nội dung bài học dưới đây, hãy tạo ra một kịch bản chi tiết để làm Slide thuyết trình (PowerPoint / Canva).
+
+PHẠM VI KIẾN THỨC CẦN TRUYỀN ĐẠT:
+${selectedTopics.map((t,i) => (i+1) + ". " + t).join("\n")}
+
+YÊU CẦU:
+- Số lượng Slide dự kiến: Khoảng ${numSlides} Slide.
+- Phong cách trình bày: ${slideStyle}.
+- Cấu trúc trả về cho mỗi Slide phải bao gồm:
+  + Tựa đề Slide (Tiêu đề chính)
+  + Nội dung (Bullet points, ngắn gọn, súc tích)
+  + Gợi ý hình ảnh / biểu đồ minh họa (nếu có)
+  + Ghi chú cho người thuyết trình (Speaker Notes)
+
+Vui lòng xuất kết quả rõ ràng, dễ đọc để tôi có thể copy vào phần mềm thiết kế.`;
+
+   paper.innerText = promptText;
+}
+
+function copySlidePrompt() {
+    const text = document.getElementById("slidePromptPaper").innerText;
+    if(!text || text.includes("Prompt sẽ hiển thị")) return alert("Chưa có prompt để copy!");
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Đã copy Prompt vào bộ nhớ đệm!");
+    });
+}
+
 
 // --- STEP 3: EXAM GENERATOR LOGIC ---
 function renderExamChapterSelection(payload) {
