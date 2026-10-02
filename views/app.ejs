@@ -6812,6 +6812,24 @@ Vui lòng xuất kết quả bằng định dạng HTML để hiển thị trên
 }
 
 
+
+async function fetchImageAsBase64(url) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) return null;
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (e) {
+        console.error("Failed to fetch image:", e);
+        return null;
+    }
+}
+
 async function exportPPTX() {
     const paper = document.getElementById("slidePromptPaper");
     if (!paper || paper.innerText.includes("Kết quả thiết kế Slide sẽ hiển thị")) return alert("Vui lòng tạo Slide bằng AI trước khi xuất PPTX!");
@@ -6819,7 +6837,6 @@ async function exportPPTX() {
     const btn = document.getElementById("btnExportPPTX");
     const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang tạo file PPTX và tải ảnh...";
     
     try {
         let pres = new PptxGenJS();
@@ -6828,7 +6845,6 @@ async function exportPPTX() {
         const slides = [];
         let currentSlide = null;
         
-        // Parse HTML
         Array.from(paper.childNodes).forEach(node => {
             if (node.nodeName === 'H2' || node.nodeName === 'H3') {
                 if (currentSlide) slides.push(currentSlide);
@@ -6862,17 +6878,15 @@ async function exportPPTX() {
         if (currentSlide) slides.push(currentSlide);
         
         if (slides.length === 0) {
-            throw new Error("Không tìm thấy cấu trúc Slide. Hãy chắc chắn rằng AI trả về đúng định dạng có Tiêu đề và Danh sách (Bullet points).");
+            throw new Error("Không tìm thấy cấu trúc Slide. Hãy chắc chắn rằng AI trả về đúng định dạng có Tiêu đề và Danh sách.");
         }
         
         for (let i = 0; i < slides.length; i++) {
             const s = slides[i];
             let slide = pres.addSlide();
             
-            // Title
             slide.addText(s.title, { x: 0.5, y: 0.3, w: '90%', h: 0.8, fontSize: 28, bold: true, color: '16469D', align: 'center' });
             
-            // Layout decision: If has image prompt, split 50-50, else full width
             let hasImage = s.imagePrompt && s.imagePrompt.length > 5;
             let textW = hasImage ? '50%' : '90%';
             
@@ -6881,21 +6895,26 @@ async function exportPPTX() {
             }
             
             if (hasImage) {
-                // Generate an English prompt for better image results
+                btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang vẽ ảnh slide " + (i+1) + "/" + slides.length + "...";
+                
                 let engPrompt = s.imagePrompt;
                 if (!engPrompt.toLowerCase().includes("corporate style")) engPrompt += ", consistent corporate style, blue and white color palette, clean modern vector illustration";
                 let imgUrl = "https://image.pollinations.ai/prompt/" + encodeURIComponent(engPrompt) + "?width=800&height=600&nologo=true";
                 
-                slide.addImage({
-                    path: imgUrl,
-                    x: 5.5,
-                    y: 1.5,
-                    w: 4.2,
-                    h: 3.2,
-                    sizing: { type: 'contain' }
-                });
+                let base64Img = await fetchImageAsBase64(imgUrl);
+                if (base64Img) {
+                    slide.addImage({
+                        data: base64Img,
+                        x: 5.5,
+                        y: 1.5,
+                        w: 4.2,
+                        h: 3.2,
+                        sizing: { type: 'contain' }
+                    });
+                } else {
+                    slide.addText("(Lỗi tải ảnh AI)", { x: 5.5, y: 3.0, w: 4.2, h: 0.5, color: 'FF0000', align: 'center' });
+                }
                 
-                // Add caption
                 slide.addText(s.imagePrompt, { x: 5.5, y: 4.8, w: 4.2, h: 0.5, fontSize: 11, italic: true, color: '666666', align: 'center' });
             }
             
@@ -6903,11 +6922,12 @@ async function exportPPTX() {
                 slide.addNotes(s.notes);
             }
             
-            // Add slide number
             slide.addText(String(i+1), { x: 9.5, y: 7.0, w: 0.5, h: 0.3, fontSize: 12, color: '999999', align: 'right' });
         }
         
+        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang đóng gói file PPTX...";
         await pres.writeFile({ fileName: "Slide_Bai_Giang_AI.pptx" });
+
         alert("Đã xuất file PPTX thành công! Mở file để xem ảnh minh họa AI đã tạo.");
         
     } catch(e) {
