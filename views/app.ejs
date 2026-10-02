@@ -120,10 +120,10 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 
 <style>
 /* CSS cho Bước 3 - Tạo đề thi */
-#step3 .split { display:flex; gap:20px; align-items:flex-start; }
-#step3 .panel { flex:1; background:#fff; border-radius:10px; border:1px solid #d9e2ef; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-#step3 .panel:first-child { flex: 0.8; }
-#step3 .panel:last-child { flex: 1.2; }
+#step3 .split, #step4 .split { display:flex; gap:20px; align-items:flex-start; }
+#step3 .panel, #step4 .panel { flex:1; background:#fff; border-radius:10px; border:1px solid #d9e2ef; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+#step3 .panel, #step4 .panel:first-child { flex: 0.8; }
+#step3 .panel, #step4 .panel:last-child { flex: 1.2; }
 #step3 .field-box { border:1px solid #dbe4ef; border-radius:9px; background:#f8fbff; padding:12px 14px; margin-bottom:12px; }
 #step3 .field-box label { display:block; font-size:13px; color:#475569; font-weight:700; margin-bottom:8px; }
 #step3 .field-box input[type="number"], #step3 .field-box input[type="text"] { width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; box-sizing:border-box; outline:none; }
@@ -141,8 +141,8 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 #step3 .status.err { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
 
 @media (max-width:900px) {
-   #step3 .split { flex-direction:column; }
-   #step3 .panel { width:100%; box-sizing:border-box; }
+   #step3 .split, #step4 .split { flex-direction:column; }
+   #step3 .panel, #step4 .panel { width:100%; box-sizing:border-box; }
    #step3 .toolbar { flex-direction:column; width:100%; }
    #step3 .toolbar .btn { width:100%; }
 }
@@ -6086,9 +6086,14 @@ function switchTab(step) {
       }
   }
   
+  
   if (step === 3 && window._lastSchedulePayload) {
       renderExamChapterSelection(window._lastSchedulePayload);
   }
+  if (step === 4 && window._lastSchedulePayload) {
+      renderSlideChapterSelection(window._lastSchedulePayload);
+  }
+
 }
 
 // Make pills clickable
@@ -6243,10 +6248,16 @@ window.addEventListener("message", async e => {
     if(e.data.payload.textbookData) window._lastSchedulePayload.textbookData = e.data.payload.textbookData;
     if(e.data.payload.courseName) window._lastSchedulePayload.courseName = e.data.payload.courseName;
     
+    
     const step3 = document.getElementById("step3");
     if (step3 && step3.style.display === "block") {
         renderExamChapterSelection(window._lastSchedulePayload);
     }
+    const step4 = document.getElementById("step4");
+    if (step4 && step4.style.display === "block") {
+        renderSlideChapterSelection(window._lastSchedulePayload);
+    }
+
   }
 
   if(e.data?.type==="OPEN_LESSON_PLAN_FROM_SCHEDULE"){
@@ -6676,23 +6687,38 @@ function renderSlideChapterSelection(payload) {
        return;
    }
    
-   let html = '<div style="margin-bottom:8px;"><label><input type="checkbox" id="slideCbAll" checked onchange="toggleAllSlideCbs(this)"> <b>Chọn tất cả các chương/bài</b></label></div>';
+   let html = '<div style="margin-bottom:8px;"><label><input type="checkbox" id="slideCbAll" checked onchange="toggleAllSlideCbs(this); updateSuggestedSlideCount();"> <b>Chọn tất cả các chương/bài</b></label></div>';
    
    lessons.forEach((l, idx) => {
        html += `<div style="margin-left:8px; margin-bottom:5px;">
-           <label><input type="checkbox" class="slide-chapter-cb" value="${idx}" checked onchange="toggleSlideSubCbs(${idx})"> <b>${escapeHtml(l.title)}</b></label>
+           <label><input type="checkbox" class="slide-chapter-cb" value="${idx}" checked onchange="toggleSlideSubCbs(${idx}); updateSuggestedSlideCount();"> <b>${escapeHtml(l.title)}</b></label>
        </div>`;
        
        if (l.items && l.items.length > 0) {
            html += `<div id="slideSubBox_${idx}" style="margin-left:28px; margin-bottom:8px; display:flex; flex-direction:column; gap:4px;">`;
            l.items.forEach((sub, subIdx) => {
-               html += `<label style="font-size:13.5px;"><input type="checkbox" class="slide-sub-cb-${idx}" value="${subIdx}" checked> ${escapeHtml(sub)}</label>`;
+               html += `<label style="font-size:13.5px;"><input type="checkbox" class="slide-sub-cb-${idx}" value="${subIdx}" checked onchange="updateSuggestedSlideCount();"> ${escapeHtml(sub)}</label>`;
            });
            html += `</div>`;
        }
    });
    
    container.innerHTML = html;
+   updateSuggestedSlideCount();
+}
+
+
+function updateSuggestedSlideCount() {
+    const chapterCbs = document.querySelectorAll(".slide-chapter-cb:checked");
+    let count = 0;
+    chapterCbs.forEach(cb => {
+        const idx = cb.value;
+        const subs = document.querySelectorAll(`.slide-sub-cb-${idx}:checked`);
+        if (subs.length > 0) count += subs.length;
+        else count += 1;
+    });
+    const suggested = count > 0 ? (count * 2 + 2) : 10; // 2 slides per topic + title & end slide
+    document.getElementById("numSlides").value = suggested;
 }
 
 function toggleAllSlideCbs(master) {
@@ -6960,7 +6986,7 @@ function exportExamPdf() {
     const step2 = document.getElementById("step2");
     const hero = document.querySelector(".hero");
     const steps = document.querySelector(".steps");
-    const leftPanel = document.querySelector("#step3 .panel:first-child");
+    const leftPanel = document.querySelector("#step3 .panel, #step4 .panel:first-child");
     const header = document.querySelector(".header"); // If any
     const footer = document.querySelector(".footer"); // If any
     const h2Title = document.querySelector("#step3 h2");
