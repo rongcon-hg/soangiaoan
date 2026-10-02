@@ -147,6 +147,9 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
    #step3 .toolbar .btn { width:100%; }
 }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/libs/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.min.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -6038,6 +6041,7 @@ init();
          <h3 style="margin:0;"><i class="fas fa-file-powerpoint" style="color:#16469d;"></i> Nội dung Slide</h3>
          <div class="toolbar" style="display:flex; gap:10px;">
              <button class="btn" onclick="copySlidePrompt()" id="btnCopyPrompt" style="background:#f1f5f9; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-clone"></i> Sao chép</button>
+             <button class="btn" onclick="exportPPTX()" id="btnExportPPTX" style="background:#2563eb; color:#fff; border:1px solid #1d4ed8; margin-left:5px;"><i class="fas fa-file-powerpoint"></i> Xuất PPTX (Kèm Ảnh)</button>
          </div>
       </div>
       <div id="slidePromptPaper" style="min-height:400px; padding:20px; border:1px solid var(--border); border-radius:8px; background:#fafafa; white-space:pre-wrap; font-family:monospace; font-size:14.5px; color:#1e293b; line-height:1.6;">Kết quả thiết kế Slide sẽ hiển thị tại đây sau khi AI xử lý xong...</div>
@@ -6806,6 +6810,110 @@ Vui lòng xuất kết quả rõ ràng, bằng tiếng Việt, định dạng HT
        btn.innerHTML = originalBtnText;
    }
 }
+
+
+async function exportPPTX() {
+    const paper = document.getElementById("slidePromptPaper");
+    if (!paper || paper.innerText.includes("Kết quả thiết kế Slide sẽ hiển thị")) return alert("Vui lòng tạo Slide bằng AI trước khi xuất PPTX!");
+    
+    const btn = document.getElementById("btnExportPPTX");
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang tạo file PPTX và tải ảnh...";
+    
+    try {
+        let pres = new PptxGenJS();
+        pres.layout = 'LAYOUT_16x9';
+        
+        const slides = [];
+        let currentSlide = null;
+        
+        // Parse HTML
+        Array.from(paper.childNodes).forEach(node => {
+            if (node.nodeName === 'H2' || node.nodeName === 'H3') {
+                if (currentSlide) slides.push(currentSlide);
+                let title = (node.innerText || "").replace(/Slide d+:/i, "").trim();
+                currentSlide = { title: title, bullets: [], notes: '', imagePrompt: '' };
+            } else if (node.nodeName === 'UL' || node.nodeName === 'OL') {
+                if (currentSlide) {
+                    node.querySelectorAll('li').forEach(li => currentSlide.bullets.push({ text: li.innerText, options: { bullet: true } }));
+                }
+            } else if (node.nodeName === 'P' || node.nodeName === 'DIV') {
+                if (currentSlide) {
+                    const text = node.innerText || "";
+                    const lower = text.toLowerCase();
+                    if (lower.includes('hình ảnh') || lower.includes('minh họa') || lower.includes('gợi ý')) {
+                        currentSlide.imagePrompt = text.replace(/.*?(hình ảnh|minh họa).*?:\s*/i, '').trim();
+                    } else if (lower.includes('ghi chú') || lower.includes('speaker note')) {
+                        currentSlide.notes = text.replace(/.*?(ghi chú|speaker note).*?:\s*/i, '').trim();
+                    } else {
+                        // Regular paragraph text, add as a bullet without bullet icon
+                        if(text.trim().length > 0) {
+                            currentSlide.bullets.push({ text: text.trim(), options: { bullet: false } });
+                        }
+                    }
+                }
+            }
+        });
+        if (currentSlide) slides.push(currentSlide);
+        
+        if (slides.length === 0) {
+            throw new Error("Không tìm thấy cấu trúc Slide. Hãy chắc chắn rằng AI trả về đúng định dạng có Tiêu đề và Danh sách (Bullet points).");
+        }
+        
+        for (let i = 0; i < slides.length; i++) {
+            const s = slides[i];
+            let slide = pres.addSlide();
+            
+            // Title
+            slide.addText(s.title, { x: 0.5, y: 0.3, w: '90%', h: 0.8, fontSize: 28, bold: true, color: '16469D', align: 'center' });
+            
+            // Layout decision: If has image prompt, split 50-50, else full width
+            let hasImage = s.imagePrompt && s.imagePrompt.length > 5;
+            let textW = hasImage ? '50%' : '90%';
+            
+            if (s.bullets.length > 0) {
+                slide.addText(s.bullets, { x: 0.5, y: 1.5, w: textW, h: 5.5, fontSize: 18, color: '333333', valign: 'top' });
+            }
+            
+            if (hasImage) {
+                // Generate an English prompt for better image results
+                let engPrompt = "educational illustration for presentation about " + s.imagePrompt + ", clean background, high quality, professional";
+                let imgUrl = "https://image.pollinations.ai/prompt/" + encodeURIComponent(engPrompt) + "?width=800&height=600&nologo=true";
+                
+                slide.addImage({
+                    path: imgUrl,
+                    x: 5.5,
+                    y: 1.5,
+                    w: 4.2,
+                    h: 3.2,
+                    sizing: { type: 'contain' }
+                });
+                
+                // Add caption
+                slide.addText(s.imagePrompt, { x: 5.5, y: 4.8, w: 4.2, h: 0.5, fontSize: 11, italic: true, color: '666666', align: 'center' });
+            }
+            
+            if (s.notes) {
+                slide.addNotes(s.notes);
+            }
+            
+            // Add slide number
+            slide.addText(String(i+1), { x: 9.5, y: 7.0, w: 0.5, h: 0.3, fontSize: 12, color: '999999', align: 'right' });
+        }
+        
+        await pres.writeFile({ fileName: "Slide_Bai_Giang_AI.pptx" });
+        alert("Đã xuất file PPTX thành công! Mở file để xem ảnh minh họa AI đã tạo.");
+        
+    } catch(e) {
+        console.error(e);
+        alert("Lỗi khi tạo PPTX: " + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
 
 function copySlidePrompt() {
     const text = document.getElementById("slidePromptPaper").innerText;
