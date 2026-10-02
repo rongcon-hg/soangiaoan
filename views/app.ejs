@@ -6789,7 +6789,7 @@ YÊU CẦU:
   + [PROMPT ẢNH]: (Viết câu lệnh bằng tiếng Anh mô tả chi tiết hình ảnh minh họa cho slide. BẮT BUỘC chèn thêm cụm từ "consistent corporate style, blue and white color palette, clean modern vector illustration" vào cuối mỗi câu để đồng bộ màu sắc và font nét vẽ trên toàn bộ slide). Nếu slide không cần ảnh thì ghi "Không có".
   + Ghi chú: (Speaker Notes)
 
-Vui lòng xuất kết quả bằng định dạng HTML để hiển thị trên web (dùng thẻ <h2> cho tên Slide, <ul>, <li> cho Nội dung, <p> cho [PROMPT ẢNH] và Ghi chú). TUYỆT ĐỐI KHÔNG dùng markdown code block.`;
+Vui lòng xuất kết quả bằng định dạng HTML để hiển thị trên web (dùng thẻ <h2> cho tên Slide, <ul>, <li> cho Nội dung, <p> cho [PROMPT ẢNH] và Lời thuyết trình). TUYỆT ĐỐI KHÔNG dùng markdown code block.`;
 
    btn.disabled = true;
    const originalBtnText = btn.innerHTML;
@@ -6865,8 +6865,8 @@ async function exportPPTX() {
                         }
                     } else if (lower.includes('hình ảnh') || lower.includes('minh họa') || lower.includes('gợi ý')) {
                         currentSlide.imagePrompt = text.replace(/.*?(hình ảnh|minh họa).*?:\s*/i, '').trim();
-                    } else if (lower.includes('ghi chú') || lower.includes('speaker note')) {
-                        currentSlide.notes = text.replace(/.*?(ghi chú|speaker note).*?:\s*/i, '').trim();
+                    } else if (lower.includes('ghi chú') || lower.includes('speaker note') || lower.includes('lời thuyết trình')) {
+                        currentSlide.notes = text.replace(/.*?(ghi chú|speaker note|lời thuyết trình).*?:\s*/i, '').trim();
                     } else {
                         if(text.trim().length > 0) {
                             currentSlide.bullets.push({ text: text.trim(), options: { bullet: false } });
