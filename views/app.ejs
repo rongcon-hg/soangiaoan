@@ -6053,6 +6053,9 @@ init();
 <script>
     injectLayout('projects', 'Soạn Giáo án');
 
+
+function escapeHtmlMain(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+
 function switchTab(step) {
   const step1 = document.getElementById("step1");
   const step2 = document.getElementById("step2");
@@ -6691,13 +6694,13 @@ function renderSlideChapterSelection(payload) {
    
    lessons.forEach((l, idx) => {
        html += `<div style="margin-left:8px; margin-bottom:5px;">
-           <label><input type="checkbox" class="slide-chapter-cb" value="${idx}" checked onchange="toggleSlideSubCbs(${idx}); updateSuggestedSlideCount();"> <b>${escapeHtml(l.title)}</b></label>
+           <label><input type="checkbox" class="slide-chapter-cb" value="${idx}" checked onchange="toggleSlideSubCbs(${idx}); updateSuggestedSlideCount();"> <b>${escapeHtmlMain(l.title)}</b></label>
        </div>`;
        
        if (l.items && l.items.length > 0) {
            html += `<div id="slideSubBox_${idx}" style="margin-left:28px; margin-bottom:8px; display:flex; flex-direction:column; gap:4px;">`;
            l.items.forEach((sub, subIdx) => {
-               html += `<label style="font-size:13.5px;"><input type="checkbox" class="slide-sub-cb-${idx}" value="${subIdx}" checked onchange="updateSuggestedSlideCount();"> ${escapeHtml(sub)}</label>`;
+               html += `<label style="font-size:13.5px;"><input type="checkbox" class="slide-sub-cb-${idx}" value="${subIdx}" checked onchange="updateSuggestedSlideCount();"> ${escapeHtmlMain(sub)}</label>`;
            });
            html += `</div>`;
        }
