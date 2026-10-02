@@ -6775,7 +6775,7 @@ async function runGenerateSlidePrompt() {
    const slideStyle = document.getElementById("slideStyle").value || "chuyên nghiệp, tinh gọn";
    
    const promptText = `Bạn là một chuyên gia thiết kế bài giảng trình chiếu (Presentation Designer) và một giảng viên dày dặn kinh nghiệm.
-Dựa vào khung nội dung bài học dưới đây, hãy tạo ra một kịch bản chi tiết để làm Slide thuyết trình (PowerPoint / Canva).
+Dựa vào khung nội dung bài học dưới đây, hãy tạo ra một kịch bản chi tiết để làm Slide thuyết trình.
 
 PHẠM VI KIẾN THỨC CẦN TRUYỀN ĐẠT:
 ${selectedTopics.map((t,i) => (i+1) + ". " + t).join("\n")}
@@ -6783,13 +6783,13 @@ ${selectedTopics.map((t,i) => (i+1) + ". " + t).join("\n")}
 YÊU CẦU:
 - Số lượng Slide dự kiến: Khoảng ${numSlides} Slide.
 - Phong cách trình bày: ${slideStyle}.
-- Cấu trúc trả về cho mỗi Slide phải bao gồm:
-  + Tựa đề Slide (Tiêu đề chính)
-  + Nội dung (Bullet points, ngắn gọn, súc tích)
-  + Gợi ý hình ảnh / biểu đồ minh họa (nếu có)
-  + Ghi chú cho người thuyết trình (Speaker Notes)
+- Cấu trúc trả về cho mỗi Slide phải tuân thủ nghiêm ngặt định dạng sau:
+  + Tựa đề Slide: (Tiêu đề chính)
+  + Nội dung: (Bullet points, ngắn gọn, súc tích)
+  + [PROMPT ẢNH]: (Viết câu lệnh bằng tiếng Anh mô tả chi tiết hình ảnh minh họa cho slide. BẮT BUỘC chèn thêm cụm từ "consistent corporate style, blue and white color palette, clean modern vector illustration" vào cuối mỗi câu để đồng bộ màu sắc và font nét vẽ trên toàn bộ slide). Nếu slide không cần ảnh thì ghi "Không có".
+  + Ghi chú: (Speaker Notes)
 
-Vui lòng xuất kết quả rõ ràng, bằng tiếng Việt, định dạng HTML để hiển thị trên web (dùng thẻ <h2>, <ul>, <li>, <b>, <i>, <p>). TUYỆT ĐỐI KHÔNG dùng markdown code block.`;
+Vui lòng xuất kết quả bằng định dạng HTML để hiển thị trên web (dùng thẻ <h2> cho tên Slide, <ul>, <li> cho Nội dung, <p> cho [PROMPT ẢNH] và Ghi chú). TUYỆT ĐỐI KHÔNG dùng markdown code block.`;
 
    btn.disabled = true;
    const originalBtnText = btn.innerHTML;
@@ -6832,7 +6832,7 @@ async function exportPPTX() {
         Array.from(paper.childNodes).forEach(node => {
             if (node.nodeName === 'H2' || node.nodeName === 'H3') {
                 if (currentSlide) slides.push(currentSlide);
-                let title = (node.innerText || "").replace(/Slide d+:/i, "").trim();
+                let title = (node.innerText || "").replace(/Slide \d+:/i, "").trim();
                 currentSlide = { title: title, bullets: [], notes: '', imagePrompt: '' };
             } else if (node.nodeName === 'UL' || node.nodeName === 'OL') {
                 if (currentSlide) {
@@ -6842,12 +6842,16 @@ async function exportPPTX() {
                 if (currentSlide) {
                     const text = node.innerText || "";
                     const lower = text.toLowerCase();
-                    if (lower.includes('hình ảnh') || lower.includes('minh họa') || lower.includes('gợi ý')) {
+                    if (text.includes('[PROMPT ẢNH]') || lower.includes('prompt ảnh')) {
+                        let promptStr = text.replace(/.*?\[?prompt ảnh\]?.*?:?/i, '').trim();
+                        if(promptStr && promptStr.toLowerCase() !== 'không có' && promptStr.toLowerCase() !== 'none') {
+                            currentSlide.imagePrompt = promptStr;
+                        }
+                    } else if (lower.includes('hình ảnh') || lower.includes('minh họa') || lower.includes('gợi ý')) {
                         currentSlide.imagePrompt = text.replace(/.*?(hình ảnh|minh họa).*?:\s*/i, '').trim();
                     } else if (lower.includes('ghi chú') || lower.includes('speaker note')) {
                         currentSlide.notes = text.replace(/.*?(ghi chú|speaker note).*?:\s*/i, '').trim();
                     } else {
-                        // Regular paragraph text, add as a bullet without bullet icon
                         if(text.trim().length > 0) {
                             currentSlide.bullets.push({ text: text.trim(), options: { bullet: false } });
                         }
@@ -6878,7 +6882,8 @@ async function exportPPTX() {
             
             if (hasImage) {
                 // Generate an English prompt for better image results
-                let engPrompt = "educational illustration for presentation about " + s.imagePrompt + ", clean background, high quality, professional";
+                let engPrompt = s.imagePrompt;
+                if (!engPrompt.toLowerCase().includes("corporate style")) engPrompt += ", consistent corporate style, blue and white color palette, clean modern vector illustration";
                 let imgUrl = "https://image.pollinations.ai/prompt/" + encodeURIComponent(engPrompt) + "?width=800&height=600&nologo=true";
                 
                 slide.addImage({
