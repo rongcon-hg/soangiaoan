@@ -5993,8 +5993,8 @@ init();
 <section class="section" id="step4" style="display:none;">
   <div class="section-head">
     <div>
-      <h2>BƯỚC 4. TẠO PROMPT LÀM SLIDE THUYẾT TRÌNH</h2>
-      <p>Tạo các câu lệnh (prompt) tối ưu để yêu cầu AI (Gemini/ChatGPT) sinh cấu trúc Slide bài giảng.</p>
+      <h2>BƯỚC 4. THIẾT KẾ SLIDE THUYẾT TRÌNH (AI)</h2>
+      <p>Sử dụng AI để tự động thiết kế cấu trúc và nội dung chi tiết cho Slide bài giảng.</p>
     </div>
     <div class="actions">
       <button class="secondary" onclick="switchTab(2)" title="Quay lại"><i class="fas fa-arrow-left"></i> <span class="btn-text">Quay lại</span></button>
@@ -6028,19 +6028,19 @@ init();
       </div>
       
       <button class="btn primary" id="btnGenerateSlide" onclick="runGenerateSlidePrompt()" style="width:100%; margin-top:20px; font-size:15px;">
-         <i class="fas fa-magic"></i> Tạo Prompt Ngay
+         <i class="fas fa-magic"></i> Thiết Kế Slide Bằng AI
       </button>
     </div>
     
     <!-- Right Panel: Output -->
     <div class="panel" style="flex:2;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-         <h3 style="margin:0;"><i class="fas fa-copy" style="color:#16469d;"></i> Prompt sinh ra</h3>
+         <h3 style="margin:0;"><i class="fas fa-file-powerpoint" style="color:#16469d;"></i> Nội dung Slide</h3>
          <div class="toolbar" style="display:flex; gap:10px;">
              <button class="btn" onclick="copySlidePrompt()" id="btnCopyPrompt" style="background:#f1f5f9; color:#1e293b; border:1px solid #cbd5e1;"><i class="fas fa-clone"></i> Sao chép</button>
          </div>
       </div>
-      <div id="slidePromptPaper" style="min-height:400px; padding:20px; border:1px solid var(--border); border-radius:8px; background:#fafafa; white-space:pre-wrap; font-family:monospace; font-size:14.5px; color:#1e293b; line-height:1.6;">Prompt sẽ hiển thị tại đây... Bạn có thể copy và dán vào ChatGPT hoặc Gemini.</div>
+      <div id="slidePromptPaper" style="min-height:400px; padding:20px; border:1px solid var(--border); border-radius:8px; background:#fafafa; white-space:pre-wrap; font-family:monospace; font-size:14.5px; color:#1e293b; line-height:1.6;">Kết quả thiết kế Slide sẽ hiển thị tại đây sau khi AI xử lý xong...</div>
     </div>
   </div>
 </section>
@@ -6738,15 +6738,21 @@ function toggleSlideSubCbs(idx) {
    subs.forEach(s => s.checked = master ? master.checked : false);
 }
 
-function runGenerateSlidePrompt() {
+async function runGenerateSlidePrompt() {
    const paper = document.getElementById("slidePromptPaper");
+   const btn = document.getElementById("btnGenerateSlide");
    const cbs = document.querySelectorAll(".slide-chapter-cb:checked");
-   if(cbs.length === 0) return alert("Vui lòng chọn ít nhất 1 bài học/chương để tạo prompt!");
+   if(cbs.length === 0) return alert("Vui lòng chọn ít nhất 1 bài học/chương để tạo slide!");
+   
+   if (!window._lastSchedulePayload || !window._lastSchedulePayload.fullProgram) {
+       return alert("Không tìm thấy dữ liệu chương trình. Vui lòng quay lại Bước 1 và thử lại.");
+   }
+   const lessons = window._lastSchedulePayload.fullProgram.filter(x => x.kind === 'lesson');
    
    let selectedTopics = [];
    cbs.forEach(cb => {
        const idx = parseInt(cb.value);
-       const lesson = window._currentExamLessons[idx];
+       const lesson = lessons[idx];
        if(lesson) {
            let t = lesson.title;
            if (lesson.detail) t += " - " + lesson.detail;
@@ -6779,9 +6785,26 @@ YÊU CẦU:
   + Gợi ý hình ảnh / biểu đồ minh họa (nếu có)
   + Ghi chú cho người thuyết trình (Speaker Notes)
 
-Vui lòng xuất kết quả rõ ràng, dễ đọc để tôi có thể copy vào phần mềm thiết kế.`;
+Vui lòng xuất kết quả rõ ràng, bằng tiếng Việt, định dạng HTML để hiển thị trên web (dùng thẻ <h2>, <ul>, <li>, <b>, <i>, <p>). TUYỆT ĐỐI KHÔNG dùng markdown code block.`;
 
-   paper.innerText = promptText;
+   btn.disabled = true;
+   const originalBtnText = btn.innerHTML;
+   btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang kết nối Gemini AI...";
+   paper.innerHTML = "<div style='text-align:center; padding: 40px; color:#666;'><i class='fas fa-circle-notch fa-spin fa-3x' style='color:#16469d; margin-bottom:15px;'></i><br>Hệ thống AI đang thiết kế Slide... Quá trình này có thể mất vài chục giây tùy thuộc vào số lượng. Vui lòng đợi!</div>";
+
+   try {
+       const raw = await simpleGeminiCall(promptText);
+       let htmlContent = String(raw || "").replace(/^\`\`(?:html|text|markdown)?/i,"").replace(/\`\`$/,"").trim();
+       htmlContent = htmlContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+       paper.innerHTML = htmlContent;
+   } catch(e) {
+       console.error(e);
+       paper.innerHTML = "<div style='color:red;'><b>Có lỗi xảy ra khi gọi AI:</b><br>" + (e.message || e) + "</div>";
+       alert("Lỗi Gemini: " + (e.message || e));
+   } finally {
+       btn.disabled = false;
+       btn.innerHTML = originalBtnText;
+   }
 }
 
 function copySlidePrompt() {
