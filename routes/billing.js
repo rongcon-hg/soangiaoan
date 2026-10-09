@@ -67,15 +67,33 @@ router.post('/request', authenticateToken, async (req, res) => {
         // Generate random transfer code GH + 6 digits
         const transfer_code = 'GH' + Math.floor(100000 + Math.random() * 900000);
         
-        await pool.query(
-            "INSERT INTO upgrade_requests (user_id, package_name, package_days, amount, transfer_code) VALUES ($1, $2, $3, $4, $5)",
+        const insertResult = await pool.query(
+            "INSERT INTO upgrade_requests (user_id, package_name, package_days, amount, transfer_code, status) VALUES ($1, $2, $3, $4, $5, 'INIT') RETURNING id",
             [req.user.id, package_name, package_days, amount, transfer_code]
         );
         
+        res.json({ success: true, transfer_code, request_id: insertResult.rows[0].id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// User xác nhận đã chuyển khoản
+router.put('/request/:id/confirm', authenticateToken, async (req, res) => {
+    try {
+        const requestId = req.params.id;
+        const result = await pool.query("UPDATE upgrade_requests SET status = 'PENDING' WHERE id = $1 AND user_id = $2 AND status = 'INIT' RETURNING *", [requestId, req.user.id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Không tìm thấy yêu cầu hợp lệ' });
+        }
+        
+        const request = result.rows[0];
+
         // Notify Admins
         try {
             const userEmail = req.user.email || req.user.username || 'Một người dùng';
-            const msg = `Có yêu cầu nâng cấp mới từ ${userEmail} (Gói: ${package_name}).`;
+            const msg = `Có yêu cầu nâng cấp mới từ ${userEmail} (Gói: ${request.package_name}).`;
             await pool.query(`
                 INSERT INTO notifications (user_id, message, type, link)
                 SELECT id, $1, 'info', '/settings' 
@@ -85,7 +103,8 @@ router.post('/request', authenticateToken, async (req, res) => {
         } catch (e) {
             console.error('Failed to notify admins', e);
         }
-        res.json({ success: true, transfer_code });
+
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -98,6 +117,7 @@ router.get('/requests', authenticateToken, requireAdmin, async (req, res) => {
             SELECT r.*, u.username, u.full_name, u.email 
             FROM upgrade_requests r 
             JOIN users u ON r.user_id = u.id 
+            WHERE r.status != 'INIT' 
             ORDER BY r.created_at DESC
         `);
         res.json(result.rows);

@@ -215,7 +215,7 @@ function injectLayout(pageId, pageTitle) {
 
         <div style="padding:20px 30px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
             <a href="javascript:void(0)" onclick="document.getElementById('qr-modal-overlay').style.display='none'; document.getElementById('renewal-modal-overlay').style.display='flex';" style="color:#0f172a; text-decoration:none; font-weight:600; font-size:14.5px;">Đổi gói khác</a>
-            <button class="btn btn-primary" onclick="document.getElementById('qr-modal-overlay').style.display='none'; closeRenewalModal(); alert('Hệ thống sẽ tự động cộng ngày sử dụng ngay sau khi Admin duyệt giao dịch của bạn!');" style="background:#6366f1; border-color:#6366f1; border-radius:8px; padding:10px 20px; font-weight:600; font-size:15px;"><i class="far fa-check-circle"></i> Tôi Đã Chuyển Khoản Xong</button>
+            <button class="btn btn-primary" onclick="confirmTransfer()" style="background:#6366f1; border-color:#6366f1; border-radius:8px; padding:10px 20px; font-weight:600; font-size:15px;"><i class="far fa-check-circle"></i> Tôi Đã Chuyển Khoản Xong</button>
         </div>
 
     </div>
@@ -475,7 +475,7 @@ async function selectBillingPackage(pkgId) {
         if (!res.ok) throw new Error(data.error || 'Lỗi gửi yêu cầu');
         
         // Hiện mã QR
-        showQRCode(pkg, data.transfer_code);
+        showQRCode(pkg, data.transfer_code, data.request_id);
     } catch (err) {
         console.error(err);
         alert(err.message);
@@ -490,7 +490,9 @@ function copyToClipboard(text, btn) {
     });
 }
 
-function showQRCode(pkg, transferCode) {
+let currentUpgradeRequestId = null;
+function showQRCode(pkg, transferCode, requestId) {
+    currentUpgradeRequestId = requestId;
     if (!billingSettingsCache || !billingSettingsCache.bank_account) {
         alert('Chưa cấu hình tài khoản ngân hàng.');
         return;
@@ -734,3 +736,23 @@ window.addEventListener('DOMContentLoaded', () => {
         document.cookie = "token=; path=/; max-age=0";
     }
 })();
+
+async function confirmTransfer() {
+    if (!currentUpgradeRequestId) return;
+    try {
+        const res = await fetch(API_URL + '/billing/request/' + currentUpgradeRequestId + '/confirm', {
+            method: 'PUT',
+            headers: getHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+            document.getElementById('qr-modal-overlay').style.display='none';
+            closeRenewalModal();
+            Swal.fire('Thành công', 'Hệ thống sẽ tự động cộng ngày sử dụng ngay sau khi Admin duyệt giao dịch của bạn!', 'success');
+        } else {
+            alert(data.error || 'Lỗi xác nhận');
+        }
+    } catch(err) {
+        alert(err.message);
+    }
+}
