@@ -203,7 +203,7 @@ window.customConfirm = async function(msg) {
             <div class="s-tab" id="tab-google" onclick="switchSettingsTab('google', this)"><i class="fab fa-google"></i> Đăng nhập Google</div>
             <div class="s-tab" id="tab-gdrive" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
             <div class="s-tab" id="tab-billing" onclick="switchSettingsTab('billing', this)"><i class="fas fa-money-bill-wave"></i> Bảng giá</div>
-            <div class="s-tab" id="tab-upgrade" onclick="switchSettingsTab('upgrade', this)"><i class="fas fa-user-check"></i> Duyệt nâng cấp</div>
+            <div class="s-tab" id="tab-upgrade" onclick="switchSettingsTab('upgrade', this)"><i class="fas fa-user-check"></i> Duyệt nâng cấp <span id="upgrade-tab-badge" style="display:none; margin-left:6px; background:#ef4444; color:#fff; border-radius:99px; padding:2px 6px; font-size:11px; font-weight:bold;">0</span></div>
             <% } %>
         </div>
 
@@ -1378,9 +1378,22 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
                 const totalPending = allRequests.filter(r => r.status === 'PENDING').reduce((sum, r) => sum + Number(r.amount || 0), 0);
                 const totalAll = allRequests.reduce((sum, r) => sum + Number(r.amount || 0), 0);
                 
+                
                 document.getElementById('req-total-revenue').innerText = totalRevenue.toLocaleString('vi-VN');
                 document.getElementById('req-total-pending').innerText = totalPending.toLocaleString('vi-VN');
                 document.getElementById('req-total-all').innerText = totalAll.toLocaleString('vi-VN');
+
+                const pendingCount = allRequests.filter(r => r.status === 'PENDING').length;
+                const tabBadge = document.getElementById('upgrade-tab-badge');
+                if (tabBadge) {
+                    if (pendingCount > 0) {
+                        tabBadge.innerText = pendingCount;
+                        tabBadge.style.display = 'inline-block';
+                    } else {
+                        tabBadge.style.display = 'none';
+                    }
+                }
+
 
                 filterRequests();
             } catch (err) {

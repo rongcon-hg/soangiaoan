@@ -110,6 +110,16 @@ router.put('/request/:id/confirm', authenticateToken, async (req, res) => {
     }
 });
 
+// Đếm số đơn hàng chờ duyệt (Dành cho Admin)
+router.get('/pending-count', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query("SELECT COUNT(*) FROM upgrade_requests WHERE status = 'PENDING'");
+        res.json({ count: parseInt(result.rows[0].count, 10) });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Admin lấy danh sách yêu cầu
 router.get('/requests', authenticateToken, requireAdmin, async (req, res) => {
     try {
