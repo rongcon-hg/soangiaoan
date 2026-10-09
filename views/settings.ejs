@@ -183,7 +183,22 @@ window.customConfirm = async function(msg) {
                         <h4 style="margin:0; color:#333;"><i class="fas fa-list"></i> Danh sách Bản sao lưu (Google Drive)</h4>
                         <button type="button" onclick="manualBackup()" class="btn btn-primary"><i class="fas fa-plus"></i> Tạo bản sao lưu ngay</button>
                     </div>
-                    <div style="overflow-x:auto;">
+                    
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; gap:10px; flex:1; min-width:300px;">
+                        <input type="text" id="req-search" class="form-control" placeholder="Tìm email, tên gói..." style="max-width:250px;" onkeyup="filterRequests()">
+                        <select id="req-filter" class="form-control" style="max-width:150px;" onchange="filterRequests()">
+                            <option value="ALL">Tất cả trạng thái</option>
+                            <option value="PENDING">Đang chờ</option>
+                            <option value="APPROVED">Đã duyệt</option>
+                            <option value="REJECTED">Đã từ chối</option>
+                        </select>
+                    </div>
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 15px; border-radius:8px; color:#166534; font-weight:bold; font-size:14px;">
+                        Tổng tiền đã bán: <span id="req-total-revenue">0</span> ₫
+                    </div>
+                </div>
+<div style="overflow-x:auto;">
                         <table class="table" style="width:100%;">
                             <thead>
                                 <tr>
@@ -1167,40 +1182,19 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
             try {
                 const res = await fetch(API_URL + '/billing/requests', { headers: getHeaders() });
                 const data = await res.json();
-                const tbody = document.getElementById('upgrade-requests-tbody');
-                if (!res.ok) throw new Error(data.error);
+                
+                allRequests = data.map(r => ({...r, status: r.status.toUpperCase()}));
+                
+                // Calculate total revenue
+                const totalRevenue = allRequests.filter(r => r.status === 'APPROVED').reduce((sum, r) => sum + Number(r.amount || 0), 0);
+                document.getElementById('req-total-revenue').innerText = totalRevenue.toLocaleString('vi-VN');
 
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chưa có yêu cầu nào.</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = data.map(req => {
-                    let statusHtml = '';
-                    if ((req.status === 'pending' || req.status === 'PENDING')) statusHtml = '<span style="color:#b45309;font-weight:bold;">Đang chờ</span>';
-                    else if ((req.status === 'approved' || req.status === 'APPROVED')) statusHtml = '<span style="color:#15803d;font-weight:bold;">Đã duyệt</span>';
-                    else statusHtml = '<span style="color:#b91c1c;font-weight:bold;">Đã từ chối</span>';
-
-                    let actions = '';
-                    if ((req.status === 'pending' || req.status === 'PENDING')) {
-                        actions = `
-                            <button class="btn btn-primary" style="padding:4px 8px; font-size:12px; margin-right:4px;" onclick="handleUpgradeRequest(${req.id}, 'APPROVED')">Duyệt</button>
-                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:12px; background:#ef4444;" onclick="handleUpgradeRequest(${req.id}, 'REJECTED')">Từ chối</button>
-                        `;
-                    }
-
-                    return `
-                        <tr>
-                            <td>${req.email || 'N/A'}<br><small>${req.full_name || ''}</small></td>
-                            <td>${req.package_name || ''}</td>
-                            <td>${Number(req.amount).toLocaleString('vi-VN')} đ</td>
-                            <td>${new Date(req.created_at).toLocaleString('vi-VN')}</td>
-                            <td>${statusHtml}</td>
-                            <td style="text-align:right;">${actions}</td>
-                        </tr>
-                    `;
-                }).join('');
+                filterRequests();
             } catch (err) {
+                console.error(err);
+            }
+        }
+ catch (err) {
                 console.error(err);
                 document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Lỗi tải dữ liệu.</td></tr>';
             }

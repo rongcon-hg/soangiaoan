@@ -93,7 +93,8 @@ const initDb = async () => {
                 id SERIAL PRIMARY KEY,
                 project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
                 schedule_data TEXT,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    rejection_reason TEXT
             )
         `);
 

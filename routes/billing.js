@@ -96,7 +96,7 @@ router.get('/requests', authenticateToken, requireAdmin, async (req, res) => {
 router.put('/requests/:id', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const requestId = req.params.id;
-        const { status } = req.body; // 'APPROVED' or 'REJECTED'
+        const { status, reason } = req.body; // 'APPROVED' or 'REJECTED'
         
         const reqResult = await pool.query("SELECT * FROM upgrade_requests WHERE id = $1", [requestId]);
         if (reqResult.rows.length === 0) return res.status(404).json({ error: 'Request not found' });
@@ -106,7 +106,7 @@ router.put('/requests/:id', authenticateToken, requireAdmin, async (req, res) =>
             return res.status(400).json({ error: 'Request already processed' });
         }
         
-        await pool.query("UPDATE upgrade_requests SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2", [status, requestId]);
+        await pool.query("UPDATE upgrade_requests SET status = $1, rejection_reason = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3", [status, reason || null, requestId]);
         
         if (status === 'APPROVED') {
             // Cấp ngày sử dụng
