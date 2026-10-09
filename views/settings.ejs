@@ -408,7 +408,9 @@ window.customConfirm = async function(msg) {
                 <p class="panel-desc">Cấu hình thông tin nhận tiền và các gói nâng cấp.</p>
                 <div class="grid grid-cols-2">
                     <div class="form-group">
-                        <label>Ngân hàng (Mã hoặc Tên viết tắt)</label>
+                        <p style="font-size: 13px; color: #475569; margin-bottom: 20px;">Các thông tin này sẽ được dùng để tự động tạo mã <b>VietQR</b> chuẩn xác khi người dùng chọn gia hạn thời gian sử dụng.</p>
+                    <h4 style="margin-bottom: 15px; font-size: 15px; font-weight: 600; color: #1e293b;">1. Thông Tin Tài Khoản Ngân Hàng</h4>
+                    <label>Ngân hàng (Mã hoặc Tên viết tắt) *</label>
                         <input type="text" id="cfg-bank-name" class="form-control" placeholder="MBBank">
                     </div>
                     <div class="form-group">
@@ -1085,7 +1087,12 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
                     document.getElementById('cfg-bank-name').value = data.bank_name || '';
                     document.getElementById('cfg-bank-account').value = data.bank_account || '';
                     document.getElementById('cfg-bank-owner').value = data.bank_owner || '';
-                    document.getElementById('cfg-billing-packages').value = data.packages ? JSON.stringify(data.packages, null, 2) : '';
+                    if (data.packages && Array.isArray(data.packages)) {
+                        data.packages.forEach(pkg => {
+                            const el = document.getElementById('cfg-price-' + pkg.id);
+                            if (el) el.value = pkg.price;
+                        });
+                    }
                 }
             } catch (err) {
                 console.error('Error loading billing settings:', err);
@@ -1098,13 +1105,12 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
             
             try {
-                let packages = [];
-                try {
-                    const packagesStr = document.getElementById('cfg-billing-packages').value.trim();
-                    if (packagesStr) packages = JSON.parse(packagesStr);
-                } catch (e) {
-                    throw new Error('Định dạng bảng giá (JSON) không hợp lệ');
-                }
+                let packages = [
+                    { id: '90d', name: 'Gói 90 Ngày (3 Tháng)', days: 90, price: parseInt(document.getElementById('cfg-price-90d').value) || 49000, desc: 'Thử nghiệm ngắn hạn' },
+                    { id: '180d', name: 'Gói 180 Ngày (6 Tháng)', days: 180, price: parseInt(document.getElementById('cfg-price-180d').value) || 99000, desc: 'Gói 1 học kỳ' },
+                    { id: '365d', name: 'Gói 365 Ngày (1 Năm)', days: 365, price: parseInt(document.getElementById('cfg-price-365d').value) || 199000, desc: 'Gói trọn vẹn 1 năm học' },
+                    { id: 'lifetime', name: 'Gói Vĩnh Viễn (Lifetime)', days: 99999, price: parseInt(document.getElementById('cfg-price-lifetime').value) || 699000, desc: 'Trọn đời, cập nhật miễn phí' }
+                ];
 
                 const payload = {
                     bank_name: document.getElementById('cfg-bank-name').value.trim(),

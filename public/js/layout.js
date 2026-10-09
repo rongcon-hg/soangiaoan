@@ -1,147 +1,76 @@
-const sidebarHTML = `
-<div class="sidebar" id="app-sidebar">
-    <div class="sidebar-header">
-        <button type="button" class="sidebar-collapse-btn" onclick="toggleSidebar()" title="Thu gọn / Mở rộng menu">
-            <i class="fas fa-chevron-left" id="sidebar-collapse-icon"></i>
-        </button>
+<!-- QR Code Modal -->
+<div id="qr-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:100000; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#fff; border-radius:14px; max-width:850px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); overflow:hidden;">
         
-        <div style="margin-bottom:8px;">
-            <a href="/profile" style="text-decoration:none; display:inline-block;" title="Xem & Cập nhật Hồ sơ cá nhân">
-                <div class="sidebar-avatar-wrapper" style="position:relative; width:60px; height:60px; margin:0 auto;">
-                    <img id="sidebar-user-avatar" class="sidebar-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E" alt="Avatar" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2.5px solid var(--primary); box-shadow:0 3px 10px rgba(22,70,157,0.18); background:#f8fafc; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                </div>
-            </a>
-            <div id="sidebar-user-fullname" class="sidebar-user-fullname" style="font-size:0.88rem; font-weight:700; color:#1e293b; margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px; margin-left:auto; margin-right:auto;">...</div>
-        </div>
-
-        <a href="/dashboard" class="sidebar-brand-link" style="text-decoration:none; color:inherit; display:flex; align-items:center; justify-content:center; gap:8px;" title="Bảng điều khiển">
-            <h2 class="sidebar-brand-title" style="margin:0; font-size:1.05rem; color:var(--primary); cursor:pointer;"><i class="fas fa-book-open"></i> Giáo án điện tử</h2>
-        </a>
-    </div>
-    <div class="nav-menu">
-        <a href="/dashboard" class="nav-item" id="nav-dashboard" title="Bảng điều khiển">
-            <i class="fas fa-chart-pie"></i> <span class="nav-item-text">Bảng điều khiển</span>
-        </a>
-        <a href="/" class="nav-item" id="nav-projects" title="Quản lý Giáo án">
-            <i class="fas fa-layer-group"></i> <span class="nav-item-text">Quản lý Giáo án</span>
-        </a>
-        <a href="/library" class="nav-item" id="nav-library" title="Thư viện Giáo án">
-            <i class="fas fa-book-open"></i> <span class="nav-item-text">Thư viện Giáo án</span>
-        </a>
-
-        <a href="/approvals" class="nav-item" id="nav-approvals" style="display:none" title="Phê duyệt Giáo án">
-            <i class="fas fa-check-double"></i> <span class="nav-item-text">Phê duyệt Giáo án</span>
-        </a>
-        <a href="/profile" class="nav-item" id="nav-profile" title="Thông tin cá nhân">
-            <i class="fas fa-user"></i> <span class="nav-item-text">Thông tin cá nhân</span>
-        </a>
-
-        <div class="nav-menu-bottom" style="margin-top:auto; padding-top:10px; border-top:1px solid var(--border, #e2e8f0); display:flex; flex-direction:column;">
-            <a href="/departments" class="nav-item" id="nav-departments" style="display:none" title="Quản lý Đơn vị">
-                <i class="fas fa-building"></i> <span class="nav-item-text">Quản lý Đơn vị</span>
-            </a>
-            <a href="/users" class="nav-item" id="nav-users" style="display:none" title="Quản lý Người dùng">
-                <i class="fas fa-users"></i> <span class="nav-item-text">Quản lý Người dùng</span>
-            </a>
-            <a href="/audit" class="nav-item" id="nav-audit" style="display:none" title="Lịch sử Hoạt động">
-                <i class="fas fa-history"></i> <span class="nav-item-text">Lịch sử Hoạt động</span>
-            </a>
-            <a href="/settings" class="nav-item" id="nav-settings" title="Cấu hình hệ thống">
-                <i class="fas fa-cog"></i> <span class="nav-item-text">Cấu hình hệ thống</span>
-            </a>
-            <a href="#" class="nav-item" onclick="logout()" style="color:var(--danger);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="Đăng xuất">
-                <i class="fas fa-sign-out-alt" style="color:var(--danger);"></i> <span class="nav-item-text">Đăng xuất</span>
-            </a>
-        </div>
-    </div>
-</div>
-`;
-
-function injectLayout(pageId, pageTitle) {
-    document.body.insertAdjacentHTML('afterbegin', '<div class="sidebar-overlay" onclick="toggleSidebar()"></div>' + sidebarHTML);
-    
-    // Set active
-    const activeNav = document.getElementById('nav-' + pageId);
-    if(activeNav) activeNav.classList.add('active');
-
-    // Create main content wrapper
-    const mainContent = document.createElement('div');
-    mainContent.className = 'main-content';
-
-    const topbar = `
-        <div class="topbar">
-            <div style="display:flex; align-items:center;">
-                <button type="button" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Thu gọn / Mở rộng menu"><i class="fas fa-bars"></i></button>
-                <div class="page-title" style="font-weight:600; color:var(--text-light)">${pageTitle}</div>
+        <div style="padding: 24px 30px; border-bottom: 1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <div style="display:inline-block; background:#fef3c7; color:#d97706; font-size:12px; font-weight:bold; padding:4px 12px; border-radius:99px; border:1px solid #fde68a; margin-bottom:10px;"><i class="fas fa-crown"></i> Gói Dịch Vụ Thành Viên</div>
+                <h2 style="margin:0; font-size:22px; color:#0f172a; font-weight:800; margin-bottom:5px;">Thông Tin Thanh Toán Chuyển Khoản</h2>
+                <p style="margin:0; font-size:14px; color:#64748b;">Mở ứng dụng Ngân hàng để quét mã QR hoặc chuyển khoản với nội dung chính xác bên dưới.</p>
             </div>
-            <div style="display:flex; align-items:center; gap:20px;">
-                <!-- V2: Notification Bell -->
-                <div class="notification-wrapper" style="position:relative; cursor:pointer;" onclick="toggleNotifications()">
-                    <i class="fas fa-bell" style="font-size: 1.2rem; color: #64748b; transition: color 0.2s;"></i>
-                    <span id="notif-badge" style="display:none; position:absolute; top:-6px; right:-6px; background:#ef4444; color:white; font-size:10px; padding:2px 5px; border-radius:10px; font-weight:bold; line-height:1;">0</span>
-                    <div id="notif-dropdown" class="notif-dropdown" style="display:none;">
-                        <div style="padding:12px 15px; font-weight:bold; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:14px; color:#1e293b;">Thông báo</span>
-                            <span style="font-size:12px; color:#3b82f6; cursor:pointer;" onclick="markAllNotificationsRead(event)">Đánh dấu đã đọc</span>
-                        </div>
-                        <div id="notif-list" style="max-height:300px; overflow-y:auto; padding:0;">
-                            <div style="text-align:center; padding:20px 10px; color:#94a3b8; font-size:13px;">Chưa có thông báo nào</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="cursor:pointer; display:flex; align-items:center; justify-content:center;" onclick="toggleDarkMode(event)" id="header-darkmode" title="Chế độ Tối / Sáng" onmouseover="this.querySelector('i').style.color='var(--primary)'" onmouseout="this.querySelector('i').style.color=document.body.classList.contains('dark-mode')?'#f59e0b':'#64748b'">
-                    <i class="fas fa-moon" style="font-size: 1.25rem; color: #64748b; transition: color 0.2s;"></i>
-                </div>
-
-                <div class="user-greeting">
-                    <span class="hello-text">Xin chào,</span> 
-                    <a href="/profile" style="text-decoration:none; color:inherit;" title="Xem thông tin cá nhân">
-                        <b id="topbar-username" style="color:var(--primary); cursor:pointer; transition:opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">...</b>
-                    </a> 
-                    <a href="#" onclick="logout()" style="margin-left: 8px; color: var(--danger); font-size: 1.1em; text-decoration: none;" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
-                </div>
-            </div>
+            <button type="button" onclick="document.getElementById('qr-modal-overlay').style.display='none'" style="background:transparent; border:none; color:#94a3b8; font-size:24px; cursor:pointer; line-height:1;">&times;</button>
         </div>
-    `;
-    mainContent.innerHTML = topbar;
 
-    // Move existing content into content-area
-    const contentArea = document.createElement('div');
-    contentArea.className = 'content-area';
-    
-    // Grab all direct children of body that are not sidebar, sidebar-overlay, alert-box or scripts
-    const children = Array.from(document.body.children);
-    children.forEach(child => {
-        if(child.className !== 'sidebar' && child.id !== 'app-sidebar' && child.className !== 'sidebar-overlay' && child.id !== 'alert-box' && child.tagName !== 'SCRIPT') {
-            contentArea.appendChild(child);
-        }
-    });
-
-    mainContent.appendChild(contentArea);
-    document.body.appendChild(mainContent);
-    document.body.insertAdjacentHTML('beforeend', `
-<!-- Renewal Request Modal -->
-<div id="renewal-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#fff; border-radius:14px; max-width:650px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0;">
-        <div style="background:linear-gradient(135deg, #16469d 0%, #1e3a8a 100%); color:#fff; padding:18px 22px; display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px; color:#fff;">
-                <i class="fas fa-history"></i> Gia Hạn & Nâng Cấp Thời Gian Sử Dụng
-            </h3>
-            <button type="button" onclick="closeRenewalModal()" style="background:transparent; border:none; color:#fff; font-size:1.4rem; cursor:pointer; opacity:0.8; line-height:1;" title="Đóng">&times;</button>
+        <div style="padding:15px 30px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; font-size:13px; color:#475569;">
+            <div><i class="far fa-calendar-alt"></i> Tài khoản: <b style="color:#0f172a;" id="qr-modal-email"></b></div>
+            <div><i class="far fa-clock"></i> Hạn dùng: <b style="color:#10b981;" id="qr-modal-expires"></b></div>
         </div>
-        <div style="padding:22px; max-height:80vh; overflow-y:auto;">
-            <div id="renewal-modal-notice" style="background:#eff6ff; border-left:4px solid #3b82f6; padding:12px 14px; border-radius:6px; margin-bottom:18px; color:#1e3a8a; font-size:0.88rem; line-height:1.5;">
-                <i class="fas fa-info-circle"></i> Vui lòng chọn gói thời gian sử dụng phù hợp với nhu cầu của bạn.
+
+        <div style="display:flex; flex-wrap:wrap; padding:25px 30px; gap:30px;">
+            <div style="flex: 0 0 280px; text-align:center;">
+                <div style="border:1px solid #e2e8f0; border-radius:12px; padding:15px; margin-bottom:15px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <img id="qr-image" src="" style="width:100%; display:block; border-radius:8px;">
+                </div>
+                <div style="font-size:12.5px; color:#64748b; display:flex; align-items:flex-start; gap:8px; text-align:left;">
+                    <i class="fas fa-qrcode" style="margin-top:2px;"></i> Mở App Ngân Hàng quét mã để chuyển khoản nhanh với nội dung tự động điền.
+                </div>
             </div>
             
-            <div id="billing-packages-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px;">
-                <div style="text-align:center; padding:20px; color:#64748b; font-size:0.9rem; grid-column:1/-1;">
-                    <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Đang tải bảng giá...
+            <div style="flex:1; min-width:300px;">
+                <div style="background:#eff6ff; border-radius:8px; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div style="font-size:16px; font-weight:700; color:#1e293b;" id="qr-modal-pkg-name"></div>
+                    <div style="font-size:20px; font-weight:800; color:#3b82f6;" id="qr-modal-pkg-price"></div>
+                </div>
+
+                <div style="display:flex; border:1px solid #e2e8f0; border-radius:6px; padding:12px 15px; margin-bottom:12px; align-items:center;">
+                    <div style="flex:0 0 120px; color:#64748b; font-size:14px;">Ngân hàng:</div>
+                    <div style="flex:1; font-weight:700; font-size:15px; color:#0f172a; text-align:right;" id="qr-modal-bank"></div>
+                </div>
+
+                <div style="display:flex; border:1px solid #e2e8f0; border-radius:6px; padding:12px 15px; margin-bottom:12px; align-items:center;">
+                    <div style="flex:0 0 120px; color:#64748b; font-size:14px;">Số tài khoản:</div>
+                    <div style="flex:1; font-weight:700; font-size:15px; color:#0f172a; text-align:right;" id="qr-modal-account"></div>
+                    <button onclick="copyToClipboard(document.getElementById('qr-modal-account').innerText, this)" style="margin-left:15px; background:#fff; border:1px solid #cbd5e1; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer; color:#475569;"><i class="far fa-copy"></i> Sao chép</button>
+                </div>
+
+                <div style="display:flex; border:1px solid #e2e8f0; border-radius:6px; padding:12px 15px; margin-bottom:12px; align-items:center;">
+                    <div style="flex:0 0 120px; color:#64748b; font-size:14px;">Chủ tài khoản:</div>
+                    <div style="flex:1; font-weight:700; font-size:15px; color:#0f172a; text-align:right;" id="qr-modal-owner"></div>
+                </div>
+
+                <div style="display:flex; border:1px solid #e2e8f0; border-radius:6px; padding:12px 15px; margin-bottom:15px; align-items:center;">
+                    <div style="flex:0 0 120px; color:#64748b; font-size:14px;">Số tiền:</div>
+                    <div style="flex:1; font-weight:700; font-size:15px; color:#10b981; text-align:right;" id="qr-modal-amount"></div>
+                    <button onclick="copyToClipboard(document.getElementById('qr-modal-amount').innerText.replace(/[^0-9]/g, ''), this)" style="margin-left:15px; background:#fff; border:1px solid #cbd5e1; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer; color:#475569;"><i class="far fa-copy"></i> Sao chép</button>
+                </div>
+
+                <div style="display:flex; border:1px dashed #ef4444; background:#fef2f2; border-radius:6px; padding:12px 15px; margin-bottom:20px; align-items:center;">
+                    <div style="flex:0 0 120px; color:#b91c1c; font-size:14px; font-weight:600;">Nội dung CK:</div>
+                    <div style="flex:1; font-weight:800; font-size:16px; color:#ef4444; text-align:right;" id="qr-modal-desc"></div>
+                    <button onclick="copyToClipboard(document.getElementById('qr-modal-desc').innerText, this)" style="margin-left:15px; background:#fff; border:1px solid #fca5a5; border-radius:4px; padding:4px 8px; font-size:12px; cursor:pointer; color:#ef4444;"><i class="far fa-copy"></i> Sao chép</button>
+                </div>
+
+                <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:12px 15px; color:#b45309; font-size:12.5px; line-height:1.5;">
+                    <i class="fas fa-exclamation-circle"></i> <b>Lưu ý:</b> Vui lòng giữ nguyên nội dung chuyển khoản <b id="qr-modal-desc-warn"></b> để hệ thống duyệt và kích hoạt tự động chính xác cho tài khoản của bạn.
                 </div>
             </div>
-
         </div>
+
+        <div style="padding:20px 30px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:15px; align-items:center;">
+            <a href="javascript:void(0)" onclick="document.getElementById('qr-modal-overlay').style.display='none'; document.getElementById('renewal-modal-overlay').style.display='flex';" style="color:#0f172a; text-decoration:none; font-weight:600; font-size:14.5px;">Đổi gói khác</a>
+            <button class="btn btn-primary" onclick="document.getElementById('qr-modal-overlay').style.display='none'; closeRenewalModal(); alert('Hệ thống sẽ tự động cộng ngày sử dụng ngay sau khi Admin duyệt giao dịch của bạn!');" style="background:#6366f1; border-color:#6366f1; border-radius:8px; padding:10px 20px; font-weight:600; font-size:15px;"><i class="far fa-check-circle"></i> Tôi Đã Chuyển Khoản Xong</button>
+        </div>
+
     </div>
 </div>
 
@@ -403,7 +332,7 @@ async function selectBillingPackage(pkgId) {
             package_id: pkg.id,
             package_name: pkg.name,
             amount: pkg.price,
-            days: pkg.days
+            package_days: pkg.days
         };
         
         const res = await fetch(API_URL + '/billing/request', {
@@ -416,14 +345,22 @@ async function selectBillingPackage(pkgId) {
         if (!res.ok) throw new Error(data.error || 'Lỗi gửi yêu cầu');
         
         // Hiện mã QR
-        showQRCode(pkg);
+        showQRCode(pkg, data.transfer_code);
     } catch (err) {
         console.error(err);
         alert(err.message);
     }
 }
 
-function showQRCode(pkg) {
+function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        const oldHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check" style="color:#10b981;"></i> Đã chép';
+        setTimeout(() => btn.innerHTML = oldHtml, 2000);
+    });
+}
+
+function showQRCode(pkg, transferCode) {
     if (!billingSettingsCache || !billingSettingsCache.bank_account) {
         alert('Chưa cấu hình tài khoản ngân hàng.');
         return;
@@ -433,20 +370,31 @@ function showQRCode(pkg) {
     const accountNo = billingSettingsCache.bank_account;
     const accountName = billingSettingsCache.bank_owner;
     const amount = pkg.price;
-    const desc = `NANG CAP ${currentUser ? (currentUser.email || currentUser.username) : ''}`.replace(/[^a-zA-Z0-9 ]/g, "").trim().substring(0, 50);
+    const desc = transferCode;
     
-    const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(desc)}&accountName=${encodeURIComponent(accountName)}`;
+    // https://img.vietqr.io/image/<BIN>-<RECEIVER_NUMBER>-<TEMPLATE>.png?amount=<AMOUNT>&addInfo=<DESCRIPTION>&accountName=<ACCOUNT_NAME>
+    const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(desc)}&accountName=${encodeURIComponent(accountName)}`;
     
     const img = document.getElementById('qr-image');
-    if (img) {
-        img.src = qrUrl;
-        img.style.display = 'block';
-    }
+    if (img) img.src = qrUrl;
+    
+    document.getElementById('qr-modal-email').innerText = currentUser ? (currentUser.email || currentUser.username) : '';
+    document.getElementById('qr-modal-expires').innerText = pkg.name; // Trọn đời hoặc + 365 ngày
+    
+    document.getElementById('qr-modal-pkg-name').innerText = pkg.name;
+    document.getElementById('qr-modal-pkg-price').innerText = amount.toLocaleString('vi-VN') + ' ₫';
+    
+    document.getElementById('qr-modal-bank').innerText = bankId;
+    document.getElementById('qr-modal-account').innerText = accountNo;
+    document.getElementById('qr-modal-owner').innerText = accountName;
+    document.getElementById('qr-modal-amount').innerText = amount.toLocaleString('vi-VN') + ' ₫';
+    
+    document.getElementById('qr-modal-desc').innerText = desc;
+    document.getElementById('qr-modal-desc-warn').innerText = desc;
     
     document.getElementById('renewal-modal-overlay').style.display = 'none';
     document.getElementById('qr-modal-overlay').style.display = 'flex';
 }
-
 
 function updateExpiryUI(user) {
     if (!user) return;
