@@ -1178,11 +1178,120 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
             }
         }
 
+        let allRequests = [];
+
+        function filterRequests() {
+            const query = document.getElementById('req-search').value.toLowerCase();
+            const filter = document.getElementById('req-filter').value;
+            const tbody = document.getElementById('upgrade-requests-tbody');
+            
+            const filtered = allRequests.filter(req => {
+                const matchQuery = (req.email && req.email.toLowerCase().includes(query)) || 
+                                   (req.package_name && req.package_name.toLowerCase().includes(query));
+                const matchStatus = filter === 'ALL' || req.status === filter;
+                return matchQuery && matchStatus;
+            });
+            
+            renderRequests(filtered);
+        }
+
+        function renderRequests(data) {
+            const tbody = document.getElementById('upgrade-requests-tbody');
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Không tìm thấy yêu cầu nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(req => {
+                let statusHtml = '';
+                if (req.status === 'PENDING') statusHtml = '<span style="color:#b45309;font-weight:bold;background:#fef3c7;padding:2px 8px;border-radius:99px;font-size:12px;">Đang chờ</span>';
+                else if (req.status === 'APPROVED') statusHtml = '<span style="color:#15803d;font-weight:bold;background:#dcfce7;padding:2px 8px;border-radius:99px;font-size:12px;">Đã duyệt</span>';
+                else {
+                    statusHtml = '<span style="color:#b91c1c;font-weight:bold;background:#fee2e2;padding:2px 8px;border-radius:99px;font-size:12px;">Đã từ chối</span>';
+                    if (req.rejection_reason) {
+                        statusHtml += `<div style="font-size:11px;color:#ef4444;margin-top:4px;">Lý do: ${req.rejection_reason}</div>`;
+                    }
+                }
+
+                let actions = '';
+                if (req.status === 'PENDING') {
+                    actions += `<button class="btn btn-primary" style="padding:4px 8px; font-size:12px; margin-right:4px;" onclick="handleUpgradeRequest(${req.id}, 'APPROVED')"><i class="fas fa-check"></i> Duyệt</button>`;
+                    actions += `<button class="btn btn-secondary" style="padding:4px 8px; font-size:12px; background:#ef4444; border-color:#ef4444; margin-right:4px;" onclick="handleUpgradeRequest(${req.id}, 'REJECTED')"><i class="fas fa-times"></i> Từ chối</button>`;
+                }
+                actions += `<button class="btn btn-secondary" style="padding:4px 8px; font-size:12px; background:#64748b; border-color:#64748b;" onclick="deleteUpgradeRequest(${req.id})"><i class="fas fa-trash"></i> Xóa</button>`;
+
+                return `
+                    <tr>
+                        <td>${req.email || 'N/A'}<br><small style="color:#64748b;">${req.full_name || ''}</small></td>
+                        <td style="font-weight:600; color:#3b82f6;">${req.package_name || ''}</td>
+                        <td style="font-weight:bold;">${Number(req.amount).toLocaleString('vi-VN')} đ</td>
+                        <td>${new Date(req.created_at).toLocaleString('vi-VN')}</td>
+                        <td>${statusHtml}</td>
+                        <td style="text-align:right; white-space:nowrap;">${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function handleUpgradeRequest(id, status) {
+            let reason = '';
+            if (status === 'REJECTED') {
+                reason = prompt('Vui lòng nhập lý do từ chối (bỏ trống cũng được):');
+                if (reason === null) return; // user cancelled prompt
+            } else {
+                if (!confirm('Bạn có chắc chắn muốn duyệt yêu cầu này?')) return;
+            }
+
+            try {
+                const res = await fetch(API_URL + '/billing/requests/' + id, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ status, reason })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Đã cập nhật trạng thái thành công!');
+                    loadUpgradeRequests();
+                } else {
+                    alert(data.error || 'Lỗi xử lý');
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function deleteUpgradeRequest(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa yêu cầu này? Hành động này không thể hoàn tác!')) return;
+            try {
+                const res = await fetch(API_URL + '/billing/requests/' + id, {
+                    method: 'DELETE',
+                    headers: getHeaders()
+                });
+                if (res.ok) {
+                    loadUpgradeRequests();
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'Lỗi xóa yêu cầu');
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
         async function loadUpgradeRequests() {
             try {
                 const res = await fetch(API_URL + '/billing/requests', { headers: getHeaders() });
                 const data = await res.json();
                 
+                if (!res.ok) throw new Error(data.error || 'Lỗi tải dữ liệu');
+
+                if (!data || data.length === 0) {
+                    allRequests = [];
+                    document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;">Chưa có yêu cầu nào.</td></tr>';
+                    document.getElementById('req-total-revenue').innerText = '0';
+                    return;
+                }
+
                 allRequests = data.map(r => ({...r, status: r.status.toUpperCase()}));
                 
                 // Calculate total revenue
@@ -1192,30 +1301,7 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
                 filterRequests();
             } catch (err) {
                 console.error(err);
-            }
-        }
- catch (err) {
-                console.error(err);
-                document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Lỗi tải dữ liệu.</td></tr>';
-            }
-        }
-
-        async function handleUpgradeRequest(id, status) {
-            if (!await customConfirm(`Bạn có chắc chắn muốn ${status === 'approved' ? 'duyệt' : 'từ chối'} yêu cầu này không?`)) return;
-            
-            try {
-                const res = await fetch(API_URL + `/billing/requests/${id}`, {
-                    method: 'PUT',
-                    headers: getHeaders(),
-                    body: JSON.stringify({ status })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
-                
-                showAlert(`Đã ${status === 'approved' ? 'duyệt' : 'từ chối'} yêu cầu thành công!`, 'success');
-                loadUpgradeRequests();
-            } catch (err) {
-                showAlert('Lỗi: ' + err.message, 'error');
+                document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Lỗi tải dữ liệu: ' + err.message + '</td></tr>';
             }
         }
     </script>
