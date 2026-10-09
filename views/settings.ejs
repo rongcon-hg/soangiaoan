@@ -32,8 +32,15 @@
     .toolbar-inputs {
         display: flex;
         gap: 10px;
-        flex: 1;
-        min-width: 100%;
+        flex: 0 1 auto;
+    }
+    .stats-container {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        font-weight: 600;
+        margin-left: auto;
     }
     @media (max-width: 768px) {
         .billing-grid-3 {
@@ -46,7 +53,16 @@
         }
         .toolbar-inputs {
             flex-direction: column;
-            min-width: 100%;
+            width: 100%;
+        }
+        .stats-container {
+            width: 100%;
+            justify-content: flex-start;
+            margin-left: 0;
+        }
+        .stats-container > div {
+            flex: 1 1 auto;
+            text-align: center;
         }
         .toolbar-inputs input, .toolbar-inputs select {
             max-width: 100% !important;
@@ -514,7 +530,7 @@ window.customConfirm = async function(msg) {
                 <div style="overflow-x:auto;">
                     
                 <div class="toolbar-flex">
-                    <div class="toolbar-inputs">
+                    <div class="toolbar-inputs" style="flex: 0 1 auto; min-width: auto;">
                         <input type="text" id="req-search" class="form-control" placeholder="Tìm email, tên gói..." style="max-width:250px;" onkeyup="filterRequests()">
                         <select id="req-filter" class="form-control" style="max-width:150px;" onchange="filterRequests()">
                             <option value="ALL">Tất cả trạng thái</option>
@@ -523,7 +539,7 @@ window.customConfirm = async function(msg) {
                             <option value="REJECTED">Đã từ chối</option>
                         </select>
                     </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap; font-size:13px; font-weight:600;">
+                    <div class="stats-container">
                         <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:8px 12px; border-radius:8px; color:#1e3a8a;">
                             Tổng: <span id="req-total-all">0</span> ₫
                         </div>
