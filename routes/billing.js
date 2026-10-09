@@ -71,6 +71,20 @@ router.post('/request', authenticateToken, async (req, res) => {
             "INSERT INTO upgrade_requests (user_id, package_name, package_days, amount, transfer_code) VALUES ($1, $2, $3, $4, $5)",
             [req.user.id, package_name, package_days, amount, transfer_code]
         );
+        
+        // Notify Admins
+        try {
+            const userEmail = req.user.email || req.user.username || 'Một người dùng';
+            const msg = `Có yêu cầu nâng cấp mới từ ${userEmail} (Gói: ${package_name}).`;
+            await pool.query(`
+                INSERT INTO notifications (user_id, message, type, link)
+                SELECT id, $1, 'info', '/settings' 
+                FROM users 
+                WHERE role IN ('admin', 'Admin') OR is_admin = true
+            `, [msg]);
+        } catch (e) {
+            console.error('Failed to notify admins', e);
+        }
         res.json({ success: true, transfer_code });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -124,6 +138,21 @@ router.put('/requests/:id', authenticateToken, requireAdmin, async (req, res) =>
                 currentExpires.setDate(currentExpires.getDate() + request.package_days);
                 await pool.query("UPDATE users SET expires_at = $1 WHERE id = $2", [currentExpires, request.user_id]);
             }
+
+            try {
+                await pool.query("INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, 'success')", [
+                    request.user_id, 
+                    `Yêu cầu nâng cấp "${request.package_name}" của bạn đã được duyệt thành công! Hạn sử dụng đã được cộng thêm.`
+                ]);
+            } catch(e){}
+        } else if (status === 'REJECTED') {
+            try {
+                const rejectMsg = `Yêu cầu nâng cấp "${request.package_name}" của bạn đã bị từ chối.${reason ? ' Lý do: ' + reason : ''}`;
+                await pool.query("INSERT INTO notifications (user_id, message, type) VALUES ($1, $2, 'error')", [
+                    request.user_id, 
+                    rejectMsg
+                ]);
+            } catch(e){}
         }
         
         res.json({ success: true });
