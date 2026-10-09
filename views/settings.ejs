@@ -138,6 +138,8 @@ window.customConfirm = async function(msg) {
             <div class="s-tab" id="tab-smtp" onclick="switchSettingsTab('smtp', this)"><i class="fas fa-envelope"></i> SMTP Gmail</div>
             <div class="s-tab" id="tab-google" onclick="switchSettingsTab('google', this)"><i class="fab fa-google"></i> Đăng nhập Google</div>
             <div class="s-tab" id="tab-gdrive" onclick="switchSettingsTab('gdrive', this)"><i class="fab fa-google-drive"></i> Google Team Drive</div>
+            <div class="s-tab" id="tab-billing" onclick="switchSettingsTab('billing', this)"><i class="fas fa-money-bill-wave"></i> Bảng giá</div>
+            <div class="s-tab" id="tab-upgrade" onclick="switchSettingsTab('upgrade', this)"><i class="fas fa-user-check"></i> Duyệt nâng cấp</div>
             <% } %>
         </div>
 
@@ -399,6 +401,59 @@ window.customConfirm = async function(msg) {
                 </div>
             </div>
 <% } %>
+<% if (isAdmin) { %>
+            <!-- PANEL: BILLING SETTINGS -->
+            <div id="panel-billing" class="s-panel">
+                <h3 style="margin-bottom: 12px; color: var(--primary);"><i class="fas fa-money-bill-wave"></i> Cấu hình Tài Khoản Ngân Hàng & Bảng Giá</h3>
+                <p class="panel-desc">Cấu hình thông tin nhận tiền và các gói nâng cấp.</p>
+                <div class="grid grid-cols-2">
+                    <div class="form-group">
+                        <label>Ngân hàng (Mã hoặc Tên viết tắt)</label>
+                        <input type="text" id="cfg-bank-name" class="form-control" placeholder="MBBank">
+                    </div>
+                    <div class="form-group">
+                        <label>Số tài khoản</label>
+                        <input type="text" id="cfg-bank-account" class="form-control" placeholder="123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Tên chủ tài khoản</label>
+                        <input type="text" id="cfg-bank-owner" class="form-control" placeholder="NGUYEN VAN A">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:20px;">
+                    <label>Bảng giá các gói (Định dạng JSON)</label>
+                    <textarea id="cfg-billing-packages" class="form-control" rows="8" placeholder='[{"id": "pkg_1", "name": "Gói 1 tháng", "price": 50000, "days": 30}]'></textarea>
+                </div>
+                <div class="action-btn-row">
+                    <button type="button" id="btn-save-billing" onclick="saveBillingSettings()" class="btn btn-primary">
+                        <i class="fas fa-save"></i> <span>Lưu cấu hình</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PANEL: UPGRADE REQUESTS -->
+            <div id="panel-upgrade" class="s-panel">
+                <h3 style="margin-bottom: 12px; color: var(--primary);"><i class="fas fa-user-check"></i> Danh sách Yêu cầu Nâng cấp</h3>
+                <p class="panel-desc">Duyệt hoặc từ chối các yêu cầu gia hạn / nâng cấp của người dùng.</p>
+                <div style="overflow-x:auto;">
+                    <table class="table" style="width:100%;">
+                        <thead>
+                            <tr>
+                                <th>Người dùng</th>
+                                <th>Gói</th>
+                                <th>Số tiền</th>
+                                <th>Thời gian tạo</th>
+                                <th>Trạng thái</th>
+                                <th style="text-align:right;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="upgrade-requests-tbody">
+                            <tr><td colspan="6" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+<% } %>
         </div>
     </div>
 
@@ -436,6 +491,12 @@ window.customConfirm = async function(msg) {
                     if (tabGoogle) tabGoogle.style.display = 'inline-flex';
                     const tabGdrive = document.getElementById('tab-gdrive');
                     if (tabGdrive) tabGdrive.style.display = 'inline-flex';
+                    const tabBilling = document.getElementById('tab-billing');
+                    if (tabBilling) tabBilling.style.display = 'inline-flex';
+                    const tabUpgrade = document.getElementById('tab-upgrade');
+                    if (tabUpgrade) tabUpgrade.style.display = 'inline-flex';
+                    loadBillingSettings();
+                    loadUpgradeRequests();
                 } else {
                     document.getElementById('tab-smtp')?.remove();
                     document.getElementById('tab-google')?.remove();
@@ -443,6 +504,10 @@ window.customConfirm = async function(msg) {
                     document.getElementById('panel-smtp')?.remove();
                     document.getElementById('panel-google')?.remove();
                     document.getElementById('panel-gdrive')?.remove();
+                    document.getElementById('tab-billing')?.remove();
+                    document.getElementById('tab-upgrade')?.remove();
+                    document.getElementById('panel-billing')?.remove();
+                    document.getElementById('panel-upgrade')?.remove();
                 }
                 // Đổ dữ liệu
                 document.getElementById('cfg-gemini-key').value = user.gemini_api_key || '';
@@ -1010,6 +1075,121 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
                 showAlert('✅ ' + data.message, 'success');
             } catch(e) {
                 showAlert('❌ ' + e.message, 'error');
+            }
+        }
+        async function loadBillingSettings() {
+            try {
+                const res = await fetch(API_URL + '/billing/settings', { headers: getHeaders() });
+                const data = await res.json();
+                if (res.ok && data) {
+                    document.getElementById('cfg-bank-name').value = data.bank_name || '';
+                    document.getElementById('cfg-bank-account').value = data.bank_account || '';
+                    document.getElementById('cfg-bank-owner').value = data.bank_owner || '';
+                    document.getElementById('cfg-billing-packages').value = data.packages ? JSON.stringify(data.packages, null, 2) : '';
+                }
+            } catch (err) {
+                console.error('Error loading billing settings:', err);
+            }
+        }
+
+        async function saveBillingSettings() {
+            const btn = document.getElementById('btn-save-billing');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+            
+            try {
+                let packages = [];
+                try {
+                    const packagesStr = document.getElementById('cfg-billing-packages').value.trim();
+                    if (packagesStr) packages = JSON.parse(packagesStr);
+                } catch (e) {
+                    throw new Error('Định dạng bảng giá (JSON) không hợp lệ');
+                }
+
+                const payload = {
+                    bank_name: document.getElementById('cfg-bank-name').value.trim(),
+                    bank_account: document.getElementById('cfg-bank-account').value.trim(),
+                    bank_owner: document.getElementById('cfg-bank-owner').value.trim(),
+                    packages: packages
+                };
+
+                const res = await fetch(API_URL + '/billing/settings', {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Lỗi lưu cấu hình');
+                
+                showAlert('Lưu cấu hình bảng giá thành công!', 'success');
+            } catch (err) {
+                showAlert(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> <span>Lưu cấu hình</span>';
+            }
+        }
+
+        async function loadUpgradeRequests() {
+            try {
+                const res = await fetch(API_URL + '/billing/requests', { headers: getHeaders() });
+                const data = await res.json();
+                const tbody = document.getElementById('upgrade-requests-tbody');
+                if (!res.ok) throw new Error(data.error);
+
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Chưa có yêu cầu nào.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map(req => {
+                    let statusHtml = '';
+                    if (req.status === 'pending') statusHtml = '<span style="color:#b45309;font-weight:bold;">Đang chờ</span>';
+                    else if (req.status === 'approved') statusHtml = '<span style="color:#15803d;font-weight:bold;">Đã duyệt</span>';
+                    else statusHtml = '<span style="color:#b91c1c;font-weight:bold;">Đã từ chối</span>';
+
+                    let actions = '';
+                    if (req.status === 'pending') {
+                        actions = `
+                            <button class="btn btn-primary" style="padding:4px 8px; font-size:12px; margin-right:4px;" onclick="handleUpgradeRequest(${req.id}, 'approved')">Duyệt</button>
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:12px; background:#ef4444;" onclick="handleUpgradeRequest(${req.id}, 'rejected')">Từ chối</button>
+                        `;
+                    }
+
+                    return `
+                        <tr>
+                            <td>${req.email || 'N/A'}<br><small>${req.full_name || ''}</small></td>
+                            <td>${req.package_name || ''}</td>
+                            <td>${Number(req.amount).toLocaleString('vi-VN')} đ</td>
+                            <td>${new Date(req.created_at).toLocaleString('vi-VN')}</td>
+                            <td>${statusHtml}</td>
+                            <td style="text-align:right;">${actions}</td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Lỗi tải dữ liệu.</td></tr>';
+            }
+        }
+
+        async function handleUpgradeRequest(id, status) {
+            if (!await customConfirm(`Bạn có chắc chắn muốn ${status === 'approved' ? 'duyệt' : 'từ chối'} yêu cầu này không?`)) return;
+            
+            try {
+                const res = await fetch(API_URL + `/billing/requests/${id}`, {
+                    method: 'PUT',
+                    headers: getHeaders(),
+                    body: JSON.stringify({ status })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                
+                showAlert(`Đã ${status === 'approved' ? 'duyệt' : 'từ chối'} yêu cầu thành công!`, 'success');
+                loadUpgradeRequests();
+            } catch (err) {
+                showAlert('Lỗi: ' + err.message, 'error');
             }
         }
     </script>

@@ -208,6 +208,24 @@ pool.on('connect', async (client) => {
         auditMigrated = true;
         try {
             await client.query(`
+                CREATE TABLE IF NOT EXISTS system_settings (
+                    key VARCHAR(255) PRIMARY KEY,
+                    value JSONB,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
+                CREATE TABLE IF NOT EXISTS upgrade_requests (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                    package_name VARCHAR(255),
+                    package_days INTEGER,
+                    amount INTEGER,
+                    transfer_code VARCHAR(50) UNIQUE,
+                    status VARCHAR(20) DEFAULT 'PENDING',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+
                 CREATE TABLE IF NOT EXISTS audit_logs (
                     id SERIAL PRIMARY KEY,
                     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,

@@ -123,47 +123,41 @@ function injectLayout(pageId, pageTitle) {
     document.body.insertAdjacentHTML('beforeend', `
 <!-- Renewal Request Modal -->
 <div id="renewal-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:16px;">
-    <div style="background:#fff; border-radius:14px; max-width:520px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0;">
+    <div style="background:#fff; border-radius:14px; max-width:650px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #e2e8f0;">
         <div style="background:linear-gradient(135deg, #16469d 0%, #1e3a8a 100%); color:#fff; padding:18px 22px; display:flex; justify-content:space-between; align-items:center;">
             <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px; color:#fff;">
-                <i class="fas fa-history"></i> Gửi Yêu cầu Gia hạn Sử dụng
+                <i class="fas fa-history"></i> Gia Hạn & Nâng Cấp Thời Gian Sử Dụng
             </h3>
             <button type="button" onclick="closeRenewalModal()" style="background:transparent; border:none; color:#fff; font-size:1.4rem; cursor:pointer; opacity:0.8; line-height:1;" title="Đóng">&times;</button>
         </div>
         <div style="padding:22px; max-height:80vh; overflow-y:auto;">
-            <div id="renewal-modal-notice" style="background:#fef2f2; border-left:4px solid #ef4444; padding:12px 14px; border-radius:6px; margin-bottom:18px; color:#991b1b; font-size:0.88rem; line-height:1.5;">
-                <i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn sử dụng. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!
+            <div id="renewal-modal-notice" style="background:#eff6ff; border-left:4px solid #3b82f6; padding:12px 14px; border-radius:6px; margin-bottom:18px; color:#1e3a8a; font-size:0.88rem; line-height:1.5;">
+                <i class="fas fa-info-circle"></i> Vui lòng chọn gói thời gian sử dụng phù hợp với nhu cầu của bạn.
             </div>
-            <form id="renewal-request-form" onsubmit="submitRenewalForm(event)">
-                <div class="form-group" style="margin-bottom:14px;">
-                    <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Họ và tên <span style="color:#ef4444;">*</span></label>
-                    <input type="text" id="renewal-fullname" class="form-control" required placeholder="Nhập họ và tên...">
+            
+            <div id="billing-packages-container" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px;">
+                <div style="text-align:center; padding:20px; color:#64748b; font-size:0.9rem; grid-column:1/-1;">
+                    <i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Đang tải bảng giá...
                 </div>
-                <div class="form-group" style="margin-bottom:14px;">
-                    <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Email liên hệ <span style="color:#ef4444;">*</span></label>
-                    <input type="email" id="renewal-email" class="form-control" required placeholder="name@nsg.edu.vn">
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
-                    <div class="form-group">
-                        <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Số điện thoại</label>
-                        <input type="text" id="renewal-phone" class="form-control" placeholder="09xx...">
-                    </div>
-                    <div class="form-group">
-                        <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Khoa / Bộ môn</label>
-                        <input type="text" id="renewal-dept" class="form-control" placeholder="Ví dụ: Khoa Cơ khí">
-                    </div>
-                </div>
-                <div class="form-group" style="margin-bottom:18px;">
-                    <label style="font-weight:600; font-size:0.88rem; color:#334155; margin-bottom:4px; display:block;">Lời nhắn gửi Quản trị viên</label>
-                    <textarea id="renewal-reason" class="form-control" rows="3" placeholder="Vui lòng nói lý do chúng tôi Thầy/Cô muốn liên hệ với chúng tôi để gia hạn sử dụng phần mềm."></textarea>
-                </div>
-                <div style="display:flex; justify-content:flex-end; gap:10px;">
-                    <button type="button" class="btn btn-secondary" onclick="closeRenewalModal()">Đóng</button>
-                    <button type="submit" id="btn-submit-renewal" class="btn btn-primary" style="background:#16469d;">
-                        <i class="fas fa-paper-plane"></i> Gửi yêu cầu gia hạn
-                    </button>
-                </div>
-            </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div id="qr-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:100000; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:#fff; border-radius:14px; max-width:400px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); overflow:hidden;">
+        <div style="background:#16469d; color:#fff; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:1rem; color:#fff;">Thanh toán qua mã QR</h3>
+            <button type="button" onclick="document.getElementById('qr-modal-overlay').style.display='none'" style="background:transparent; border:none; color:#fff; font-size:1.4rem; cursor:pointer;">&times;</button>
+        </div>
+        <div style="padding:20px; text-align:center;">
+            <div id="qr-image-container" style="min-height:300px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1;">
+                <img id="qr-image" src="" style="max-width:100%; display:none; border-radius:8px;">
+            </div>
+            <p style="font-size:0.9rem; color:#475569; margin-bottom:15px;">Mở ứng dụng ngân hàng và quét mã QR phía trên để thanh toán.</p>
+            <button class="btn btn-primary" onclick="document.getElementById('qr-modal-overlay').style.display='none'; closeRenewalModal();" style="width:100%;">Đã thanh toán xong</button>
         </div>
     </div>
 </div>
@@ -326,41 +320,64 @@ function showExpiredWarningBanner(user) {
 function openRenewalModal() {
     const modal = document.getElementById('renewal-modal-overlay');
     if (!modal) return;
-    if (currentUser) {
-        document.getElementById('renewal-fullname').value = currentUser.full_name || currentUser.username || '';
-        document.getElementById('renewal-email').value = currentUser.email || '';
-        document.getElementById('renewal-phone').value = currentUser.phone || '';
-        document.getElementById('renewal-dept').value = currentUser.department || '';
-
-        // Tùy chỉnh nội dung thông báo theo thời gian còn lại
-        const noticeBox = document.getElementById('renewal-modal-notice');
-        if (noticeBox) {
-            if (currentUser.expires_at) {
-                const expDate = new Date(currentUser.expires_at);
-                const now = new Date();
-                const diffTime = expDate.getTime() - now.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays > 0) {
-                    noticeBox.style.background = '#eff6ff';
-                    noticeBox.style.borderLeftColor = '#2563eb';
-                    noticeBox.style.color = '#1e40af';
-                    noticeBox.innerHTML = `<i class="fas fa-info-circle"></i> Tài khoản của bạn còn <b>${diffDays} ngày</b> sẽ hết thời hạn sử dụng. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!`;
-                } else {
-                    noticeBox.style.background = '#fef2f2';
-                    noticeBox.style.borderLeftColor = '#ef4444';
-                    noticeBox.style.color = '#991b1b';
-                    noticeBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn sử dụng. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!`;
-                }
+    
+    const noticeBox = document.getElementById('renewal-modal-notice');
+    if (noticeBox && currentUser) {
+        if (currentUser.expires_at) {
+            const expDate = new Date(currentUser.expires_at);
+            const now = new Date();
+            const diffDays = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            if (diffDays > 0) {
+                noticeBox.style.background = '#eff6ff';
+                noticeBox.style.borderLeftColor = '#2563eb';
+                noticeBox.style.color = '#1e40af';
+                noticeBox.innerHTML = `<i class="fas fa-info-circle"></i> Tài khoản của bạn còn <b>${diffDays} ngày</b> sẽ hết thời hạn sử dụng. Hãy chọn gói nâng cấp bên dưới.`;
             } else {
                 noticeBox.style.background = '#fef2f2';
                 noticeBox.style.borderLeftColor = '#ef4444';
                 noticeBox.style.color = '#991b1b';
-                noticeBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn sử dụng. Vui lòng gửi thông tin để Quản trị viên hỗ trợ kích hoạt thêm thời gian sử dụng nhé!`;
+                noticeBox.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Tài khoản của bạn đã hết thời hạn sử dụng. Vui lòng chọn gói nâng cấp để tiếp tục sử dụng!`;
             }
         }
     }
+    
     modal.style.display = 'flex';
+    fetchAndRenderPackages();
+}
+
+let billingSettingsCache = null;
+
+async function fetchAndRenderPackages() {
+    const container = document.getElementById('billing-packages-container');
+    if (!container) return;
+    
+    try {
+        const res = await fetch(API_URL + '/billing/settings', { headers: getHeaders() });
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error('Failed to load packages');
+        
+        billingSettingsCache = data;
+        
+        if (!data.packages || data.packages.length === 0) {
+            container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ef4444; font-weight:600;">Hệ thống chưa cấu hình bảng giá.</div>';
+            return;
+        }
+        
+        container.innerHTML = data.packages.map(pkg => `
+            <div style="border:1px solid #cbd5e1; border-radius:10px; padding:20px; background:#fff; display:flex; flex-direction:column; align-items:center; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                <h4 style="margin:0 0 10px; color:#1e293b; font-size:1.1rem; text-align:center;">${pkg.name}</h4>
+                <div style="font-size:1.4rem; font-weight:bold; color:#16469d; margin-bottom:15px;">${Number(pkg.price).toLocaleString('vi-VN')} đ</div>
+                <div style="font-size:0.85rem; color:#64748b; margin-bottom:20px;">Sử dụng ${pkg.days} ngày</div>
+                <button type="button" class="btn btn-primary" style="width:100%; border-radius:8px; padding:10px;" onclick="selectBillingPackage('${pkg.id}')">
+                    <i class="fas fa-shopping-cart"></i> Thanh Toán Ngay
+                </button>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#ef4444;">Lỗi tải bảng giá.</div>';
+    }
 }
 
 function closeRenewalModal() {
@@ -376,59 +393,58 @@ function closeRenewalModal() {
     }
 }
 
-async function submitRenewalForm(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btn-submit-renewal');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
-    }
-
-    const payload = {
-        fullName: document.getElementById('renewal-fullname')?.value.trim() || (currentUser?.full_name || ''),
-        username: currentUser?.username || '',
-        email: document.getElementById('renewal-email')?.value.trim() || (currentUser?.email || ''),
-        phone: document.getElementById('renewal-phone')?.value.trim() || '',
-        department: document.getElementById('renewal-dept')?.value.trim() || '',
-        reason: document.getElementById('renewal-reason')?.value.trim() || ''
-    };
-
+async function selectBillingPackage(pkgId) {
+    if (!billingSettingsCache || !billingSettingsCache.packages) return;
+    const pkg = billingSettingsCache.packages.find(p => p.id === pkgId);
+    if (!pkg) return;
+    
     try {
-        const res = await fetch(API_URL + '/auth/request-renewal', {
+        const payload = {
+            package_id: pkg.id,
+            package_name: pkg.name,
+            amount: pkg.price,
+            days: pkg.days
+        };
+        
+        const res = await fetch(API_URL + '/billing/request', {
             method: 'POST',
             headers: getHeaders(),
             body: JSON.stringify(payload)
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || data.error);
-
-        closeRenewalModal();
-        if (typeof Swal !== 'undefined') {
-            await Swal.fire({
-                title: 'Đã gửi yêu cầu!',
-                text: 'Yêu cầu gia hạn của Thầy/Cô đã được gửi tới Quản trị viên và email xác nhận đã được gửi vào hộp thư của bạn.',
-                icon: 'success',
-                confirmButtonColor: '#16469d'
-            });
-        } else {
-            alert('Đã gửi yêu cầu gia hạn thành công!');
-        }
-
-        if (currentUser && currentUser.is_expired) {
-            const path = window.location.pathname;
-            if (path === '/' || path === '/app' || path.startsWith('/app')) {
-                window.location.href = '/dashboard';
-            }
-        }
+        
+        if (!res.ok) throw new Error(data.error || 'Lỗi gửi yêu cầu');
+        
+        // Hiện mã QR
+        showQRCode(pkg);
     } catch (err) {
         console.error(err);
-        alert(err.message || 'Lỗi khi gửi yêu cầu gia hạn');
-    } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi yêu cầu gia hạn';
-        }
+        alert(err.message);
     }
+}
+
+function showQRCode(pkg) {
+    if (!billingSettingsCache || !billingSettingsCache.bank_account) {
+        alert('Chưa cấu hình tài khoản ngân hàng.');
+        return;
+    }
+    
+    const bankId = billingSettingsCache.bank_name;
+    const accountNo = billingSettingsCache.bank_account;
+    const accountName = billingSettingsCache.bank_owner;
+    const amount = pkg.price;
+    const desc = `NANG CAP ${currentUser ? (currentUser.email || currentUser.username) : ''}`.replace(/[^a-zA-Z0-9 ]/g, "").trim().substring(0, 50);
+    
+    const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact.png?amount=${amount}&addInfo=${encodeURIComponent(desc)}&accountName=${encodeURIComponent(accountName)}`;
+    
+    const img = document.getElementById('qr-image');
+    if (img) {
+        img.src = qrUrl;
+        img.style.display = 'block';
+    }
+    
+    document.getElementById('renewal-modal-overlay').style.display = 'none';
+    document.getElementById('qr-modal-overlay').style.display = 'flex';
 }
 
 
