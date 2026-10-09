@@ -183,22 +183,7 @@ window.customConfirm = async function(msg) {
                         <h4 style="margin:0; color:#333;"><i class="fas fa-list"></i> Danh sách Bản sao lưu (Google Drive)</h4>
                         <button type="button" onclick="manualBackup()" class="btn btn-primary"><i class="fas fa-plus"></i> Tạo bản sao lưu ngay</button>
                     </div>
-                    
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
-                    <div style="display:flex; gap:10px; flex:1; min-width:300px;">
-                        <input type="text" id="req-search" class="form-control" placeholder="Tìm email, tên gói..." style="max-width:250px;" onkeyup="filterRequests()">
-                        <select id="req-filter" class="form-control" style="max-width:150px;" onchange="filterRequests()">
-                            <option value="ALL">Tất cả trạng thái</option>
-                            <option value="PENDING">Đang chờ</option>
-                            <option value="APPROVED">Đã duyệt</option>
-                            <option value="REJECTED">Đã từ chối</option>
-                        </select>
-                    </div>
-                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 15px; border-radius:8px; color:#166534; font-weight:bold; font-size:14px;">
-                        Tổng tiền đã bán: <span id="req-total-revenue">0</span> ₫
-                    </div>
-                </div>
-<div style="overflow-x:auto;">
+                    <div style="overflow-x:auto;">
                         <table class="table" style="width:100%;">
                             <thead>
                                 <tr>
@@ -479,7 +464,22 @@ window.customConfirm = async function(msg) {
                 <h3 style="margin-bottom: 12px; color: var(--primary);"><i class="fas fa-user-check"></i> Danh sách Yêu cầu Nâng cấp</h3>
                 <p class="panel-desc">Duyệt hoặc từ chối các yêu cầu gia hạn / nâng cấp của người dùng.</p>
                 <div style="overflow-x:auto;">
-                    <table class="table" style="width:100%;">
+                    
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; gap:10px; flex:1; min-width:300px;">
+                        <input type="text" id="req-search" class="form-control" placeholder="Tìm email, tên gói..." style="max-width:250px;" onkeyup="filterRequests()">
+                        <select id="req-filter" class="form-control" style="max-width:150px;" onchange="filterRequests()">
+                            <option value="ALL">Tất cả trạng thái</option>
+                            <option value="PENDING">Đang chờ</option>
+                            <option value="APPROVED">Đã duyệt</option>
+                            <option value="REJECTED">Đã từ chối</option>
+                        </select>
+                    </div>
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 15px; border-radius:8px; color:#166534; font-weight:bold; font-size:14px;">
+                        Tổng tiền đã bán: <span id="req-total-revenue">0</span> ₫
+                    </div>
+                </div>
+<table class="table" style="width:100%;">
                         <thead>
                             <tr>
                                 <th>Người dùng</th>
