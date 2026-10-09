@@ -70,7 +70,7 @@ function renderSettings(req, res) {
             if (tokenMatch) {
                 const token = tokenMatch[1];
                 const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
-                if (decoded && (decoded.role === 'admin' || decoded.is_admin)) {
+                if (decoded && ((decoded.role === 'admin' || decoded.role === 'Admin') || decoded.is_admin)) {
                     isAdmin = true;
                 }
             }
