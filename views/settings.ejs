@@ -555,6 +555,7 @@ window.customConfirm = async function(msg) {
                         <thead>
                             <tr>
                                 <th>Người dùng</th>
+                                <th>Mã đơn</th>
                                 <th>Gói</th>
                                 <th>Số tiền</th>
                                 <th>Thời gian tạo</th>
@@ -563,7 +564,7 @@ window.customConfirm = async function(msg) {
                             </tr>
                         </thead>
                         <tbody id="upgrade-requests-tbody">
-                            <tr><td colspan="6" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+                            <tr><td colspan="7" style="text-align:center;">Đang tải dữ liệu...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1259,7 +1260,8 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
             
             const filtered = allRequests.filter(req => {
                 const matchQuery = (req.email && req.email.toLowerCase().includes(query)) || 
-                                   (req.package_name && req.package_name.toLowerCase().includes(query));
+                                   (req.package_name && req.package_name.toLowerCase().includes(query)) ||
+                                   (req.transfer_code && req.transfer_code.toLowerCase().includes(query));
                 const matchStatus = filter === 'ALL' || req.status === filter;
                 return matchQuery && matchStatus;
             });
@@ -1270,7 +1272,7 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
         function renderRequests(data) {
             const tbody = document.getElementById('upgrade-requests-tbody');
             if (!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Không tìm thấy yêu cầu nào.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Không tìm thấy yêu cầu nào.</td></tr>';
                 return;
             }
 
@@ -1295,6 +1297,7 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
                 return `
                     <tr>
                         <td>${req.email || 'N/A'}<br><small style="color:#64748b;">${req.full_name || ''}</small></td>
+                        <td style="font-family:monospace; font-weight:600; color:#475569; background:#f8fafc; padding:4px 8px; border-radius:4px;">${req.transfer_code || '---'}</td>
                         <td style="font-weight:600; color:#3b82f6;">${req.package_name || ''}</td>
                         <td style="font-weight:bold;">${Number(req.amount).toLocaleString('vi-VN')} đ</td>
                         <td>${new Date(req.created_at).toLocaleString('vi-VN')}</td>
@@ -1359,7 +1362,7 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
 
                 if (!data || data.length === 0) {
                     allRequests = [];
-                    document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;">Chưa có yêu cầu nào.</td></tr>';
+                    document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;">Chưa có yêu cầu nào.</td></tr>';
                     
                     document.getElementById('req-total-revenue').innerText = '0';
                     document.getElementById('req-total-all').innerText = '0';
@@ -1382,7 +1385,7 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
                 filterRequests();
             } catch (err) {
                 console.error(err);
-                document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Lỗi tải dữ liệu: ' + err.message + '</td></tr>';
+                document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="7" style="text-align:center;color:red;">Lỗi tải dữ liệu: ' + err.message + '</td></tr>';
             }
         }
     </script>
