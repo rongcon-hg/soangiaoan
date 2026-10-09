@@ -64,8 +64,8 @@ router.put('/settings', authenticateToken, requireAdmin, async (req, res) => {
 router.post('/request', authenticateToken, async (req, res) => {
     try {
         const { package_name, package_days, amount } = req.body;
-        // Generate random transfer code GH + 6 digits
-        const transfer_code = 'GH' + Math.floor(100000 + Math.random() * 900000);
+        // Generate random transfer code GADT + 6 digits
+        const transfer_code = 'GADT' + Math.floor(100000 + Math.random() * 900000);
         
         const insertResult = await pool.query(
             "INSERT INTO upgrade_requests (user_id, package_name, package_days, amount, transfer_code, status) VALUES ($1, $2, $3, $4, $5, 'INIT') RETURNING id",
