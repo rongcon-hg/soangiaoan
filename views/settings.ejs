@@ -523,8 +523,16 @@ window.customConfirm = async function(msg) {
                             <option value="REJECTED">Đã từ chối</option>
                         </select>
                     </div>
-                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 15px; border-radius:8px; color:#166534; font-weight:bold; font-size:14px;">
-                        Tổng tiền đã bán: <span id="req-total-revenue">0</span> ₫
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; font-size:13px; font-weight:600;">
+                        <div style="background:#eff6ff; border:1px solid #bfdbfe; padding:8px 12px; border-radius:8px; color:#1e3a8a;">
+                            Tổng: <span id="req-total-all">0</span> ₫
+                        </div>
+                        <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 12px; border-radius:8px; color:#166534;">
+                            Đã duyệt: <span id="req-total-revenue">0</span> ₫
+                        </div>
+                        <div style="background:#fef3c7; border:1px solid #fde68a; padding:8px 12px; border-radius:8px; color:#92400e;">
+                            Đang chờ: <span id="req-total-pending">0</span> ₫
+                        </div>
                     </div>
                 </div>
 <table class="table" style="width:100%;">
@@ -1336,15 +1344,24 @@ Bạn có CHẮC CHẮN muốn thực hiện không?`);
                 if (!data || data.length === 0) {
                     allRequests = [];
                     document.getElementById('upgrade-requests-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;">Chưa có yêu cầu nào.</td></tr>';
+                    
                     document.getElementById('req-total-revenue').innerText = '0';
+                    document.getElementById('req-total-all').innerText = '0';
+                    document.getElementById('req-total-pending').innerText = '0';
+
                     return;
                 }
 
                 allRequests = data.map(r => ({...r, status: r.status.toUpperCase()}));
                 
-                // Calculate total revenue
+                // Calculate total revenue and stats
                 const totalRevenue = allRequests.filter(r => r.status === 'APPROVED').reduce((sum, r) => sum + Number(r.amount || 0), 0);
+                const totalPending = allRequests.filter(r => r.status === 'PENDING').reduce((sum, r) => sum + Number(r.amount || 0), 0);
+                const totalAll = allRequests.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+                
                 document.getElementById('req-total-revenue').innerText = totalRevenue.toLocaleString('vi-VN');
+                document.getElementById('req-total-pending').innerText = totalPending.toLocaleString('vi-VN');
+                document.getElementById('req-total-all').innerText = totalAll.toLocaleString('vi-VN');
 
                 filterRequests();
             } catch (err) {
