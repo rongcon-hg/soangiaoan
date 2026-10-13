@@ -120,31 +120,31 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 
 <style>
 /* CSS cho Bước 3 - Tạo đề thi */
-#step3 .split, #step4 .split { display:flex; gap:20px; align-items:flex-start; }
-#step3 .panel, #step4 .panel { flex:1; background:#fff; border-radius:10px; border:1px solid #d9e2ef; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
-#step3 .panel, #step4 .panel:first-child { flex: 0.8; }
-#step3 .panel, #step4 .panel:last-child { flex: 1.2; }
-#step3 .field-box { border:1px solid #dbe4ef; border-radius:9px; background:#f8fbff; padding:12px 14px; margin-bottom:12px; }
-#step3 .field-box label { display:block; font-size:13px; color:#475569; font-weight:700; margin-bottom:8px; }
-#step3 .field-box input[type="number"], #step3 .field-box input[type="text"] { width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; box-sizing:border-box; outline:none; }
-#step3 .field-box input:focus { border-color:#16469d; box-shadow:0 0 0 3px rgba(22,70,157,0.1); }
-#step3 .schedule-inline { display:flex; gap:10px; }
-#step3 .schedule-inline .field-box { flex:1; margin-bottom:0; }
-#step3 .btn { font:inherit; border:0; border-radius:8px; padding:10px 16px; font-weight:700; cursor:pointer; color:#fff; display:inline-flex; align-items:center; gap:8px; justify-content:center; transition:background 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
-#step3 .btn.primary { background:#16469d; }
-#step3 .btn.primary:hover { background:#123a80; }
-#step3 .toolbar { display:flex; gap:10px; }
-#step3 h3 { margin-top:0; color:#123d82; font-size:16px; margin-bottom:18px; display:flex; align-items:center; gap:8px; text-transform:uppercase; font-weight:700; }
-#step3 .status { padding:12px; border-radius:8px; font-size:14px; font-weight:600; text-align:center; }
-#step3 .status.warn { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
-#step3 .status.success { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
-#step3 .status.err { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
+#step3 .split, #step4 .split, #step5 .split { display:flex; gap:20px; align-items:flex-start; }
+#step3 .panel, #step4 .panel, #step5 .panel { flex:1; background:#fff; border-radius:10px; border:1px solid #d9e2ef; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+#step3 .panel, #step4 .panel:first-child, #step5 .panel:first-child { flex: 0.8; }
+#step3 .panel, #step4 .panel:last-child, #step5 .panel:last-child { flex: 1.2; }
+#step3 .field-box, #step5 .field-box { border:1px solid #dbe4ef; border-radius:9px; background:#f8fbff; padding:12px 14px; margin-bottom:12px; }
+#step3 .field-box label, #step5 .field-box label { display:block; font-size:13px; color:#475569; font-weight:700; margin-bottom:8px; }
+#step3 .field-box input[type="number"], #step3 .field-box input[type="text"], #step5 .field-box input[type="number"], #step5 .field-box input[type="text"], #step5 .field-box select { width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; box-sizing:border-box; outline:none; }
+#step3 .field-box input:focus, #step5 .field-box input:focus, #step5 .field-box select:focus { border-color:#16469d; box-shadow:0 0 0 3px rgba(22,70,157,0.1); }
+#step3 .schedule-inline, #step5 .schedule-inline { display:flex; gap:10px; }
+#step3 .schedule-inline .field-box, #step5 .schedule-inline .field-box { flex:1; margin-bottom:0; }
+#step3 .btn, #step5 .btn { font:inherit; border:0; border-radius:8px; padding:10px 16px; font-weight:700; cursor:pointer; color:#fff; display:inline-flex; align-items:center; gap:8px; justify-content:center; transition:background 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+#step3 .btn.primary, #step5 .btn.primary { background:#16469d; }
+#step3 .btn.primary:hover, #step5 .btn.primary:hover { background:#123a80; }
+#step3 .toolbar, #step5 .toolbar { display:flex; gap:10px; }
+#step3 h3, #step5 h3 { margin-top:0; color:#123d82; font-size:16px; margin-bottom:18px; display:flex; align-items:center; gap:8px; text-transform:uppercase; font-weight:700; }
+#step3 .status, #step5 .status { padding:12px; border-radius:8px; font-size:14px; font-weight:600; text-align:center; }
+#step3 .status.warn, #step5 .status.warn { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
+#step3 .status.success, #step5 .status.success { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+#step3 .status.err, #step5 .status.err { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
 
 @media (max-width:900px) {
-   #step3 .split, #step4 .split { flex-direction:column; }
-   #step3 .panel, #step4 .panel { width:100%; box-sizing:border-box; }
-   #step3 .toolbar { flex-direction:column; width:100%; }
-   #step3 .toolbar .btn { width:100%; }
+   #step3 .split, #step4 .split, #step5 .split { flex-direction:column; }
+   #step3 .panel, #step4 .panel, #step5 .panel { width:100%; box-sizing:border-box; }
+   #step3 .toolbar, #step5 .toolbar { flex-direction:column; width:100%; }
+   #step3 .toolbar .btn, #step5 .toolbar .btn { width:100%; }
 }
 </style>
 
@@ -160,7 +160,8 @@ html,body,button,input,select,textarea,label,table,th,td,div,span,p,h1,h2,h3,h4,
 <div class="step-pill" onclick="switchTab(1)" style="cursor:pointer;" title="Chuyển sang Bước 1">BƯỚC 1 · Lập Sổ đầu bài</div>
 <div class="step-pill" onclick="switchTab(2)" style="cursor:pointer;" title="Chuyển sang Bước 2">BƯỚC 2 · Soạn giáo án theo từng buổi</div>
 <div class="step-pill" onclick="switchTab(3)" style="cursor:pointer;" title="Chuyển sang Bước 3">BƯỚC 3 · Tạo Đề thi (AI)</div>
-        <div class="step-pill" onclick="switchTab(4)" style="cursor:pointer;" title="Chuyển sang Bước 4">BƯỚC 4 – Tạo Slide (AI)</div><a href="/templates/chuong_trinh_mon_hoc_mau.docx" download="chuong_trinh_mon_hoc_mau.docx" class="download-btn-mobile" style="background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; border-radius: 99px; text-decoration: none; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='var(--bg)'"><i class="fas fa-download" style="color:var(--primary)"></i> Tải file mẫu Chương trình</a></div>
+        <div class="step-pill" onclick="switchTab(4)" style="cursor:pointer;" title="Chuyển sang Bước 4">BƯỚC 4 · Tạo Slide (AI)</div>
+<div class="step-pill" onclick="switchTab(5)" style="cursor:pointer;" title="Chuyển sang Bước 5">BƯỚC 5 · Hoạt động tự học (AI)</div><a href="/templates/chuong_trinh_mon_hoc_mau.docx" download="chuong_trinh_mon_hoc_mau.docx" class="download-btn-mobile" style="background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; border-radius: 99px; text-decoration: none; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='var(--bg)'"><i class="fas fa-download" style="color:var(--primary)"></i> Tải file mẫu Chương trình</a></div>
 </div>
 
 <section class="section" id="step1">
@@ -6049,6 +6050,91 @@ init();
   </div>
 </section>
 
+<section class="section" id="step5" style="display:none;">
+  <div class="section-head">
+    <div>
+      <h2>BƯỚC 5. HOẠT ĐỘNG TỰ HỌC CỦA SINH VIÊN (AI)</h2>
+      <p>Tự động thiết kế Phiếu hướng dẫn tự học bám sát từng bài, từng đề mục theo Chương trình đào tạo và Giáo trình.</p>
+    </div>
+    <div class="actions">
+      <button class="secondary" onclick="switchTab(2)" title="Quay lại"><i class="fas fa-arrow-left"></i> <span class="btn-text">Quay lại</span></button>
+    </div>
+  </div>
+  
+  <div class="split" style="gap:20px; align-items:flex-start;">
+    <!-- Left Panel: Settings -->
+    <div class="panel" style="flex:1;">
+      <h3><i class="fas fa-user-graduate" style="color:#16469d;"></i> Cấu hình Hoạt động tự học</h3>
+      
+      <div class="field-box" style="margin-top:15px;">
+        <label>Phạm vi kiến thức (Chọn các chương/bài):</label>
+        <div id="selfStudyChapterList" style="max-height:240px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:10px; background:#fff;">
+          <em style="color:#666; font-size:13px;">(Cần tải Sổ đầu bài ở Bước 1 trước)</em>
+        </div>
+      </div>
+
+      <div class="field-box" style="margin-top:12px;">
+        <label>Mục đích & Trọng tâm tự học</label>
+        <select id="selfStudyGoal" style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; outline:none; background:#fff;">
+           <option value="Toàn diện (Chuẩn bị bài mới, Ôn tập củng cố, Bài tập vận dụng và mở rộng)" selected>Toàn diện (Trước, trong & sau buổi học)</option>
+           <option value="Chuẩn bị bài mới trước khi lên lớp (Đọc giáo trình, tra cứu thuật ngữ, câu hỏi định hướng)">Chuẩn bị bài mới trước khi lên lớp</option>
+           <option value="Ôn tập và hệ thống hóa kiến thức sau buổi học (Vẽ sơ đồ tư duy, tóm tắt cốt lõi, câu hỏi ôn tập)">Ôn tập & Củng cố kiến thức sau buổi học</option>
+           <option value="Bài tập tình huống, nghiên cứu thực tế & Dự án thực hành nghề nghiệp">Bài tập tình huống & Dự án thực tế</option>
+        </select>
+      </div>
+
+      <div class="schedule-inline" style="margin-top:12px;">
+        <div class="field-box">
+          <label>Thời lượng tự học (giờ)</label>
+          <input type="number" id="selfStudyHours" value="4" min="1" max="60" step="1">
+        </div>
+        <div class="field-box">
+          <label>Hình thức nộp sản phẩm</label>
+          <select id="selfStudySubmission" style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; outline:none; background:#fff;">
+             <option value="Vở ghi chép / Báo cáo tóm tắt cá nhân" selected>Vở ghi chép / Báo cáo cá nhân</option>
+             <option value="Sơ đồ tư duy (Mindmap) & Trả lời câu hỏi">Sơ đồ tư duy (Mindmap)</option>
+             <option value="Bài tập thực hành / File sản phẩm chuyên môn">Bài tập thực hành / File sản phẩm</option>
+             <option value="Báo cáo nhóm và Thuyết trình trước lớp">Báo cáo nhóm & Thuyết trình</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-box" style="margin-top:12px;">
+        <label>Thang điểm & Đánh giá (Rubric)</label>
+        <select id="selfStudyRubric" style="width:100%; border:1px solid #cbd5e1; border-radius:6px; padding:8px 12px; font:inherit; outline:none; background:#fff;">
+           <option value="Thang điểm 10 chi tiết (Đúng hạn 2đ, Độ chính xác 4đ, Vận dụng 3đ, Hình thức 1đ)" selected>Kèm Bảng tiêu chí đánh giá (Rubric 10 điểm)</option>
+           <option value="Đánh giá Đạt / Không đạt (Chuyên cần & Hoàn thành nhiệm vụ)">Đánh giá Đạt / Không đạt (Chuyên cần)</option>
+           <option value="Không kèm bảng điểm (Chỉ phiếu hướng dẫn học tập)">Chỉ lập phiếu hướng dẫn (Không kèm điểm)</option>
+        </select>
+      </div>
+      
+      <button class="btn primary" id="btnGenerateSelfStudy" onclick="runGenerateSelfStudy()" style="width:100%; margin-top:18px; font-size:15px;">
+         <i class="fas fa-magic"></i> Tạo Hoạt Động Tự Học Bằng AI
+      </button>
+      
+      <div id="selfStudyStatus" class="status" style="margin-top:10px; display:none;"></div>
+    </div>
+    
+    <!-- Right Panel: Output -->
+    <div class="panel" style="flex:2;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap; gap:10px;">
+         <h3 style="margin:0;"><i class="fas fa-file-alt" style="color:#16469d;"></i> Xem trước Phiếu hướng dẫn tự học</h3>
+         <div class="toolbar" style="display:flex; gap:10px;">
+           <button class="btn" onclick="exportSelfStudyWord()" style="background:#2563eb;"><i class="fas fa-file-word"></i> Xuất Word</button>
+           <button class="btn" onclick="exportSelfStudyPdf()" style="background:#dc2626;"><i class="fas fa-file-pdf"></i> Xuất PDF</button>
+         </div>
+      </div>
+      
+      <div id="selfStudyPaper" class="paper" style="min-height:500px; padding:30px; border:1px solid #ccc; background:#fff; font-size:14pt; line-height:1.5; font-family:'Times New Roman', Times, serif;">
+        <div style="text-align:center; color:#999; margin-top:150px;">
+           <i class="fas fa-book-reader" style="font-size:45px; margin-bottom:15px; color:#cbd5e1;"></i><br>
+           Nội dung Phiếu hướng dẫn tự học sẽ hiển thị tại đây sau khi AI xử lý xong...
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
 
 </div>
 
@@ -6065,10 +6151,12 @@ function switchTab(step) {
   const step2 = document.getElementById("step2");
   const step3 = document.getElementById("step3");
   const step4 = document.getElementById("step4");
+  const step5 = document.getElementById("step5");
   if(step1) step1.style.display = step === 1 ? "block" : "none";
   if(step2) step2.style.display = step === 2 ? "block" : "none";
   if(step3) step3.style.display = step === 3 ? "block" : "none";
   if(step4) step4.style.display = step === 4 ? "block" : "none";
+  if(step5) step5.style.display = step === 5 ? "block" : "none";
   
   const pills = document.querySelectorAll(".step-pill");
   pills.forEach((pill, idx) => {
@@ -6093,25 +6181,24 @@ function switchTab(step) {
       }
   }
   
-  
   if (step === 3 && window._lastSchedulePayload) {
       renderExamChapterSelection(window._lastSchedulePayload);
   }
   if (step === 4 && window._lastSchedulePayload) {
       renderSlideChapterSelection(window._lastSchedulePayload);
   }
-
+  if (step === 5 && window._lastSchedulePayload) {
+      renderSelfStudyChapterSelection(window._lastSchedulePayload);
+  }
 }
 
 // Make pills clickable
 document.addEventListener("DOMContentLoaded", () => {
     const pills = document.querySelectorAll(".step-pill");
-    if(pills.length >= 2) {
-        pills[0].style.cursor = "pointer";
-        pills[1].style.cursor = "pointer";
-        pills[0].onclick = () => switchTab(1);
-        pills[1].onclick = () => switchTab(2);
-    }
+    pills.forEach((p, idx) => {
+        p.style.cursor = "pointer";
+        p.onclick = () => switchTab(idx + 1);
+    });
     switchTab(1);
 });
 
@@ -6263,6 +6350,10 @@ window.addEventListener("message", async e => {
     const step4 = document.getElementById("step4");
     if (step4 && step4.style.display === "block") {
         renderSlideChapterSelection(window._lastSchedulePayload);
+    }
+    const step5 = document.getElementById("step5");
+    if (step5 && step5.style.display === "block") {
+        renderSelfStudyChapterSelection(window._lastSchedulePayload);
     }
 
   }
@@ -6587,11 +6678,11 @@ function downloadExamWord(inner, filename) {
 
 
 // --- NATIVE GEMINI CALL FOR EXAM ---
-async function simpleGeminiCall(prompt) {
+async function simpleGeminiCall(prompt, statusElId = "examStatus") {
    const key = localStorage.getItem("giaoan_gemini_key");
    if(!key) throw new Error("Vui lòng thiết lập Google Gemini API Key trong Bước 2 (Soạn Giáo Án -> Cài đặt AI) trước khi sử dụng tính năng này.");
    
-   const stat = document.getElementById("examStatus");
+   const stat = document.getElementById(statusElId);
    if (stat) stat.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang tải danh sách mô hình AI...";
 
    let validModels = [];
@@ -7289,6 +7380,240 @@ function exportExamPdf() {
             item.el.style.display = item.display;
         });
     }, 200);
+}
+
+
+// --- STEP 5: SELF-STUDY (HOẠT ĐỘNG TỰ HỌC) LOGIC ---
+function renderSelfStudyChapterSelection(payload) {
+   const container = document.getElementById("selfStudyChapterList");
+   if(!container) return;
+   
+   const program = payload.fullProgram;
+   if(!program || !Array.isArray(program) || program.length === 0) {
+       container.innerHTML = '<em style="color:#666; font-size:13px;">(Chưa có dữ liệu chương trình. Vui lòng lập Sổ đầu bài ở Bước 1)</em>';
+       return;
+   }
+   
+   const lessons = program.filter(x => x.kind === 'lesson');
+   if(lessons.length === 0) {
+       container.innerHTML = '<em style="color:#666; font-size:13px;">(Không tìm thấy bài học nào trong chương trình)</em>';
+       return;
+   }
+
+   window._currentSelfStudyLessons = lessons;
+
+   let html = '<div style="margin-bottom:8px;"><label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:bold; background:#e2e8f0; padding:6px 10px; border-radius:6px;"><input type="checkbox" id="selfStudyCbAll" checked onchange="toggleAllSelfStudyCbs(this);"> <span>Chọn tất cả các chương/bài</span></label></div>';
+   
+   lessons.forEach((l, idx) => {
+       let title = l.title || ("Bài " + (idx+1));
+       if (l.detail) title += " - " + l.detail;
+       html += `<div style="margin-left:4px; margin-bottom:8px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
+           <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-weight:600; padding:4px;">
+              <input type="checkbox" class="self-study-chapter-cb" value="${idx}" checked style="margin-top:3px;" onchange="toggleSelfStudySubCbs(${idx}); checkSelfStudySelectAllState();"> 
+              <span style="font-size:14px; line-height:1.4;">${escapeHtmlMain(title)}</span>
+           </label>`;
+       
+       if (l.items && l.items.length > 0) {
+           html += `<div id="selfStudySubBox_${idx}" style="margin-left:26px; margin-top:4px; display:flex; flex-direction:column; gap:5px;">`;
+           l.items.forEach((sub, subIdx) => {
+               html += `<label style="font-size:13px; display:flex; align-items:flex-start; gap:6px; cursor:pointer; color:#475569;">
+                  <input type="checkbox" class="self-study-sub-cb self-study-sub-cb-${idx}" data-parent="${idx}" value="${subIdx}" checked style="margin-top:2px;" onchange="
+                      const parent = document.querySelector('.self-study-chapter-cb[value=\'${idx}\']');
+                      if(this.checked) parent.checked = true;
+                      else if(document.querySelectorAll('.self-study-sub-cb-${idx}:checked').length === 0) parent.checked = false;
+                      checkSelfStudySelectAllState();
+                  "> 
+                  <span style="line-height:1.4;">${escapeHtmlMain(sub)}</span>
+               </label>`;
+           });
+           html += `</div>`;
+       }
+       html += `</div>`;
+   });
+   
+   container.innerHTML = html;
+}
+
+function checkSelfStudySelectAllState() {
+   const all = Array.from(document.querySelectorAll('.self-study-chapter-cb, .self-study-sub-cb'));
+   if(all.length === 0) return;
+   const allChecked = all.every(cb => cb.checked);
+   const master = document.getElementById('selfStudyCbAll');
+   if(master) master.checked = allChecked;
+}
+
+function toggleAllSelfStudyCbs(master) {
+   const cbs = document.querySelectorAll('.self-study-chapter-cb, .self-study-sub-cb');
+   cbs.forEach(cb => cb.checked = master.checked);
+}
+
+function toggleSelfStudySubCbs(idx) {
+   const master = document.querySelector(`.self-study-chapter-cb[value="${idx}"]`);
+   const subs = document.querySelectorAll(`.self-study-sub-cb-${idx}`);
+   subs.forEach(s => s.checked = master ? master.checked : false);
+   checkSelfStudySelectAllState();
+}
+
+async function runGenerateSelfStudy() {
+   const btn = document.getElementById("btnGenerateSelfStudy");
+   const stat = document.getElementById("selfStudyStatus");
+   const paper = document.getElementById("selfStudyPaper");
+   
+   const checkedChapters = document.querySelectorAll(".self-study-chapter-cb:checked");
+   if(checkedChapters.length === 0) return alert("Vui lòng chọn ít nhất 1 bài học/chương trong danh sách!");
+   
+   if (!window._lastSchedulePayload || !window._lastSchedulePayload.fullProgram) {
+       return alert("Không tìm thấy dữ liệu chương trình. Vui lòng quay lại Bước 1 kiểm tra Sổ đầu bài.");
+   }
+
+   const lessons = window._currentSelfStudyLessons || window._lastSchedulePayload.fullProgram.filter(x => x.kind === 'lesson');
+   let selectedTopics = [];
+   
+   checkedChapters.forEach(cb => {
+       const idx = parseInt(cb.value);
+       const lesson = lessons[idx];
+       if(lesson) {
+           let t = lesson.title || ("Bài " + (idx+1));
+           if(lesson.detail) t += " - " + lesson.detail;
+           
+           const subCbs = document.querySelectorAll(`.self-study-sub-cb-${idx}:checked`);
+           let subs = [];
+           subCbs.forEach(subCb => {
+               const subIdx = parseInt(subCb.value);
+               if(lesson.items && lesson.items[subIdx]) {
+                   subs.push(lesson.items[subIdx]);
+               }
+           });
+           
+           if(subs.length > 0) {
+               t += "\n   + " + subs.join("\n   + ");
+           }
+           selectedTopics.push(t);
+       }
+   });
+
+   let textbookContext = "";
+   if (window._lastSchedulePayload && window._lastSchedulePayload.textbookData) {
+       const textStr = window._lastSchedulePayload.textbookData.text || window._lastSchedulePayload.textbookData;
+       if (typeof textStr === 'string' && textStr.length > 0) {
+           textbookContext = textStr.substring(0, 150000);
+       }
+   }
+
+   const courseName = (window._lastSchedulePayload && window._lastSchedulePayload.courseName) || (currentProject && currentProject.name) || "Môn học chuyên môn";
+   const goal = document.getElementById("selfStudyGoal") ? document.getElementById("selfStudyGoal").value : "Toàn diện";
+   const hours = document.getElementById("selfStudyHours") ? document.getElementById("selfStudyHours").value : "4";
+   const submission = document.getElementById("selfStudySubmission") ? document.getElementById("selfStudySubmission").value : "Báo cáo cá nhân";
+   const rubric = document.getElementById("selfStudyRubric") ? document.getElementById("selfStudyRubric").value : "Thang điểm 10";
+
+   const prompt = `Bạn là một Chuyên gia Sư phạm Giáo dục nghề nghiệp dày dặn kinh nghiệm.
+Hãy soạn thảo một PHIẾU HƯỚNG DẪN HOẠT ĐỘNG TỰ HỌC CỦA SINH VIÊN thật chi tiết, chuẩn mực sư phạm và khoa học.
+
+THÔNG TIN MÔN HỌC & PHẠM VI KIẾN THỨC CẦN TỰ HỌC:
+- Tên môn học/mô-đun: ${courseName}
+- Phạm vi kiến thức bài học (Chương/bài và đề mục):
+${selectedTopics.map((t,i) => (i+1) + ". " + t).join("\n")}
+
+${textbookContext ? "NỘI DUNG THAM KHẢO TỪ GIÁO TRÌNH:\n" + textbookContext + "\n\n" : ""}
+CẤU HÌNH YÊU CẦU:
+- Mục đích & Trọng tâm tự học: ${goal}
+- Thời lượng tự học dự kiến: ${hours} giờ học tập độc lập.
+- Hình thức nộp sản phẩm: ${submission}
+- Yêu cầu đánh giá: ${rubric}
+
+YÊU CẦU BỐ CỤC NỘI DUNG VĂN BẢN (Chuẩn văn thư Nghị định 30/2020/NĐ-CP):
+Vui lòng xuất kết quả BẰNG MÃ HTML DUY NHẤT (TUYỆT ĐỐI KHÔNG dùng markdown code block, KHÔNG dùng ký tự sao hay triple backticks).
+Mã HTML bao gồm đầy đủ các mục sau:
+1. TIÊU NGỮ VÀ TIÊU ĐỀ:
+   - Quốc hiệu, Tiêu ngữ (CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM / Độc lập - Tự do - Hạnh phúc)
+   - Tiêu đề chính giữa, in hoa đậm: PHIẾU HƯỚNG DẪN HOẠT ĐỘNG TỰ HỌC CỦA SINH VIÊN
+   - Tên môn học, Mã bài/chương, Thời lượng tự học (${hours} giờ).
+2. I. MỤC TIÊU TỰ HỌC:
+   - Kiến thức: Sinh viên tự nghiên cứu, phân tích, hiểu rõ được những nội dung cốt lõi nào.
+   - Kỹ năng: Sinh viên rèn luyện và thực hiện được các thao tác, bài tập hoặc tra cứu kỹ thuật gì.
+   - Mức độ tự chủ và trách nhiệm: Ý thức tự giác, chủ động giải quyết vấn đề, tinh thần trách nhiệm.
+3. II. TÀI LIỆU HỌC TẬP VÀ PHƯƠNG TIỆN CẦN CHUẨN BỊ:
+   - Chỉ dẫn cụ thể các mục, đề mục tương ứng trong Giáo trình môn học.
+   - Các công cụ, thiết bị, phần mềm, liên kết tài liệu số phục vụ tự học.
+4. III. NỘI DUNG VÀ NHIỆM VỤ TỰ HỌC CHI TIẾT:
+   - Nhiệm vụ 1 (Đọc & Tóm tắt): Hệ thống các câu hỏi hướng dẫn đọc, yêu cầu trích xuất định nghĩa, nguyên lý then chốt.
+   - Nhiệm vụ 2 (Tư duy & Phân tích): Các câu hỏi so sánh, giải thích bản chất, phân tích sơ đồ/quy trình.
+   - Nhiệm vụ 3 (Thực hành & Vận dụng): Bài tập thực tế, xử lý tình huống chuyên môn hoặc viết báo cáo/mã nguồn thực nghiệm.
+5. IV. PHƯƠNG PHÁP & CÁC BƯỚC THỰC HIỆN TỰ HỌC:
+   - Hướng dẫn sinh viên lộ trình 4 bước: (Bước 1: Nghiên cứu lý thuyết -> Bước 2: Tự hệ thống hóa sơ đồ tư duy -> Bước 3: Giải quyết bài tập vận dụng -> Bước 4: Kiểm tra chéo & Hoàn thiện sản phẩm).
+6. V. HÌNH THỨC NỘP SẢN PHẨM & TIÊU CHÍ ĐÁNH GIÁ (RUBRIC):
+   - Thời hạn và quy cách nộp (${submission}).
+   - Bảng Rubric đánh giá (${rubric}) sử dụng thẻ <table> viền nét đơn chuẩn chỉ (border="1" cellspacing="0" cellpadding="6") gồm các cột: Tiêu chí, Mức độ Đạt / Khá / Giỏi, Điểm số tối đa.
+7. PHẦN KÝ TÊN Ở CUỐI:
+   - Giảng viên biên soạn hướng dẫn.
+
+Hãy trình bày trang trọng, ngôn từ sư phạm chuẩn mực, câu hỏi và bài tập thật cụ thể, bám sát chuyên môn của môn học.`;
+
+   btn.disabled = true;
+   stat.style.display = "block";
+   stat.className = "status warn";
+   stat.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang kết nối AI và thiết kế Phiếu tự học...";
+   paper.innerHTML = "<div style='text-align:center; padding:50px; color:#64748b;'><i class='fas fa-circle-notch fa-spin fa-3x' style='color:#16469d; margin-bottom:15px;'></i><br><b style='font-size:16px;'>Hệ thống AI đang phân tích giáo trình và thiết kế Hoạt động tự học...</b><br>Quá trình này có thể mất từ 15 - 30 giây. Vui lòng đợi!</div>";
+
+   try {
+       const raw = await simpleGeminiCall(prompt, "selfStudyStatus");
+       let htmlContent = String(raw || "").replace(/^```(?:html|text|markdown)?s*/i,"").replace(/```s*$/,"").trim();
+       htmlContent = htmlContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+       paper.innerHTML = htmlContent;
+       stat.className = "status success";
+       stat.innerHTML = "<i class='fas fa-check-circle'></i> Đã thiết kế Phiếu tự học thành công!";
+   } catch(e) {
+       console.error("Self study gen error:", e);
+       stat.className = "status err";
+       stat.innerHTML = "<i class='fas fa-exclamation-triangle'></i> Lỗi: " + (e.message || e);
+       alert("Lỗi khi tạo Hoạt động tự học: " + (e.message || e));
+       paper.innerHTML = "<div style='color:red; padding:30px;'><b>Lỗi xử lý:</b> " + (e.message || e) + "</div>";
+   } finally {
+       btn.disabled = false;
+   }
+}
+
+function exportSelfStudyWord() {
+    const paper = document.getElementById("selfStudyPaper");
+    if(!paper || paper.innerText.includes("Nội dung Phiếu hướng dẫn tự học sẽ hiển thị")) return alert("Vui lòng tạo nội dung trước khi xuất file!");
+    downloadExamWord(paper.innerHTML, "Phieu_Huong_Dan_Tu_Hoc.doc");
+}
+
+async function exportSelfStudyPdf() {
+    const paper = document.getElementById("selfStudyPaper");
+    if(!paper || paper.innerText.includes("Nội dung Phiếu hướng dẫn tự học sẽ hiển thị")) return alert("Vui lòng tạo nội dung trước khi xuất file!");
+    
+    const clone = paper.cloneNode(true);
+    clone.style.border = "none";
+    clone.style.padding = "0";
+    clone.style.fontFamily = "'Times New Roman', Times, serif";
+    clone.style.fontSize = "14pt";
+    
+    const opt = {
+        margin:       [20, 15, 20, 30], // ND 30/2020: Top 20, Right 15, Bottom 20, Left 30 mm
+        filename:     'Phieu_Huong_Dan_Tu_Hoc.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    if(typeof html2pdf === "undefined") {
+        return alert("Chưa tải được thư viện xuất PDF (html2pdf). Vui lòng thử lại!");
+    }
+
+    try {
+        const btn = document.querySelector("#step5 .btn[onclick='exportSelfStudyPdf()']");
+        const originalText = btn ? btn.innerHTML : "";
+        if(btn) { btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Đang xuất..."; btn.disabled = true; }
+        
+        await html2pdf().set(opt).from(clone).save();
+        
+        if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
+    } catch(e) {
+        console.error("PDF Export Error:", e);
+        alert("Đã xảy ra lỗi khi tạo PDF: " + e.message);
+    }
 }
 
 </script>
