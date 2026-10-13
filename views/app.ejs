@@ -20,6 +20,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>.swal2-popup { font-family: 'Be Vietnam Pro', sans-serif !important; }</style>
 <script>
 window._originalAlert = window.alert;
@@ -7700,7 +7701,17 @@ async function exportSelfStudyPdf() {
     };
 
     if(typeof html2pdf === "undefined") {
-        return alert("Chưa tải được thư viện xuất PDF (html2pdf). Vui lòng thử lại!");
+        try {
+            await new Promise((resolve, reject) => {
+                const s = document.createElement("script");
+                s.src = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+                s.onload = resolve;
+                s.onerror = reject;
+                document.head.appendChild(s);
+            });
+        } catch(err) {
+            return alert("Không thể tải thư viện xuất PDF (html2pdf). Vui lòng kiểm tra lại kết nối mạng!");
+        }
     }
 
     try {
