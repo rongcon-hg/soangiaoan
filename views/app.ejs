@@ -727,7 +727,8 @@ function broadcastProgramData() {
         payload: {
             fullProgram: (typeof programSequence !== 'undefined' ? programSequence : []).map(x=>JSON.parse(JSON.stringify(x))),
             textbookData: typeof textbookData !== 'undefined' ? textbookData : '',
-            courseName: typeof course !== 'undefined' ? (course.name||'') : ''
+            courseName: typeof course !== 'undefined' ? (course.name||'') : '',
+            rawCurriculumText: typeof course !== 'undefined' ? (course.rawCurriculumText||'') : ''
         }
     }, '*');
 }
@@ -6341,6 +6342,7 @@ window.addEventListener("message", async e => {
     window._lastSchedulePayload.fullProgram = e.data.payload.fullProgram;
     if(e.data.payload.textbookData) window._lastSchedulePayload.textbookData = e.data.payload.textbookData;
     if(e.data.payload.courseName) window._lastSchedulePayload.courseName = e.data.payload.courseName;
+    if(e.data.payload.rawCurriculumText) window._lastSchedulePayload.rawCurriculumText = e.data.payload.rawCurriculumText;
     
     
     const step3 = document.getElementById("step3");
@@ -6946,7 +6948,10 @@ Vui lòng xuất kết quả bằng định dạng HTML để hiển thị trên
            li.style.lineHeight = '1.5';
        });
 
-       paper.innerHTML = tempDiv.innerHTML;
+       const curTextExam = (window._lastSchedulePayload && window._lastSchedulePayload.rawCurriculumText) || "";
+        const tbTextExam = (window._lastSchedulePayload && window._lastSchedulePayload.textbookData && window._lastSchedulePayload.textbookData.text) || "";
+        const officialHeaderExam = buildOfficialDocumentHeader(curTextExam, tbTextExam);
+        paper.innerHTML = officialHeaderExam + tempDiv.innerHTML;
    } catch(e) {
        console.error(e);
        paper.innerHTML = "<div style='color:red;'><b>Có lỗi xảy ra khi gọi AI:</b><br>" + (e.message || e) + "</div>";
@@ -7094,6 +7099,72 @@ function copySlidePrompt() {
     });
 }
 
+
+
+// --- OFFICIAL DOCUMENT HEADER EXTRACTOR (ND 30/2020) ---
+function extractDocumentHeaderInfo(curriculumText, textbookText) {
+  const combined = ((curriculumText || "") + "\n" + (textbookText || "")).trim();
+  if (!combined) return { governingOrg: "", schoolName: "", facultyName: "" };
+
+  const lines = combined.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  let governingOrg = "";
+  let schoolName = "";
+  let facultyName = "";
+
+  const headerLines = lines.slice(0, 40);
+  for (let l of headerLines) {
+    const upper = l.toUpperCase();
+    if (!governingOrg && /^(?:ỦY BAN NHÂN DÂN|UBND|BỘ LAO ĐỘNG|BỘ GIÁO DỤC|BỘ NÔNG NGHIỆP|TỔNG CỤC|SỞ GIÁO DỤC)/i.test(l)) {
+      governingOrg = l.trim().toUpperCase();
+    } else if (!schoolName && /^(?:TRƯỜNG|TRUONG|HỌC VIỆN)/i.test(l) && !upper.includes("CHƯƠNG TRÌNH")) {
+      schoolName = l.trim().toUpperCase();
+    } else if (!facultyName && /^(?:KHOA|BỘ MÔN|TỔ BỘ MÔN)/i.test(l) && !upper.includes("CHƯƠNG TRÌNH")) {
+      facultyName = l.trim().toUpperCase();
+    }
+  }
+
+  if (!schoolName) {
+    const m = combined.match(/(?:TRƯỜNG|TRUONG|HỌC VIỆN)\s+(?:CAO ĐẲNG|TRUNG CẤP|ĐẠI HỌC|NGHỀ)?[^\n\r,.:;]{3,50}/i);
+    if (m) schoolName = m[0].trim().toUpperCase();
+  }
+  if (!facultyName) {
+    const m = combined.match(/(?:KHOA|BỘ MÔN)\s+[^\n\r,.:;]{3,40}/i);
+    if (m) facultyName = m[0].trim().toUpperCase();
+  }
+  if (!governingOrg) {
+    const m = combined.match(/(?:ỦY BAN NHÂN DÂN|UBND|BỘ LAO ĐỘNG[^\n\r,.:;]*|BỘ GIÁO DỤC[^\n\r,.:;]*)[^\n\r,.:;]{0,40}/i);
+    if (m) governingOrg = m[0].trim().toUpperCase();
+  }
+
+  return { governingOrg, schoolName, facultyName };
+}
+
+function buildOfficialDocumentHeader(curriculumText, textbookText) {
+  const info = extractDocumentHeaderInfo(curriculumText, textbookText);
+  let leftHtml = "";
+  if (info.schoolName || info.governingOrg || info.facultyName) {
+    if (info.governingOrg) leftHtml += `<div style="font-size:12pt; text-transform:uppercase;">${info.governingOrg}</div>`;
+    if (info.schoolName) leftHtml += `<div style="font-size:12.5pt; font-weight:bold; text-transform:uppercase;">${info.schoolName}</div>`;
+    if (info.facultyName) leftHtml += `<div style="font-size:12pt; font-weight:bold; margin-top:2px;">${info.facultyName}</div>`;
+    leftHtml += `<div style="width:120px; height:1px; background:#000; margin:4px auto 0 auto;"></div>`;
+  } else {
+    leftHtml += `<div style="font-size:12pt; text-transform:uppercase;">CƠ SỞ ĐÀO TẠO: ............................</div>`;
+    leftHtml += `<div style="font-size:12pt; font-weight:bold; margin-top:4px;">KHOA / TỔ BỘ MÔN: ....................</div>`;
+  }
+
+  return `<table style="width:100%; border:none; border-collapse:collapse; margin-bottom:20px; font-family:'Times New Roman', serif;">
+  <tr style="border:none;">
+    <td style="width:48%; vertical-align:top; text-align:center; border:none; padding:0;">
+      ${leftHtml}
+    </td>
+    <td style="width:52%; vertical-align:top; text-align:center; border:none; padding:0;">
+      <div style="font-size:12pt; font-weight:bold;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+      <div style="font-size:12.5pt; font-weight:bold; font-style:italic;">Độc lập - Tự do - Hạnh phúc</div>
+      <div style="width:160px; height:1px; background:#000; margin:4px auto 0 auto;"></div>
+    </td>
+  </tr>
+</table>`;
+}
 
 // --- STEP 3: EXAM GENERATOR LOGIC ---
 function renderExamChapterSelection(payload) {
@@ -7524,10 +7595,9 @@ CẤU HÌNH YÊU CẦU:
 YÊU CẦU BỐ CỤC NỘI DUNG VĂN BẢN (Chuẩn văn thư Nghị định 30/2020/NĐ-CP):
 Vui lòng xuất kết quả BẰNG MÃ HTML DUY NHẤT (TUYỆT ĐỐI KHÔNG dùng markdown code block, KHÔNG dùng ký tự sao hay triple backticks).
 Mã HTML bao gồm đầy đủ các mục sau:
-1. TIÊU NGỮ VÀ TIÊU ĐỀ:
-   - Quốc hiệu, Tiêu ngữ (CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM / Độc lập - Tự do - Hạnh phúc)
-   - Tiêu đề chính giữa, in hoa đậm: PHIẾU HƯỚNG DẪN HOẠT ĐỘNG TỰ HỌC CỦA SINH VIÊN
-   - Tên môn học, Mã bài/chương, Thời lượng tự học (${hours} giờ).
+1. TIÊU ĐỀ CHÍNH GIỮA (LƯU Ý: KHÔNG tự bịa tên cơ sở giáo dục, trường hay khoa nếu không có trong dữ liệu giáo trình):
+   - Bắt đầu trực tiếp bằng thẻ: <h2 style="text-align:center; font-weight:bold; text-transform:uppercase; margin-bottom:5px;">PHIẾU HƯỚNG DẪN HOẠT ĐỘNG TỰ HỌC CỦA SINH VIÊN</h2>
+   - Dòng phụ: <div style="text-align:center; font-style:italic; margin-bottom:15px;">Môn học: ${courseName} | Thời lượng tự học: ${hours} giờ</div>
 2. I. MỤC TIÊU TỰ HỌC:
    - Kiến thức: Sinh viên tự nghiên cứu, phân tích, hiểu rõ được những nội dung cốt lõi nào.
    - Kỹ năng: Sinh viên rèn luyện và thực hiện được các thao tác, bài tập hoặc tra cứu kỹ thuật gì.
@@ -7560,7 +7630,10 @@ Hãy trình bày trang trọng, ngôn từ sư phạm chuẩn mực, câu hỏi 
        let htmlContent = String(raw || "").replace(/^```(?:html|text|markdown)?s*/i,"").replace(/```s*$/,"").trim();
        htmlContent = htmlContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
-       paper.innerHTML = htmlContent;
+       const curTextSelf = (window._lastSchedulePayload && window._lastSchedulePayload.rawCurriculumText) || "";
+       const tbTextSelf = (window._lastSchedulePayload && window._lastSchedulePayload.textbookData && window._lastSchedulePayload.textbookData.text) || "";
+       const officialHeaderSelf = buildOfficialDocumentHeader(curTextSelf, tbTextSelf);
+       paper.innerHTML = officialHeaderSelf + htmlContent;
        stat.className = "status success";
        stat.innerHTML = "<i class='fas fa-check-circle'></i> Đã thiết kế Phiếu tự học thành công!";
    } catch(e) {
