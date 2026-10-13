@@ -6257,6 +6257,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             });
                             
                             pdata.savedLessons = savedLessons;
+                            if (pdata.rawCurriculumText) {
+                                if(!window._lastSchedulePayload) window._lastSchedulePayload = {};
+                                window._lastSchedulePayload.rawCurriculumText = pdata.rawCurriculumText;
+                            }
                             
                             // Fallback courseInfo if missing or empty
                             if (!pdata.courseInfo) {
@@ -7103,37 +7107,61 @@ function copySlidePrompt() {
 
 // --- OFFICIAL DOCUMENT HEADER EXTRACTOR (ND 30/2020) ---
 function extractDocumentHeaderInfo(curriculumText, textbookText) {
-  const combined = ((curriculumText || "") + "\n" + (textbookText || "")).trim();
-  if (!combined) return { governingOrg: "", schoolName: "", facultyName: "" };
+  const combined = ((curriculumText || '') + '\n' + (textbookText || '')).trim();
+  if (!combined) return { governingOrg: '', schoolName: '', facultyName: '' };
 
-  const lines = combined.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  let governingOrg = "";
-  let schoolName = "";
-  let facultyName = "";
+  const lines = combined.split(/\r?\n/).map(l => l.trim()).filter(Boolean).slice(0, 50);
+  let governingOrg = '';
+  let schoolName = '';
+  let facultyName = '';
 
-  const headerLines = lines.slice(0, 40);
-  for (let l of headerLines) {
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
     const upper = l.toUpperCase();
-    if (!governingOrg && /^(?:ỦY BAN NHÂN DÂN|UBND|BỘ LAO ĐỘNG|BỘ GIÁO DỤC|BỘ NÔNG NGHIỆP|TỔNG CỤC|SỞ GIÁO DỤC)/i.test(l)) {
+
+    // 1. Governing organization (ỦY BAN NHÂN DÂN..., BỘ...)
+    if (!governingOrg && /^(?:ỦY\s+BAN\s+NHÂN\s+DÂN|UBND|BỘ\s+LAO\s+ĐỘNG|BỘ\s+GIÁO\s+DỤC|BỘ\s+NÔNG\s+NGHIỆP|TỔNG\s+CỤC|SỞ\s+GIÁO\s+DỤC)/i.test(l)) {
       governingOrg = l.trim().toUpperCase();
-    } else if (!schoolName && /^(?:TRƯỜNG|TRUONG|HỌC VIỆN)/i.test(l) && !upper.includes("CHƯƠNG TRÌNH")) {
+      if (i + 1 < lines.length && /^(?:THÀNH\s+PHỐ|TỈNH|TP\.)/i.test(lines[i+1])) {
+        governingOrg += ' ' + lines[i+1].trim().toUpperCase();
+        i++;
+      }
+      continue;
+    }
+
+    // 2. School Name (TRƯỜNG CAO ĐẲNG BÁCH KHOA NAM SÀI GÒN...)
+    if (!schoolName && /^(?:TRƯỜNG|TRUONG|HỌC\s+VIỆN)/i.test(l)) {
       schoolName = l.trim().toUpperCase();
-    } else if (!facultyName && /^(?:KHOA|BỘ MÔN|TỔ BỘ MÔN)/i.test(l) && !upper.includes("CHƯƠNG TRÌNH")) {
+      if (i + 1 < lines.length) {
+        const nextUpper = lines[i+1].trim().toUpperCase();
+        if (/^(?:KHOA\s+NAM\s+SÀI\s+GÒN|NAM\s+SÀI\s+GÒN)/i.test(nextUpper)) {
+          schoolName += ' ' + nextUpper;
+          i++;
+        }
+      }
+      continue;
+    }
+
+    // 3. Faculty / Department (KHOA CÔNG NGHỆ THÔNG TIN...)
+    if (!facultyName && /^(?:KHOA|BỘ\s+MÔN|TỔ\s+BỘ\s+MÔN)\s+/i.test(l) && !upper.includes('CHƯƠNG TRÌNH') && !upper.includes('NAM SÀI GÒN')) {
       facultyName = l.trim().toUpperCase();
+      continue;
     }
   }
 
+  // Regex fallbacks across entire block
+  const fullBlock = lines.join('\n');
   if (!schoolName) {
-    const m = combined.match(/(?:TRƯỜNG|TRUONG|HỌC VIỆN)\s+(?:CAO ĐẲNG|TRUNG CẤP|ĐẠI HỌC|NGHỀ)?[^\n\r,.:;]{3,50}/i);
+    const m = fullBlock.match(/TRƯỜNG\s+(?:CAO\s+ĐẲNG|TRUNG\s+CẤP|ĐẠI\s+HỌC|NGHỀ)[^\n\r,.:;]{2,80}/i);
     if (m) schoolName = m[0].trim().toUpperCase();
   }
-  if (!facultyName) {
-    const m = combined.match(/(?:KHOA|BỘ MÔN)\s+[^\n\r,.:;]{3,40}/i);
-    if (m) facultyName = m[0].trim().toUpperCase();
-  }
   if (!governingOrg) {
-    const m = combined.match(/(?:ỦY BAN NHÂN DÂN|UBND|BỘ LAO ĐỘNG[^\n\r,.:;]*|BỘ GIÁO DỤC[^\n\r,.:;]*)[^\n\r,.:;]{0,40}/i);
+    const m = fullBlock.match(/(?:ỦY\s+BAN\s+NHÂN\s+DÂN|UBND|BỘ\s+LAO\s+ĐỘNG|BỘ\s+GIÁO\s+DỤC)[^\n\r,.:;]{2,80}/i);
     if (m) governingOrg = m[0].trim().toUpperCase();
+  }
+  if (!facultyName) {
+    const m = fullBlock.match(/(?:KHOA|BỘ\s+MÔN)\s+[^\n\r,.:;]{3,50}/i);
+    if (m && !m[0].toUpperCase().includes('NAM SÀI GÒN')) facultyName = m[0].trim().toUpperCase();
   }
 
   return { governingOrg, schoolName, facultyName };
@@ -7141,29 +7169,29 @@ function extractDocumentHeaderInfo(curriculumText, textbookText) {
 
 function buildOfficialDocumentHeader(curriculumText, textbookText) {
   const info = extractDocumentHeaderInfo(curriculumText, textbookText);
-  let leftHtml = "";
-  if (info.schoolName || info.governingOrg || info.facultyName) {
-    if (info.governingOrg) leftHtml += `<div style="font-size:12pt; text-transform:uppercase;">${info.governingOrg}</div>`;
-    if (info.schoolName) leftHtml += `<div style="font-size:12.5pt; font-weight:bold; text-transform:uppercase;">${info.schoolName}</div>`;
-    if (info.facultyName) leftHtml += `<div style="font-size:12pt; font-weight:bold; margin-top:2px;">${info.facultyName}</div>`;
-    leftHtml += `<div style="width:120px; height:1px; background:#000; margin:4px auto 0 auto;"></div>`;
+  let leftHtml = '';
+  if (info.governingOrg || info.schoolName || info.facultyName) {
+    if (info.governingOrg) leftHtml += '<div style="font-size:12pt; text-transform:uppercase; font-weight:normal; margin-bottom:2px;">' + info.governingOrg + '</div>';
+    if (info.schoolName) leftHtml += '<div style="font-size:12.5pt; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">' + info.schoolName + '</div>';
+    if (info.facultyName) leftHtml += '<div style="font-size:12pt; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">' + info.facultyName + '</div>';
+    leftHtml += '<div style="width:130px; height:1px; background:#000; margin:4px auto 0 auto;"></div>';
   } else {
-    leftHtml += `<div style="font-size:12pt; text-transform:uppercase;">CƠ SỞ ĐÀO TẠO: ............................</div>`;
-    leftHtml += `<div style="font-size:12pt; font-weight:bold; margin-top:4px;">KHOA / TỔ BỘ MÔN: ....................</div>`;
+    leftHtml += '<div style="font-size:12pt; text-transform:uppercase; margin-bottom:2px;">CƠ SỞ ĐÀO TẠO: ............................</div>';
+    leftHtml += '<div style="font-size:12pt; font-weight:bold; margin-top:4px;">KHOA / TỔ BỘ MÔN: ....................</div>';
   }
 
-  return `<table style="width:100%; border:none; border-collapse:collapse; margin-bottom:20px; font-family:'Times New Roman', serif;">
-  <tr style="border:none;">
-    <td style="width:48%; vertical-align:top; text-align:center; border:none; padding:0;">
-      ${leftHtml}
-    </td>
-    <td style="width:52%; vertical-align:top; text-align:center; border:none; padding:0;">
-      <div style="font-size:12pt; font-weight:bold;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-      <div style="font-size:12.5pt; font-weight:bold; font-style:italic;">Độc lập - Tự do - Hạnh phúc</div>
-      <div style="width:160px; height:1px; background:#000; margin:4px auto 0 auto;"></div>
-    </td>
-  </tr>
-</table>`;
+  return '<table style="width:100%; border:none; border-collapse:collapse; margin-bottom:25px; font-family:\'Times New Roman\', serif;">' +
+    '<tr style="border:none;">' +
+      '<td style="width:50%; vertical-align:top; text-align:center; border:none; padding:0 8px 0 0;">' +
+        leftHtml +
+      '</td>' +
+      '<td style="width:50%; vertical-align:top; text-align:center; border:none; padding:0 0 0 8px;">' +
+        '<div style="font-size:12pt; font-weight:bold; text-transform:uppercase; margin-bottom:3px;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>' +
+        '<div style="font-size:12.5pt; font-weight:bold; font-style:normal;">Độc lập – Tự do – Hạnh phúc</div>' +
+        '<div style="width:170px; height:1px; background:#000; margin:4px auto 0 auto;"></div>' +
+      '</td>' +
+    '</tr>' +
+  '</table>';
 }
 
 // --- STEP 3: EXAM GENERATOR LOGIC ---
@@ -7630,7 +7658,7 @@ Hãy trình bày trang trọng, ngôn từ sư phạm chuẩn mực, câu hỏi 
        let htmlContent = String(raw || "").replace(/^```(?:html|text|markdown)?s*/i,"").replace(/```s*$/,"").trim();
        htmlContent = htmlContent.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
-       const curTextSelf = (window._lastSchedulePayload && window._lastSchedulePayload.rawCurriculumText) || "";
+       const curTextSelf = (window._lastSchedulePayload && window._lastSchedulePayload.rawCurriculumText) || (currentProject && currentProject.program_data && currentProject.program_data.rawCurriculumText) || "";
        const tbTextSelf = (window._lastSchedulePayload && window._lastSchedulePayload.textbookData && window._lastSchedulePayload.textbookData.text) || "";
        const officialHeaderSelf = buildOfficialDocumentHeader(curTextSelf, tbTextSelf);
        paper.innerHTML = officialHeaderSelf + htmlContent;
